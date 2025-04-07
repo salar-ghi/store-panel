@@ -26,6 +26,27 @@ export const useAuthStore = create<AuthState>()(
       error: null,
       login: async (credentials) => {
         try {
+          // For development, allow admin user to log in without API call
+          if (credentials.username === "admin" && credentials.password === "12346") {
+            const adminUser: User = {
+              id: "admin-id",
+              username: "admin",
+              phoneNumber: "1234567890",
+              role: "admin"
+            };
+            
+            set({
+              user: adminUser,
+              token: "dev-token",
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            
+            localStorage.setItem('auth-token', "dev-token");
+            toast.success('Logged in as admin');
+            return;
+          }
+          
           set({ isLoading: true, error: null });
           const response = await apiClient.post<AuthResponse>('/api/Auth/login', credentials);
           const { token, user } = response.data;
