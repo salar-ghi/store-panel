@@ -16,6 +16,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Brands from "@/pages/Brands";
 import Categories from "@/pages/Categories";
+import Users from "@/pages/Users";
 import { useAuthStore } from "@/store/auth-store";
 
 // Create a client
@@ -93,6 +94,14 @@ const App = () => {
             <ProtectedRoute>
               <Layout>
                 <Customers />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/users" element={
+            <ProtectedRoute>
+              <Layout>
+                <Users />
               </Layout>
             </ProtectedRoute>
           } />

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User, LoginRequest, SignupRequest, AuthResponse } from '@/types/auth';
@@ -27,7 +26,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (credentials) => {
         try {
           // For development, allow admin user to log in without API call
-          if (credentials.username === "admin" && credentials.password === "12346") {
+          if (credentials.username === "admin" && credentials.password === "123456") {
             const adminUser: User = {
               id: "admin-id",
               username: "admin",
