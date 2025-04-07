@@ -35,7 +35,7 @@ const formSchema = z.object({
     message: "Password must be at least 6 characters.",
   }),
   role: z.string({
-    required_error: "Please select a role",
+    required_error: "Please select a role.",
   }),
 });
 
@@ -49,12 +49,19 @@ export default function Register() {
       username: "",
       phoneNumber: "",
       password: "",
-      role: "admin",
+      role: "admin", // Default role
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await signup(values);
+    const signupData = {
+      username: values.username,
+      phoneNumber: values.phoneNumber,
+      password: values.password,
+      role: values.role
+    };
+    
+    await signup(signupData);
     navigate("/login");
   }
 

@@ -11,7 +11,7 @@ import {
   Settings, 
   Box,
   Tag,
-  Category,
+  FolderTree,
   LayoutDashboard
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -30,7 +30,7 @@ interface SidebarItemProps {
 const sidebarItems = [
   { title: "Dashboard", path: "/", icon: LayoutDashboard },
   { title: "Products", path: "/products", icon: Package },
-  { title: "Categories", path: "/categories", icon: Category },
+  { title: "Categories", path: "/categories", icon: FolderTree },
   { title: "Brands", path: "/brands", icon: Tag },
   { title: "Orders", path: "/orders", icon: ShoppingBag },
   { title: "Customers", path: "/customers", icon: Users },

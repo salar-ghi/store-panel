@@ -89,7 +89,13 @@ export default function Categories() {
   });
 
   const createMutation = useMutation({
-    mutationFn: CategoryService.create,
+    mutationFn: (data: FormData) => {
+      // Ensure the data meets the CreateCategoryRequest requirements
+      return CategoryService.create({
+        name: data.name,
+        description: data.description
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category created successfully");
@@ -102,8 +108,13 @@ export default function Categories() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: FormData }) =>
-      CategoryService.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: FormData }) => {
+      // Ensure the data meets the CreateCategoryRequest requirements
+      return CategoryService.update(id, {
+        name: data.name,
+        description: data.description
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category updated successfully");

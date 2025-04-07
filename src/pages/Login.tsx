@@ -39,7 +39,12 @@ export default function Login() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await login(values);
+    const loginData = {
+      username: values.username,
+      password: values.password
+    };
+    
+    await login(loginData);
     navigate("/");
   }
 

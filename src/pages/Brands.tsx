@@ -89,7 +89,13 @@ export default function Brands() {
   });
 
   const createMutation = useMutation({
-    mutationFn: BrandService.create,
+    mutationFn: (data: FormData) => {
+      // Ensure the data meets the CreateBrandRequest requirements
+      return BrandService.create({
+        name: data.name,
+        description: data.description
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
       toast.success("Brand created successfully");
@@ -102,8 +108,13 @@ export default function Brands() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: FormData }) =>
-      BrandService.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: FormData }) => {
+      // Ensure the data meets the CreateBrandRequest requirements
+      return BrandService.update(id, {
+        name: data.name,
+        description: data.description
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
       toast.success("Brand updated successfully");
