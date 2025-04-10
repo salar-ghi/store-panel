@@ -4,7 +4,7 @@ export interface User {
   username: string;
   email?: string;
   phoneNumber: string;
-  role: string;
+  roles: string[];
 }
 
 export interface Role {
@@ -15,9 +15,10 @@ export interface Role {
 export interface CreateUserRequest {
   username: string;
   email: string;
-  password: string;
+  password?: string; // Make password optional for auto-generation
   phoneNumber: string;
-  roleId?: string;
+  roleIds?: string[]; // Change to array for multiple roles
+  generatePassword?: boolean; // Flag to generate random password
 }
 
 export interface CreateRoleRequest {

@@ -96,7 +96,7 @@ export default function Users() {
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
-                  <TableHead>Role</TableHead>
+                  <TableHead>Roles</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -111,7 +111,17 @@ export default function Users() {
                       <TableCell>{user.email || "N/A"}</TableCell>
                       <TableCell>{user.phoneNumber}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{user.role}</Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {user.roles && user.roles.length > 0 ? (
+                            user.roles.map((role, index) => (
+                              <Badge key={index} variant="outline" className="mr-1">
+                                {role}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground">No roles</span>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

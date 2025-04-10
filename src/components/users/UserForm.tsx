@@ -13,23 +13,29 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Card,
+  CardContent,
+} from "@/components/ui/card";
 
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
   phoneNumber: z.string().min(10, "Please enter a valid phone number"),
-  roleId: z.string().optional(),
+  roleIds: z.array(z.string()).min(1, "Select at least one role"),
+  generatePassword: z.boolean().default(false),
+  password: z.string().min(6, "Password must be at least 6 characters").optional()
+    .refine(val => val !== undefined || val === '', {
+      message: "Password is required if not auto-generating",
+    }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -40,8 +46,9 @@ interface UserFormProps {
 
 export function UserForm({ onUserAdded }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPasswordField, setShowPasswordField] = useState(true);
 
-  const { data: roles } = useQuery({
+  const { data: roles = [] } = useQuery({
     queryKey: ['roles'],
     queryFn: UserService.getAllRoles,
   });
@@ -51,24 +58,51 @@ export function UserForm({ onUserAdded }: UserFormProps) {
     defaultValues: {
       username: "",
       email: "",
-      password: "",
       phoneNumber: "",
-      roleId: undefined,
+      roleIds: [],
+      generatePassword: false,
+      password: "",
     },
   });
+
+  const generatePassword = form.watch("generatePassword");
+
+  // Update password visibility based on generate password toggle
+  const onGeneratePasswordChange = (checked: boolean) => {
+    setShowPasswordField(!checked);
+    if (checked) {
+      form.setValue("password", ""); // Clear password field if auto-generating
+    }
+  };
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      // Fix: Ensure all required fields are present for CreateUserRequest
+      let passwordToSend = data.password;
+      
+      // If generating password, create one and notify about it
+      if (data.generatePassword) {
+        passwordToSend = UserService.generateRandomPassword();
+        // In a real app, this would be sent via email/SMS
+        console.log("Generated password:", passwordToSend);
+      }
+
+      // Create the user with the form data
       await UserService.createUser({
         username: data.username,
         email: data.email,
-        password: data.password,
+        password: passwordToSend,
         phoneNumber: data.phoneNumber,
-        roleId: data.roleId,
+        roleIds: data.roleIds,
+        generatePassword: data.generatePassword
       });
-      toast.success("User created successfully!");
+
+      let successMessage = "User created successfully!";
+      if (data.generatePassword) {
+        successMessage += " A password has been generated and would be sent to the user.";
+      }
+      
+      toast.success(successMessage);
       form.reset();
       onUserAdded();
     } catch (error: any) {
@@ -86,9 +120,9 @@ export function UserForm({ onUserAdded }: UserFormProps) {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter username" {...field} />
+                <Input placeholder="Enter full name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,26 +145,12 @@ export function UserForm({ onUserAdded }: UserFormProps) {
 
         <FormField
           control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter password" type="password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="phoneNumber"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Cell Phone</FormLabel>
               <FormControl>
-                <Input placeholder="Enter phone number" {...field} />
+                <Input placeholder="Enter cell phone number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -139,27 +159,95 @@ export function UserForm({ onUserAdded }: UserFormProps) {
 
         <FormField
           control={form.control}
-          name="roleId"
+          name="generatePassword"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value}
-              >
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+              <div className="space-y-0.5">
+                <FormLabel>Generate Random Password</FormLabel>
+                <FormDescription>
+                  System will generate a secure password and send it to the user
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked);
+                    onGeneratePasswordChange(checked);
+                  }}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {showPasswordField && (
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
+                  <Input 
+                    placeholder="Enter password" 
+                    type="password" 
+                    {...field} 
+                  />
                 </FormControl>
-                <SelectContent>
-                  {roles?.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <Separator className="my-4" />
+        
+        <FormField
+          control={form.control}
+          name="roleIds"
+          render={() => (
+            <FormItem>
+              <FormLabel>Roles</FormLabel>
+              <FormDescription>
+                Select one or more roles for this user
+              </FormDescription>
+              <Card className="mt-2">
+                <ScrollArea className="h-[200px]">
+                  <CardContent className="pt-4">
+                    {roles.map((role) => (
+                      <FormField
+                        key={role.id}
+                        control={form.control}
+                        name="roleIds"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={role.id}
+                              className="flex flex-row items-start space-x-3 space-y-0 py-2"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(role.id)}
+                                  onCheckedChange={(checked) => {
+                                    const updatedRoles = checked
+                                      ? [...field.value, role.id]
+                                      : field.value.filter((id) => id !== role.id);
+                                    field.onChange(updatedRoles);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                {role.name}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                  </CardContent>
+                </ScrollArea>
+              </Card>
               <FormMessage />
             </FormItem>
           )}

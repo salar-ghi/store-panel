@@ -47,11 +47,6 @@ export function UserDetailsDialog({ userId, open, onClose }: UserDetailsDialogPr
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Role</p>
-                <Badge variant="outline">{user.role}</Badge>
-              </div>
-
-              <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Email</p>
                 <p className="text-sm">{user.email || "N/A"}</p>
               </div>
@@ -64,6 +59,19 @@ export function UserDetailsDialog({ userId, open, onClose }: UserDetailsDialogPr
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">User ID</p>
                 <p className="text-sm text-muted-foreground">{user.id}</p>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Roles</p>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {user.roles && user.roles.length > 0 ? (
+                  user.roles.map((role, index) => (
+                    <Badge key={index} variant="outline">{role}</Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No roles assigned</p>
+                )}
               </div>
             </div>
           </div>

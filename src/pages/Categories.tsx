@@ -1,7 +1,7 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash, Pencil, Plus, FolderTree } from "lucide-react";
+import { Plus, FolderTree, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,16 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Form,
   FormControl,
@@ -43,6 +34,7 @@ import {
 } from "@/components/ui/card";
 import { CategoryService } from "@/services/category-service";
 import { Category } from "@/types/category";
+import { CategoryCard } from "@/components/categories/CategoryCard";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -59,6 +51,7 @@ export default function Categories() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -69,7 +62,7 @@ export default function Categories() {
   });
 
   // Reset form when editingCategory changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (editingCategory) {
       form.reset({
         name: editingCategory.name,
@@ -163,6 +156,13 @@ export default function Categories() {
     setIsOpen(true);
   }
 
+  // Filter categories based on search term
+  const filteredCategories = categories.filter(
+    category => 
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -231,68 +231,60 @@ export default function Categories() {
 
       <Card className="border shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle>Manage Categories</CardTitle>
+          <CardTitle>Product Categories</CardTitle>
           <CardDescription>
-            View and manage all your product categories here
+            Organize your products with categories
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="flex items-center gap-2 pb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search categories..."
+                className="w-full pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="flex justify-center py-8">Loading categories...</div>
-          ) : categories.length === 0 ? (
+          ) : filteredCategories.length === 0 ? (
             <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center bg-muted/20">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <FolderTree className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-medium">No categories found</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Get started by creating your first category
+                {searchTerm 
+                  ? "No categories match your search" 
+                  : "Get started by creating your first category"}
               </p>
-              <Button 
-                variant="outline" 
-                onClick={openDialog}
-                className="mt-2"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Category
-              </Button>
+              {!searchTerm && (
+                <Button 
+                  variant="outline" 
+                  onClick={openDialog}
+                  className="mt-2"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Category
+                </Button>
+              )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell>{category.description}</TableCell>
-                    <TableCell>{new Date(category.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(category)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(category.id)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCategories.map((category) => (
+                <CategoryCard 
+                  key={category.id} 
+                  category={category} 
+                  onEdit={handleEdit} 
+                  onDelete={handleDelete} 
+                />
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

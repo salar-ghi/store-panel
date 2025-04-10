@@ -27,4 +27,15 @@ export class UserService {
     const response = await apiClient.post<Role>('/api/User/roles', roleData);
     return response.data;
   }
+
+  // Generate a random password for a user
+  static generateRandomPassword(length = 10): string {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  }
 }
