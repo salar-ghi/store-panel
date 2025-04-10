@@ -11,11 +11,18 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogFooter
 } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Category } from "@/types/category";
+import { Category, CreateCategoryRequest } from "@/types/category";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 // Mock data for categories with brand relations
 const mockCategories: Category[] = [
@@ -61,11 +68,29 @@ const mockCategories: Category[] = [
   },
 ];
 
+// Category form validation schema
+const categoryFormSchema = z.object({
+  name: z.string().min(2, { message: "Category name must be at least 2 characters" }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+});
+
+type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+
 export default function Categories() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Initialize form with react-hook-form
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
   // Fetch categories from API but use mock data for now
-  const { data: categories, isLoading, error } = useQuery({
+  const { data: categories, isLoading, error, refetch } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       // In a real app, this would fetch from API
@@ -76,6 +101,21 @@ export default function Categories() {
 
   const handleCategoryClick = (category: Category) => {
     setSelectedCategory(category);
+  };
+
+  const onSubmit = async (data: CategoryFormValues) => {
+    try {
+      // In a real app, this would create a category in the API
+      // await CategoryService.create(data);
+      
+      toast.success(`Category "${data.name}" created successfully`);
+      setIsDialogOpen(false);
+      form.reset();
+      refetch(); // Refresh the categories list
+    } catch (error) {
+      toast.error("Failed to create category");
+      console.error(error);
+    }
   };
 
   // Function to determine card border color based on product count
@@ -90,7 +130,7 @@ export default function Categories() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Categories</h1>
         
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -101,10 +141,55 @@ export default function Categories() {
             <DialogHeader>
               <DialogTitle>Create New Category</DialogTitle>
             </DialogHeader>
-            <div className="py-4">
-              {/* Category creation form would go here */}
-              <p className="text-muted-foreground">Category creation form will be implemented here</p>
-            </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Electronics" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe this category" 
+                          {...field} 
+                          className="min-h-[100px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      form.reset();
+                      setIsDialogOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">Create Category</Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -154,7 +239,7 @@ export default function Categories() {
               <CardFooter className="pt-2 flex-col items-start">
                 <div className="flex items-center text-sm mb-2">
                   <ArrowRightLeft className="h-4 w-4 mr-1 text-green-500" />
-                  <span className="font-medium">Brand Relations</span>
+                  <span className="font-medium">Associated Brands</span>
                 </div>
                 
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -165,7 +250,7 @@ export default function Categories() {
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-muted-foreground text-xs">No brand relations</span>
+                    <span className="text-muted-foreground text-xs">No associated brands</span>
                   )}
                 </div>
               </CardFooter>
@@ -176,7 +261,7 @@ export default function Categories() {
         <div className="text-center py-20 border rounded-lg bg-muted/10">
           <h3 className="text-xl font-medium">No categories found</h3>
           <p className="text-muted-foreground mt-2">Create your first category to get started</p>
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="mt-4">
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -187,10 +272,55 @@ export default function Categories() {
               <DialogHeader>
                 <DialogTitle>Create New Category</DialogTitle>
               </DialogHeader>
-              <div className="py-4">
-                {/* Category creation form would go here */}
-                <p className="text-muted-foreground">Category creation form will be implemented here</p>
-              </div>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Electronics" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe this category" 
+                            {...field} 
+                            className="min-h-[100px]"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <DialogFooter>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => {
+                        form.reset();
+                        setIsDialogOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit">Create Category</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
             </DialogContent>
           </Dialog>
         </div>
@@ -214,14 +344,14 @@ export default function Categories() {
               </div>
               
               <div>
-                <h4 className="font-medium">Brand Relations</h4>
+                <h4 className="font-medium">Associated Brands</h4>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {selectedCategory.brandRelations && selectedCategory.brandRelations.length > 0 ? (
                     selectedCategory.brandRelations.map((brand, idx) => (
                       <Badge key={idx} variant="outline">{brand}</Badge>
                     ))
                   ) : (
-                    <span className="text-muted-foreground">No brand relations</span>
+                    <span className="text-muted-foreground">No associated brands</span>
                   )}
                 </div>
               </div>
