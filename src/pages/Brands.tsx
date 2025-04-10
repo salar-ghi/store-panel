@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash, Pencil, Plus } from "lucide-react";
+import { Trash, Pencil, Plus, Package } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -90,7 +90,6 @@ export default function Brands() {
 
   const createMutation = useMutation({
     mutationFn: (data: FormData) => {
-      // Ensure the data meets the CreateBrandRequest requirements
       return BrandService.create({
         name: data.name,
         description: data.description
@@ -109,7 +108,6 @@ export default function Brands() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: FormData }) => {
-      // Ensure the data meets the CreateBrandRequest requirements
       return BrandService.update(id, {
         name: data.name,
         description: data.description
@@ -168,7 +166,10 @@ export default function Brands() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Brands</h2>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Brands</h2>
+          <p className="text-muted-foreground">Manage product brands</p>
+        </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={openDialog} className="flex items-center gap-1">
@@ -228,8 +229,8 @@ export default function Brands() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-3">
           <CardTitle>Manage Brands</CardTitle>
           <CardDescription>
             View and manage all your product brands here
@@ -239,15 +240,18 @@ export default function Brands() {
           {isLoading ? (
             <div className="flex justify-center py-8">Loading brands...</div>
           ) : brands.length === 0 ? (
-            <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
+            <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center bg-muted/20">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Package className="h-6 w-6 text-primary" />
+              </div>
               <h3 className="text-lg font-medium">No brands found</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
                 Get started by creating your first brand
               </p>
               <Button 
-                className="mt-4" 
                 variant="outline" 
                 onClick={openDialog}
+                className="mt-2"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Brand

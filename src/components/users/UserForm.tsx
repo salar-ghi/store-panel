@@ -60,7 +60,14 @@ export function UserForm({ onUserAdded }: UserFormProps) {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      await UserService.createUser(data);
+      // Fix: Ensure all required fields are present for CreateUserRequest
+      await UserService.createUser({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        phoneNumber: data.phoneNumber,
+        roleId: data.roleId,
+      });
       toast.success("User created successfully!");
       form.reset();
       onUserAdded();
