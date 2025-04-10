@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,7 +25,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User } from "@/components/ui/user";
 import { Key, AtSign, Phone, ShieldCheck } from "lucide-react";
 
 const formSchema = z.object({
@@ -68,10 +66,8 @@ export function UserForm({ onUserAdded }: UserFormProps) {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      // Always generate a password
       const passwordToSend = UserService.generateRandomPassword();
       
-      // Create the user with the form data
       await UserService.createUser({
         username: data.username,
         email: data.email,
@@ -80,8 +76,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         generatePassword: true
       });
 
-      // In a real application, this password would be sent to the user via email/SMS
-      // For demo purposes, we'll show it on the UI
       setGeneratedPassword(passwordToSend);
       
       let successMessage = `User ${data.username} created successfully!`;
@@ -93,7 +87,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         });
       }
       
-      // Don't reset the form if we're showing the generated password
       if (!generatedPassword) {
         form.reset();
       }
