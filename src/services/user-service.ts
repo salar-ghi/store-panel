@@ -14,7 +14,16 @@ export class UserService {
   }
 
   static async createUser(userData: CreateUserRequest): Promise<User> {
+    // If generatePassword is true, create a random password
+    if (userData.generatePassword) {
+      userData.password = this.generateRandomPassword();
+    }
+    
     const response = await apiClient.post<User>('/api/User/users', userData);
+    
+    // In a real app, if generatePassword is true, we would send an email/SMS with the password
+    console.log("User created with password:", userData.password);
+    
     return response.data;
   }
 
@@ -29,13 +38,28 @@ export class UserService {
   }
 
   // Generate a random password for a user
-  static generateRandomPassword(length = 10): string {
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-    let password = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
-      password += charset[randomIndex];
+  static generateRandomPassword(length = 12): string {
+    const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+    const numberChars = "0123456789";
+    const specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+    
+    const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
+    
+    // Ensure at least one of each character type
+    let password = 
+      uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length)) +
+      lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length)) +
+      numberChars.charAt(Math.floor(Math.random() * numberChars.length)) +
+      specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+    
+    // Fill the rest of the password
+    for (let i = 4; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * allChars.length);
+      password += allChars[randomIndex];
     }
-    return password;
+    
+    // Shuffle the password characters
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
   }
 }
