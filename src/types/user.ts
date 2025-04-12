@@ -22,6 +22,7 @@ export interface CreateUserRequest {
   roleIds?: string[]; // Array for multiple roles
   generatePassword?: boolean; // Flag to generate random password
   isAdmin?: boolean; // Flag for admin privileges
+  notificationMethod?: 'email' | 'sms' | 'both'; // Method to send credentials
 }
 
 export interface CreateRoleRequest {

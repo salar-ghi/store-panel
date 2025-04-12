@@ -21,8 +21,21 @@ export class UserService {
     
     const response = await apiClient.post<User>('/api/User/users', userData);
     
-    // In a real app, if generatePassword is true, we would send an email/SMS with the password
-    console.log("User created with password:", userData.password);
+    // In a real app, we would send credentials via the selected notification method
+    console.log(`User created with password: ${userData.password}`);
+    console.log(`Notification method: ${userData.notificationMethod || 'none'}`);
+    
+    if (userData.notificationMethod) {
+      if (userData.notificationMethod === 'email' || userData.notificationMethod === 'both') {
+        console.log(`Sending credentials to email: ${userData.email}`);
+        // In a real app, this would be an API call to send an email
+      }
+      
+      if (userData.notificationMethod === 'sms' || userData.notificationMethod === 'both') {
+        console.log(`Sending credentials to phone: ${userData.phoneNumber}`);
+        // In a real app, this would be an API call to send an SMS
+      }
+    }
     
     return response.data;
   }

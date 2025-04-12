@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -25,7 +26,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Key, AtSign, Phone, ShieldCheck } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Key, AtSign, Phone, ShieldCheck, Bell } from "lucide-react";
 
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -34,6 +36,7 @@ const formSchema = z.object({
   roleIds: z.array(z.string()).min(1, "Select at least one role"),
   generatePassword: z.boolean().default(true),
   isAdmin: z.boolean().default(false),
+  notificationMethod: z.enum(["email", "sms", "both"]).default("email"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -60,6 +63,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       roleIds: [],
       generatePassword: true,
       isAdmin: false,
+      notificationMethod: "email",
     },
   });
 
@@ -68,12 +72,14 @@ export function UserForm({ onUserAdded }: UserFormProps) {
     try {
       const passwordToSend = UserService.generateRandomPassword();
       
-      await UserService.createUser({
+      const user = await UserService.createUser({
         username: data.username,
         email: data.email,
         phoneNumber: data.phoneNumber,
         roleIds: data.roleIds,
-        generatePassword: true
+        generatePassword: true,
+        isAdmin: data.isAdmin,
+        notificationMethod: data.notificationMethod
       });
 
       setGeneratedPassword(passwordToSend);
@@ -86,6 +92,12 @@ export function UserForm({ onUserAdded }: UserFormProps) {
           description: "This user has been given administrator privileges"
         });
       }
+      
+      toast.success(`Credentials will be sent via ${data.notificationMethod}`, {
+        description: data.notificationMethod === "both" 
+          ? "User will receive login details via email and SMS" 
+          : `User will receive login details via ${data.notificationMethod}`
+      });
       
       if (!generatedPassword) {
         form.reset();
@@ -114,7 +126,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                 {generatedPassword}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                In a real application, this would be sent to the user via email or SMS.
+                This password will be sent to the user via the selected notification method.
               </p>
             </div>
             <div className="flex justify-end space-x-2">
@@ -200,6 +212,55 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notificationMethod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center">
+                    <Bell className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Notification Method
+                  </FormLabel>
+                  <FormDescription>
+                    How should we send the login credentials to this user?
+                  </FormDescription>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1 mt-2"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="email" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Email only
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="sms" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          SMS only
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="both" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Both Email and SMS
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

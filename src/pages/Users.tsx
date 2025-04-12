@@ -42,11 +42,14 @@ export default function Users() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Users Management</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Users Management</h1>
+          <p className="text-muted-foreground">Create and manage users and their roles</p>
+        </div>
         <div className="flex gap-2">
           <Sheet>
             <SheetTrigger asChild>
-              <Button>
+              <Button variant="outline">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Role
               </Button>
@@ -66,7 +69,7 @@ export default function Users() {
                 Add User
               </Button>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="sm:max-w-md">
               <SheetHeader>
                 <SheetTitle>Create New User</SheetTitle>
               </SheetHeader>
@@ -97,6 +100,7 @@ export default function Users() {
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Roles</TableHead>
+                  <TableHead className="text-center">Admin</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -123,11 +127,16 @@ export default function Users() {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell className="text-center">
+                        {user.isAdmin && (
+                          <Badge variant="default" className="bg-purple-500">Admin</Badge>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                       No users found
                     </TableCell>
                   </TableRow>
