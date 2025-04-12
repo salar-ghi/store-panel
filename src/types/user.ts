@@ -4,6 +4,7 @@ export interface User {
   username: string;
   email?: string;
   phoneNumber: string;
+  description?: string;
   roles: string[];
   isAdmin?: boolean;
 }
@@ -19,6 +20,7 @@ export interface CreateUserRequest {
   email: string;
   password?: string; // Optional for auto-generation
   phoneNumber: string;
+  description?: string;
   roleIds?: string[]; // Array for multiple roles
   generatePassword?: boolean; // Flag to generate random password
   isAdmin?: boolean; // Flag for admin privileges

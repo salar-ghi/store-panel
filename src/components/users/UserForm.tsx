@@ -27,12 +27,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Key, AtSign, Phone, ShieldCheck, Bell } from "lucide-react";
+import { Key, AtSign, Phone, ShieldCheck, Bell, FileText } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email"),
   phoneNumber: z.string().min(10, "Please enter a valid phone number"),
+  description: z.string().optional(),
   roleIds: z.array(z.string()).min(1, "Select at least one role"),
   generatePassword: z.boolean().default(true),
   isAdmin: z.boolean().default(false),
@@ -60,6 +62,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       username: "",
       email: "",
       phoneNumber: "",
+      description: "",
       roleIds: [],
       generatePassword: true,
       isAdmin: false,
@@ -76,6 +79,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         username: data.username,
         email: data.email,
         phoneNumber: data.phoneNumber,
+        description: data.description,
         roleIds: data.roleIds,
         generatePassword: true,
         isAdmin: data.isAdmin,
@@ -186,6 +190,27 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                   </FormLabel>
                   <FormControl>
                     <Input placeholder="Enter cell phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center">
+                    <FileText className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Description
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter user description or notes (optional)" 
+                      className="resize-none min-h-[80px]"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

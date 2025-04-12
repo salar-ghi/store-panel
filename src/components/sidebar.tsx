@@ -33,7 +33,7 @@ const sidebarItems = [
   { title: "Categories", path: "/categories", icon: FolderTree },
   { title: "Brands", path: "/brands", icon: Tag },
   { title: "Orders", path: "/orders", icon: ShoppingBag },
-  { title: "Customers", path: "/customers", icon: Users },
+  { title: "Users", path: "/users", icon: Users },
   { title: "Analytics", path: "/analytics", icon: BarChart3 },
   { title: "Promotions", path: "/promotions", icon: Percent },
   { title: "Settings", path: "/settings", icon: Settings },

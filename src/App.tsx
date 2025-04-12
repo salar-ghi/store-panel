@@ -7,7 +7,6 @@ import { Layout } from "@/components/layout";
 import Dashboard from "@/pages/Dashboard";
 import Products from "@/pages/Products";
 import Orders from "@/pages/Orders";
-import Customers from "@/pages/Customers";
 import Analytics from "@/pages/Analytics";
 import Promotions from "@/pages/Promotions";
 import Settings from "@/pages/Settings";
@@ -90,13 +89,8 @@ const App = () => {
             </ProtectedRoute>
           } />
           
-          <Route path="/customers" element={
-            <ProtectedRoute>
-              <Layout>
-                <Customers />
-              </Layout>
-            </ProtectedRoute>
-          } />
+          {/* Redirect /customers to /users */}
+          <Route path="/customers" element={<Navigate to="/users" replace />} />
           
           <Route path="/users" element={
             <ProtectedRoute>
