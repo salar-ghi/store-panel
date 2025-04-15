@@ -27,8 +27,24 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Key, AtSign, Phone, ShieldCheck, Bell, FileText } from "lucide-react";
+import { 
+  Key, 
+  AtSign, 
+  Phone, 
+  ShieldCheck, 
+  Bell, 
+  FileText,
+  Check,
+  Users
+} from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -50,6 +66,7 @@ interface UserFormProps {
 export function UserForm({ onUserAdded }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   const { data: roles = [] } = useQuery({
     queryKey: ['roles'],
@@ -105,6 +122,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       
       if (!generatedPassword) {
         form.reset();
+        setSelectedRoles([]);
       }
       
       onUserAdded();
@@ -113,6 +131,17 @@ export function UserForm({ onUserAdded }: UserFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRoleToggle = (roleId: string) => {
+    setSelectedRoles(prev => {
+      const newSelection = prev.includes(roleId)
+        ? prev.filter(id => id !== roleId)
+        : [...prev, roleId];
+      
+      form.setValue('roleIds', newSelection);
+      return newSelection;
+    });
   };
 
   return (
@@ -297,49 +326,63 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               name="roleIds"
               render={() => (
                 <FormItem>
-                  <FormLabel>Roles</FormLabel>
+                  <FormLabel className="flex items-center">
+                    <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Roles
+                  </FormLabel>
                   <FormDescription>
                     Assign one or more roles to this user
                   </FormDescription>
-                  <Card className="mt-2">
-                    <ScrollArea className="h-[200px]">
-                      <CardContent className="pt-4">
+                  <div className="mt-3 space-y-4">
+                    {roles.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {roles.map((role) => (
-                          <FormField
-                            key={role.id}
-                            control={form.control}
-                            name="roleIds"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={role.id}
-                                  className="flex flex-row items-start space-x-3 space-y-0 py-2"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(role.id)}
-                                      onCheckedChange={(checked) => {
-                                        const updatedRoles = checked
-                                          ? [...field.value, role.id]
-                                          : field.value.filter((id) => id !== role.id);
-                                        field.onChange(updatedRoles);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer">
-                                    {role.name}
-                                    {role.name.toLowerCase() === 'admin' && (
-                                      <Badge variant="outline" className="ml-2 bg-purple-500/10">Admin</Badge>
+                          <div 
+                            key={role.id} 
+                            className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-colors ${
+                              selectedRoles.includes(role.id) 
+                                ? "bg-purple-50 border-purple-200" 
+                                : "hover:bg-gray-50"
+                            }`}
+                            onClick={() => handleRoleToggle(role.id)}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Checkbox 
+                                checked={selectedRoles.includes(role.id)}
+                                onCheckedChange={() => handleRoleToggle(role.id)}
+                                className="data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
+                              />
+                              <div>
+                                <p className="font-medium">{role.name}</p>
+                                {role.permissions && role.permissions.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {role.permissions.slice(0, 2).map((permission, idx) => (
+                                      <Badge key={idx} variant="outline" className="text-xs">
+                                        {permission}
+                                      </Badge>
+                                    ))}
+                                    {role.permissions.length > 2 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        +{role.permissions.length - 2} more
+                                      </Badge>
                                     )}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {selectedRoles.includes(role.id) && (
+                              <Check className="h-4 w-4 text-purple-500" />
+                            )}
+                          </div>
                         ))}
-                      </CardContent>
-                    </ScrollArea>
-                  </Card>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-dashed p-6 text-center">
+                        <p className="text-muted-foreground">No roles available</p>
+                        <p className="text-sm text-muted-foreground mt-1">Create roles first to assign them to users</p>
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

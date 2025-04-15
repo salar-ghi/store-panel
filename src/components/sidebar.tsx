@@ -12,7 +12,9 @@ import {
   Box,
   Tag,
   FolderTree,
-  LayoutDashboard
+  LayoutDashboard,
+  Image,
+  PictureInPicture
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -34,6 +36,8 @@ const sidebarItems = [
   { title: "Brands", path: "/brands", icon: Tag },
   { title: "Orders", path: "/orders", icon: ShoppingBag },
   { title: "Users", path: "/users", icon: Users },
+  { title: "Banners", path: "/banners", icon: Image },
+  { title: "Tags", path: "/tags", icon: PictureInPicture },
   { title: "Analytics", path: "/analytics", icon: BarChart3 },
   { title: "Promotions", path: "/promotions", icon: Percent },
   { title: "Settings", path: "/settings", icon: Settings },
