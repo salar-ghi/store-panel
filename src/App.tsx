@@ -16,6 +16,8 @@ import Register from "@/pages/Register";
 import Brands from "@/pages/Brands";
 import Categories from "@/pages/Categories";
 import Users from "@/pages/Users";
+import Banners from "@/pages/Banners";
+import Tags from "@/pages/Tags";
 import { useAuthStore } from "@/store/auth-store";
 
 // Create a client
@@ -120,6 +122,24 @@ const App = () => {
             <ProtectedRoute>
               <Layout>
                 <Settings />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          {/* Adding Banners Route */}
+          <Route path="/banners" element={
+            <ProtectedRoute>
+              <Layout>
+                <Banners />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          {/* Adding Tags Route */}
+          <Route path="/tags" element={
+            <ProtectedRoute>
+              <Layout>
+                <Tags />
               </Layout>
             </ProtectedRoute>
           } />
