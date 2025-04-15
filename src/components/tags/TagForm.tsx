@@ -58,7 +58,13 @@ export function TagForm({ onTagAdded, initialData }: TagFormProps) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      await TagService.createTag(data);
+      // Ensure we're passing a valid CreateTagRequest with required name
+      const tagData = {
+        name: data.name, // This is required by CreateTagRequest
+        description: data.description,
+        color: data.color
+      };
+      await TagService.createTag(tagData);
       toast.success("Tag created successfully!");
       form.reset();
       onTagAdded();

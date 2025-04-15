@@ -81,7 +81,21 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      await BannerService.createBanner(data);
+      // Ensure required fields are included in the request
+      const bannerData = {
+        title: data.title, // Required field
+        description: data.description,
+        imageUrl: data.imageUrl, // Required field
+        linkUrl: data.linkUrl,
+        targetLocation: data.targetLocation as BannerTargetLocation, // Required field
+        size: data.size as BannerSize, // Required field
+        type: data.type as BannerType, // Required field
+        active: data.active,
+        startDate: data.startDate,
+        endDate: data.endDate
+      };
+      
+      await BannerService.createBanner(bannerData);
       toast.success("Banner created successfully!");
       form.reset();
       setImagePreview(null);
