@@ -1,5 +1,4 @@
-
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ export function ProductList({
   onSearchChange,
   onViewProduct 
 }: ProductListProps) {
+  const queryClient = useQueryClient();
   const { isLoading, data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: ProductService.getAll,
