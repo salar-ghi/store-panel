@@ -30,17 +30,17 @@ interface SidebarItemProps {
 }
 
 const sidebarItems = [
-  { title: "Dashboard", path: "/", icon: LayoutDashboard },
-  { title: "Products", path: "/products", icon: Package },
-  { title: "Categories", path: "/categories", icon: FolderTree },
-  { title: "Brands", path: "/brands", icon: Tag },
-  { title: "Orders", path: "/orders", icon: ShoppingBag },
-  { title: "Users", path: "/users", icon: Users },
-  { title: "Banners", path: "/banners", icon: Image },
-  { title: "Tags", path: "/tags", icon: PictureInPicture },
-  { title: "Analytics", path: "/analytics", icon: BarChart3 },
-  { title: "Promotions", path: "/promotions", icon: Percent },
-  { title: "Settings", path: "/settings", icon: Settings },
+  { title: "داشبورد", path: "/", icon: LayoutDashboard },
+  { title: "محصولات", path: "/products", icon: Package },
+  { title: "دسته‌بندی‌ها", path: "/categories", icon: FolderTree },
+  { title: "برندها", path: "/brands", icon: Tag },
+  { title: "سفارشات", path: "/orders", icon: ShoppingBag },
+  { title: "کاربران", path: "/users", icon: Users },
+  { title: "بنرها", path: "/banners", icon: Image },
+  { title: "تگ‌ها", path: "/tags", icon: PictureInPicture },
+  { title: "آمار", path: "/analytics", icon: BarChart3 },
+  { title: "تخفیف‌ها", path: "/promotions", icon: Percent },
+  { title: "تنظیمات", path: "/settings", icon: Settings },
 ];
 
 function SidebarItem({ icon: Icon, title, path, isActive }: SidebarItemProps) {
@@ -54,7 +54,7 @@ function SidebarItem({ icon: Icon, title, path, isActive }: SidebarItemProps) {
         isActive 
           ? "bg-sidebar-accent text-sidebar-accent-foreground" 
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-        collapsed && "flex-col justify-center"
+        collapsed ? "flex-col justify-center" : "flex-row-reverse" // Changed to flex-row-reverse for RTL
       )}
     >
       <Icon className={cn("h-5 w-5", collapsed && "h-6 w-6")} />
@@ -70,14 +70,14 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col border-r bg-sidebar h-screen transition-all duration-300",
+        "flex flex-col border-l bg-sidebar h-screen transition-all duration-300", // Changed border-r to border-l
         collapsed ? "w-[70px]" : "w-[240px]",
         className
       )}
     >
       <div className="p-4 h-14 flex items-center border-b">
         {!collapsed && (
-          <h1 className="font-semibold text-lg">ShopAdmin</h1>
+          <h1 className="font-semibold text-lg">مدیریت فروشگاه</h1>
         )}
         {collapsed && (
           <Box className="h-6 w-6 mx-auto" />

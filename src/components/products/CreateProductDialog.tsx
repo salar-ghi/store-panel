@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "./ProductForm";
+import { ProductService } from "@/services/product-service";
 import {
   Dialog,
   DialogContent,
@@ -26,10 +27,10 @@ export function CreateProductDialog({ open, onOpenChange }: CreateProductDialogP
     try {
       await ProductService.create(data);
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Product created successfully");
+      toast.success("محصول با موفقیت ایجاد شد");
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create product");
+      toast.error(error.response?.data?.message || "خطا در ایجاد محصول");
     }
   };
 
@@ -38,14 +39,14 @@ export function CreateProductDialog({ open, onOpenChange }: CreateProductDialogP
       <DialogTrigger asChild>
         <Button className="flex items-center gap-1">
           <Plus className="h-4 w-4" />
-          Add Product
+          افزودن محصول
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[750px]">
         <DialogHeader>
-          <DialogTitle>Create New Product</DialogTitle>
+          <DialogTitle>ایجاد محصول جدید</DialogTitle>
           <DialogDescription>
-            Enter product details to create a new product.
+            برای ایجاد محصول جدید، اطلاعات زیر را وارد کنید.
           </DialogDescription>
         </DialogHeader>
         <ProductForm onSubmit={handleSubmit} />

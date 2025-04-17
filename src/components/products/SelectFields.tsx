@@ -46,11 +46,11 @@ export function SelectFields({ control }: SelectFieldsProps) {
         name="categoryId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Category</FormLabel>
+            <FormLabel>دسته‌بندی</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="انتخاب دسته‌بندی" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -74,11 +74,11 @@ export function SelectFields({ control }: SelectFieldsProps) {
         name="brandId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Brand</FormLabel>
+            <FormLabel>برند</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a brand" />
+                  <SelectValue placeholder="انتخاب برند" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -102,11 +102,11 @@ export function SelectFields({ control }: SelectFieldsProps) {
         name="supplierId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Supplier</FormLabel>
+            <FormLabel>تامین‌کننده</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a supplier" />
+                  <SelectValue placeholder="انتخاب تامین‌کننده" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>

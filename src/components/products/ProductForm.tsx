@@ -67,10 +67,19 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
   });
 
   const handleSubmit = (data: FormData) => {
-    onSubmit({
-      ...data,
+    // Ensure all required fields are present before submitting
+    const productData: CreateProductRequest = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      stockQuantity: data.stockQuantity,
+      categoryId: Number(data.categoryId),
+      brandId: Number(data.brandId),
+      supplierId: Number(data.supplierId),
       images: productImages,
-    });
+    };
+    
+    onSubmit(productData);
     form.reset();
     setProductImages([]);
   };
@@ -85,9 +94,9 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>نام محصول</FormLabel>
                   <FormControl>
-                    <Input placeholder="Product name" {...field} />
+                    <Input placeholder="نام محصول را وارد کنید" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -99,10 +108,10 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>توضیحات</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Product description"
+                      placeholder="توضیحات محصول را وارد کنید"
                       className="min-h-[120px]"
                       {...field}
                     />
@@ -118,11 +127,11 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>قیمت</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="0.00"
+                        placeholder="0"
                         min={0}
                         step={0.01}
                         {...field}
@@ -138,7 +147,7 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
                 name="stockQuantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Stock Quantity</FormLabel>
+                    <FormLabel>موجودی</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -157,7 +166,7 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
           
           <div className="space-y-4">
             <FormItem className="col-span-2">
-              <FormLabel>Images</FormLabel>
+              <FormLabel>تصاویر محصول</FormLabel>
               <ProductImageUpload
                 value={productImages}
                 onChange={setProductImages}
@@ -171,7 +180,7 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
 
         <div className="flex justify-end">
           <Button type="submit" className="w-full">
-            Create Product
+            ایجاد محصول
           </Button>
         </div>
       </form>
