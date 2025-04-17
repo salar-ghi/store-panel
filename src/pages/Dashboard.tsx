@@ -9,33 +9,33 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight">داشبورد</h2>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Revenue"
-          value="$45,231.89"
+          title="درآمد کل"
+          value="۴۵,۲۳۱.۸۹ تومان"
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          description="+20.1% from last month"
+          description="۲۰.۱٪ افزایش نسبت به ماه قبل"
         />
         <StatCard
-          title="Orders"
-          value="2,345"
+          title="سفارش‌ها"
+          value="۲,۳۴۵"
           icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
-          description="+12.3% from last month"
+          description="۱۲.۳٪ افزایش نسبت به ماه قبل"
         />
         <StatCard
-          title="Products"
-          value="432"
+          title="محصولات"
+          value="۴۳۲"
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
-          description="+5.7% new products"
+          description="۵.۷٪ محصولات جدید"
         />
         <StatCard
-          title="Customers"
-          value="1,893"
+          title="مشتریان"
+          value="۱,۸۹۳"
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
-          description="+18.2% new customers"
+          description="۱۸.۲٪ مشتریان جدید"
         />
       </div>
       

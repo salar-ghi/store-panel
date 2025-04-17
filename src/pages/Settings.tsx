@@ -24,66 +24,67 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+        <h2 className="text-3xl font-bold tracking-tight">تنظیمات</h2>
       </div>
       
       <Tabs defaultValue="general">
         <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="general">عمومی</TabsTrigger>
+          <TabsTrigger value="notifications">اعلان‌ها</TabsTrigger>
+          <TabsTrigger value="payments">پرداخت‌ها</TabsTrigger>
+          <TabsTrigger value="security">امنیت</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general" className="mt-6 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Store Information</CardTitle>
+              <CardTitle>اطلاعات فروشگاه</CardTitle>
               <CardDescription>
-                Update your store details and preferences.
+                بروزرسانی جزئیات و تنظیمات فروشگاه.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="store-name">Store Name</Label>
-                <Input id="store-name" defaultValue="My Awesome Store" />
+                <Label htmlFor="store-name">نام فروشگاه</Label>
+                <Input id="store-name" defaultValue="فروشگاه عالی من" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="store-email">Email Address</Label>
+                <Label htmlFor="store-email">آدرس ایمیل</Label>
                 <Input id="store-email" defaultValue="contact@myawesomestore.com" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="store-currency">Currency</Label>
-                <Select defaultValue="usd">
+                <Label htmlFor="store-currency">واحد پول</Label>
+                <Select defaultValue="irr">
                   <SelectTrigger id="store-currency">
-                    <SelectValue placeholder="Select a currency" />
+                    <SelectValue placeholder="یک واحد پول انتخاب کنید" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="usd">USD ($)</SelectItem>
-                    <SelectItem value="eur">EUR (€)</SelectItem>
-                    <SelectItem value="gbp">GBP (£)</SelectItem>
-                    <SelectItem value="jpy">JPY (¥)</SelectItem>
+                    <SelectItem value="irr">تومان (IRR)</SelectItem>
+                    <SelectItem value="usd">دلار ($)</SelectItem>
+                    <SelectItem value="eur">یورو (€)</SelectItem>
+                    <SelectItem value="gbp">پوند (£)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="store-timezone">Timezone</Label>
-                <Select defaultValue="est">
+                <Label htmlFor="store-timezone">منطقه زمانی</Label>
+                <Select defaultValue="tehran">
                   <SelectTrigger id="store-timezone">
-                    <SelectValue placeholder="Select a timezone" />
+                    <SelectValue placeholder="یک منطقه زمانی انتخاب کنید" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="est">Eastern Time (ET)</SelectItem>
-                    <SelectItem value="cst">Central Time (CT)</SelectItem>
-                    <SelectItem value="mst">Mountain Time (MT)</SelectItem>
-                    <SelectItem value="pst">Pacific Time (PT)</SelectItem>
-                    <SelectItem value="utc">Coordinated Universal Time (UTC)</SelectItem>
+                    <SelectItem value="tehran">تهران (GMT+3:30)</SelectItem>
+                    <SelectItem value="est">شرق آمریکا (EST)</SelectItem>
+                    <SelectItem value="cst">مرکز آمریکا (CST)</SelectItem>
+                    <SelectItem value="mst">کوهستان آمریکا (MST)</SelectItem>
+                    <SelectItem value="pst">غرب آمریکا (PST)</SelectItem>
+                    <SelectItem value="utc">زمان جهانی هماهنگ (UTC)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Save Changes</Button>
+              <Button>ذخیره تغییرات</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -91,57 +92,57 @@ export default function Settings() {
         <TabsContent value="notifications" className="mt-6 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
+              <CardTitle>تنظیمات اعلان‌ها</CardTitle>
               <CardDescription>
-                Customize when and how you receive notifications.
+                سفارشی‌سازی زمان و نحوه دریافت اعلان‌ها.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start space-x-2">
                 <Checkbox id="notify-orders" defaultChecked />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="notify-orders"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    New Orders
+                    سفارش‌های جدید
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive notifications when new orders are placed.
+                    دریافت اعلان هنگام ثبت سفارش‌های جدید.
                   </p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">
                 <Checkbox id="notify-products" defaultChecked />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="notify-products"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Low Stock
+                    موجودی کم
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive notifications when products are low in stock.
+                    دریافت اعلان هنگامی که موجودی محصولات کم است.
                   </p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">
                 <Checkbox id="notify-reviews" />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="notify-reviews"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Customer Reviews
+                    نظرات مشتریان
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive notifications for new product reviews.
+                    دریافت اعلان برای نظرات جدید محصولات.
                   </p>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Save Preferences</Button>
+              <Button>ذخیره تنظیمات</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -149,57 +150,57 @@ export default function Settings() {
         <TabsContent value="payments" className="mt-6 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Payment Methods</CardTitle>
+              <CardTitle>روش‌های پرداخت</CardTitle>
               <CardDescription>
-                Configure the payment methods your store accepts.
+                پیکربندی روش‌های پرداختی که فروشگاه شما می‌پذیرد.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start space-x-2">
                 <Checkbox id="payment-credit" defaultChecked />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="payment-credit"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Credit Cards
+                    کارت‌های بانکی
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Accept Visa, Mastercard, American Express, and Discover.
+                    پذیرش انواع کارت‌های بانکی شتاب.
                   </p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">
                 <Checkbox id="payment-paypal" defaultChecked />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="payment-paypal"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    PayPal
+                    درگاه زرین‌پال
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Accept payments through PayPal.
+                    پذیرش پرداخت از طریق درگاه زرین‌پال.
                   </p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">
                 <Checkbox id="payment-apple" />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="payment-apple"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Apple Pay
+                    کیف پول دیجیتال
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Accept payments through Apple Pay.
+                    پذیرش پرداخت از طریق کیف پول دیجیتال.
                   </p>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Save Payment Methods</Button>
+              <Button>ذخیره روش‌های پرداخت</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -207,41 +208,41 @@ export default function Settings() {
         <TabsContent value="security" className="mt-6 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
+              <CardTitle>تنظیمات امنیتی</CardTitle>
               <CardDescription>
-                Manage your account's security preferences.
+                مدیریت تنظیمات امنیتی حساب کاربری خود.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="current-password">Current Password</Label>
+                <Label htmlFor="current-password">رمز عبور فعلی</Label>
                 <Input id="current-password" type="password" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="new-password">New Password</Label>
+                <Label htmlFor="new-password">رمز عبور جدید</Label>
                 <Input id="new-password" type="password" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Label htmlFor="confirm-password">تأیید رمز عبور جدید</Label>
                 <Input id="confirm-password" type="password" />
               </div>
               <div className="flex items-start space-x-2 pt-4">
                 <Checkbox id="two-factor" />
-                <div className="grid gap-1.5">
+                <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="two-factor"
                     className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Enable Two-Factor Authentication
+                    فعال‌سازی احراز هویت دو مرحله‌ای
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Add an extra layer of security to your account.
+                    یک لایه امنیتی اضافه به حساب خود اضافه کنید.
                   </p>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Update Security Settings</Button>
+              <Button>بروزرسانی تنظیمات امنیتی</Button>
             </CardFooter>
           </Card>
         </TabsContent>

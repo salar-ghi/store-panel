@@ -38,7 +38,7 @@ const sidebarItems = [
   { title: "کاربران", path: "/users", icon: Users },
   { title: "بنرها", path: "/banners", icon: Image },
   { title: "تگ‌ها", path: "/tags", icon: PictureInPicture },
-  { title: "آمار", path: "/analytics", icon: BarChart3 },
+  { title: "تحلیل‌ها", path: "/analytics", icon: BarChart3 },
   { title: "تخفیف‌ها", path: "/promotions", icon: Percent },
   { title: "تنظیمات", path: "/settings", icon: Settings },
 ];
@@ -54,7 +54,7 @@ function SidebarItem({ icon: Icon, title, path, isActive }: SidebarItemProps) {
         isActive 
           ? "bg-sidebar-accent text-sidebar-accent-foreground" 
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-        collapsed ? "flex-col justify-center" : "flex-row-reverse" // Changed to flex-row-reverse for RTL
+        collapsed ? "flex-col justify-center" : "flex-row-reverse" 
       )}
     >
       <Icon className={cn("h-5 w-5", collapsed && "h-6 w-6")} />
@@ -70,7 +70,7 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col border-l bg-sidebar h-screen transition-all duration-300", // Changed border-r to border-l
+        "flex flex-col border-l bg-sidebar h-screen transition-all duration-300",
         collapsed ? "w-[70px]" : "w-[240px]",
         className
       )}
