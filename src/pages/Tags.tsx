@@ -57,19 +57,19 @@ export default function Tags() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Product Tags</h1>
-          <p className="text-muted-foreground">Create and manage tags for categorizing products</p>
+          <h1 className="text-3xl font-bold">برچسب‌های محصول</h1>
+          <p className="text-muted-foreground">ایجاد و مدیریت برچسب‌ها برای دسته‌بندی محصولات</p>
         </div>
         <Sheet>
           <SheetTrigger asChild>
             <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Tag
+              <PlusCircle className="ml-2 h-4 w-4" />
+              افزودن برچسب
             </Button>
           </SheetTrigger>
-          <SheetContent>
+          <SheetContent side="right">
             <SheetHeader>
-              <SheetTitle>Create New Tag</SheetTitle>
+              <SheetTitle>ایجاد برچسب جدید</SheetTitle>
             </SheetHeader>
             <TagForm onTagAdded={handleTagAdded} />
           </SheetContent>
@@ -78,7 +78,7 @@ export default function Tags() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Tag List</CardTitle>
+          <CardTitle>لیست برچسب‌ها</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (

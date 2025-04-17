@@ -66,12 +66,12 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center px-4 py-12" dir="rtl">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold">ایجاد حساب کاربری</CardTitle>
           <CardDescription>
-            Enter your information to create an account
+            برای ایجاد حساب کاربری، اطلاعات زیر را وارد کنید
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -82,9 +82,9 @@ export default function Register() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>نام کاربری</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your username" {...field} />
+                      <Input placeholder="نام کاربری خود را وارد کنید" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -95,9 +95,9 @@ export default function Register() {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>شماره تلفن</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your phone number" {...field} />
+                      <Input placeholder="شماره تلفن خود را وارد کنید" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -108,9 +108,9 @@ export default function Register() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>رمز عبور</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input type="password" placeholder="رمز عبور خود را وارد کنید" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,17 +121,17 @@ export default function Register() {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>نقش</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
+                          <SelectValue placeholder="یک نقش انتخاب کنید" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="staff">Staff</SelectItem>
+                        <SelectItem value="admin">مدیر</SelectItem>
+                        <SelectItem value="manager">مدیر فروشگاه</SelectItem>
+                        <SelectItem value="staff">کارمند</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -140,16 +140,16 @@ export default function Register() {
               />
               {error && <p className="text-sm font-medium text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Register"}
+                {isLoading ? "در حال ایجاد حساب..." : "ثبت نام"}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
+            قبلاً ثبت نام کرده‌اید؟{" "}
             <Link to="/login" className="text-primary underline-offset-4 hover:underline">
-              Login
+              ورود
             </Link>
           </p>
         </CardFooter>

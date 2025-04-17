@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,20 +15,20 @@ export default function Promotions() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Promotions</h2>
+        <h2 className="text-3xl font-bold tracking-tight">تخفیف‌ها</h2>
         <Button className="flex items-center gap-1">
           <Plus className="h-4 w-4" />
-          Create Promotion
+          ایجاد تخفیف
         </Button>
       </div>
       
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search promotions..."
-            className="w-full pl-8"
+            placeholder="جستجوی تخفیف‌ها..."
+            className="w-full pr-8"
           />
         </div>
       </div>
@@ -39,31 +38,31 @@ export default function Promotions() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Summer Sale</CardTitle>
-                <CardDescription>20% off selected products</CardDescription>
+                <CardTitle>تخفیف تابستانه</CardTitle>
+                <CardDescription>۲۰٪ تخفیف محصولات منتخب</CardDescription>
               </div>
-              <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20">Active</Badge>
+              <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20">فعال</Badge>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Code:</span>
+                <span className="text-muted-foreground">کد:</span>
                 <span className="font-medium">SUMMER20</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Validity:</span>
-                <span className="font-medium">Jun 1 - Aug 31, 2023</span>
+                <span className="text-muted-foreground">اعتبار:</span>
+                <span className="font-medium">۱ تیر - ۳۱ شهریور ۱۴۰۲</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Orders:</span>
-                <span className="font-medium">132</span>
+                <span className="text-muted-foreground">سفارش‌ها:</span>
+                <span className="font-medium">۱۳۲</span>
               </div>
             </div>
           </CardContent>
           <CardFooter>
             <Button variant="outline" size="sm" className="w-full">
-              Edit Promotion
+              ویرایش تخفیف
             </Button>
           </CardFooter>
         </Card>
