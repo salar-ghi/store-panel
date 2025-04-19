@@ -19,10 +19,10 @@ import { useAuthStore } from "@/store/auth-store";
 
 const formSchema = z.object({
   username: z.string().min(3, {
-    message: "Username must be at least 3 characters.",
+    message: "نام کاربری باید حداقل ۳ کاراکتر باشد.",
   }),
   password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
+    message: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
   }),
 });
 
@@ -54,12 +54,12 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center px-4 py-12" dir="rtl">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold">ورود به سیستم</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            برای دسترسی به حساب کاربری خود اطلاعات خود را وارد کنید
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -70,9 +70,9 @@ export default function Login() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>نام کاربری</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your username" {...field} />
+                      <Input placeholder="نام کاربری خود را وارد کنید" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -83,9 +83,9 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>رمز عبور</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input type="password" placeholder="رمز عبور خود را وارد کنید" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,16 +93,16 @@ export default function Login() {
               />
               {error && <p className="text-sm font-medium text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "در حال ورود..." : "ورود"}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            حساب کاربری ندارید؟{" "}
             <Link to="/register" className="text-primary underline-offset-4 hover:underline">
-              Sign up
+              ثبت نام
             </Link>
           </p>
         </CardFooter>

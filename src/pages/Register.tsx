@@ -26,16 +26,16 @@ import { useAuthStore } from "@/store/auth-store";
 
 const formSchema = z.object({
   username: z.string().min(3, {
-    message: "Username must be at least 3 characters.",
+    message: "نام کاربری باید حداقل ۳ کاراکتر باشد.",
   }),
   phoneNumber: z.string().min(10, {
-    message: "Phone number must be at least 10 characters.",
+    message: "شماره تلفن باید حداقل ۱۰ کاراکتر باشد.",
   }),
   password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
+    message: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
   }),
   role: z.string({
-    required_error: "Please select a role.",
+    required_error: "لطفاً یک نقش انتخاب کنید.",
   }),
 });
 
@@ -49,7 +49,7 @@ export default function Register() {
       username: "",
       phoneNumber: "",
       password: "",
-      role: "admin", // Default role
+      role: "admin", // نقش پیش‌فرض
     },
   });
 

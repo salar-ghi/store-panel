@@ -41,23 +41,23 @@ export default function Users() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-6 space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">Create and manage users and their roles</p>
+          <h1 className="text-3xl font-bold">مدیریت کاربران</h1>
+          <p className="text-muted-foreground">ایجاد و مدیریت کاربران و نقش‌های آنها</p>
         </div>
         <div className="flex gap-2">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline">
-                <Shield className="mr-2 h-4 w-4" />
-                Add Role
+                <Shield className="ml-2 h-4 w-4" />
+                افزودن نقش
               </Button>
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>Create New Role</SheetTitle>
+                <SheetTitle>ایجاد نقش جدید</SheetTitle>
               </SheetHeader>
               <RoleForm onRoleAdded={handleRoleAdded} />
             </SheetContent>
@@ -66,13 +66,13 @@ export default function Users() {
           <Sheet>
             <SheetTrigger asChild>
               <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add User
+                <UserPlus className="ml-2 h-4 w-4" />
+                افزودن کاربر
               </Button>
             </SheetTrigger>
             <SheetContent className="sm:max-w-md">
               <SheetHeader>
-                <SheetTitle>Create New User</SheetTitle>
+                <SheetTitle>ایجاد کاربر جدید</SheetTitle>
               </SheetHeader>
               <UserForm onUserAdded={handleUserAdded} />
             </SheetContent>
@@ -82,14 +82,14 @@ export default function Users() {
 
       <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="users">User List</TabsTrigger>
-          <TabsTrigger value="roles">Role Management</TabsTrigger>
+          <TabsTrigger value="users">لیست کاربران</TabsTrigger>
+          <TabsTrigger value="roles">مدیریت نقش‌ها</TabsTrigger>
         </TabsList>
         
         <TabsContent value="users">
           <Card>
             <CardHeader>
-              <CardTitle>User List</CardTitle>
+              <CardTitle>لیست کاربران</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -98,17 +98,17 @@ export default function Users() {
                 </div>
               ) : error ? (
                 <div className="text-destructive text-center py-8">
-                  Failed to load users
+                  خطا در بارگذاری کاربران
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Roles</TableHead>
-                      <TableHead className="text-center">Admin</TableHead>
+                      <TableHead>نام کاربری</TableHead>
+                      <TableHead>ایمیل</TableHead>
+                      <TableHead>شماره تلفن</TableHead>
+                      <TableHead>نقش‌ها</TableHead>
+                      <TableHead className="text-center">مدیر</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -120,24 +120,24 @@ export default function Users() {
                           onClick={() => handleUserClick(user.id)}
                         >
                           <TableCell className="font-medium">{user.username}</TableCell>
-                          <TableCell>{user.email || "N/A"}</TableCell>
+                          <TableCell>{user.email || "ندارد"}</TableCell>
                           <TableCell>{user.phoneNumber}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
                               {user.roles && user.roles.length > 0 ? (
                                 user.roles.map((role, index) => (
-                                  <Badge key={index} variant="outline" className="mr-1">
+                                  <Badge key={index} variant="outline" className="ml-1">
                                     {role}
                                   </Badge>
                                 ))
                               ) : (
-                                <span className="text-muted-foreground">No roles</span>
+                                <span className="text-muted-foreground">بدون نقش</span>
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
                             {user.isAdmin && (
-                              <Badge variant="default" className="bg-purple-500">Admin</Badge>
+                              <Badge variant="default" className="bg-purple-500">مدیر</Badge>
                             )}
                           </TableCell>
                         </TableRow>
@@ -145,7 +145,7 @@ export default function Users() {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                          No users found
+                          کاربری یافت نشد
                         </TableCell>
                       </TableRow>
                     )}
@@ -159,17 +159,17 @@ export default function Users() {
         <TabsContent value="roles">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Role Management</CardTitle>
+              <CardTitle>مدیریت نقش‌ها</CardTitle>
               <Sheet>
                 <SheetTrigger asChild>
                   <Button size="sm">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    New Role
+                    <PlusCircle className="ml-2 h-4 w-4" />
+                    نقش جدید
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
                   <SheetHeader>
-                    <SheetTitle>Create New Role</SheetTitle>
+                    <SheetTitle>ایجاد نقش جدید</SheetTitle>
                   </SheetHeader>
                   <RoleForm onRoleAdded={handleRoleAdded} />
                 </SheetContent>
@@ -210,7 +210,7 @@ function RolesTable() {
   if (error) {
     return (
       <div className="text-destructive text-center py-8">
-        Failed to load roles
+        خطا در بارگذاری نقش‌ها
       </div>
     );
   }
@@ -219,8 +219,8 @@ function RolesTable() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Role Name</TableHead>
-          <TableHead>Permissions</TableHead>
+          <TableHead>نام نقش</TableHead>
+          <TableHead>دسترسی‌ها</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -232,12 +232,12 @@ function RolesTable() {
                 <div className="flex flex-wrap gap-1">
                   {role.permissions && role.permissions.length > 0 ? (
                     role.permissions.map((permission, index) => (
-                      <Badge key={index} variant="outline" className="mr-1">
+                      <Badge key={index} variant="outline" className="ml-1">
                         {permission}
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-muted-foreground">No specific permissions</span>
+                    <span className="text-muted-foreground">بدون دسترسی خاص</span>
                   )}
                 </div>
               </TableCell>
@@ -246,7 +246,7 @@ function RolesTable() {
         ) : (
           <TableRow>
             <TableCell colSpan={2} className="text-center py-6 text-muted-foreground">
-              No roles found
+              نقشی یافت نشد
             </TableCell>
           </TableRow>
         )}

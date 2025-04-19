@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Role name must be at least 2 characters"),
+  name: z.string().min(2, "نام نقش باید حداقل ۲ کاراکتر باشد"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -40,11 +40,11 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
     setIsSubmitting(true);
     try {
       await UserService.createRole({ name: data.name });
-      toast.success("Role created successfully!");
+      toast.success("نقش با موفقیت ایجاد شد!");
       form.reset();
       onRoleAdded();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create role");
+      toast.error(error.response?.data?.message || "خطا در ایجاد نقش");
     } finally {
       setIsSubmitting(false);
     }
@@ -52,15 +52,15 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4" dir="rtl">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role Name</FormLabel>
+              <FormLabel>نام نقش</FormLabel>
               <FormControl>
-                <Input placeholder="Enter role name" {...field} />
+                <Input placeholder="نام نقش را وارد کنید" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -68,7 +68,7 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
         />
 
         <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Creating..." : "Create Role"}
+          {isSubmitting ? "در حال ایجاد..." : "ایجاد نقش"}
         </Button>
       </form>
     </Form>

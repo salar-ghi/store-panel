@@ -47,11 +47,11 @@ import {
 } from "@/components/ui/select";
 
 const formSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email"),
-  phoneNumber: z.string().min(10, "Please enter a valid phone number"),
+  username: z.string().min(3, "نام کاربری باید حداقل ۳ کاراکتر باشد"),
+  email: z.string().email("لطفاً یک ایمیل معتبر وارد کنید"),
+  phoneNumber: z.string().min(10, "لطفاً یک شماره تلفن معتبر وارد کنید"),
   description: z.string().optional(),
-  roleIds: z.array(z.string()).min(1, "Select at least one role"),
+  roleIds: z.array(z.string()).min(1, "حداقل یک نقش انتخاب کنید"),
   generatePassword: z.boolean().default(true),
   isAdmin: z.boolean().default(false),
   notificationMethod: z.enum(["email", "sms", "both"]).default("email"),
@@ -105,19 +105,19 @@ export function UserForm({ onUserAdded }: UserFormProps) {
 
       setGeneratedPassword(passwordToSend);
       
-      let successMessage = `User ${data.username} created successfully!`;
+      let successMessage = `کاربر ${data.username} با موفقیت ایجاد شد!`;
       toast.success(successMessage);
       
       if (data.isAdmin) {
-        toast("Admin role assigned", {
-          description: "This user has been given administrator privileges"
+        toast("نقش مدیر اختصاص داده شد", {
+          description: "به این کاربر دسترسی‌های مدیریتی داده شده است"
         });
       }
       
-      toast.success(`Credentials will be sent via ${data.notificationMethod}`, {
+      toast.success(`اطلاعات ورود از طریق ${data.notificationMethod === "email" ? "ایمیل" : data.notificationMethod === "sms" ? "پیامک" : "ایمیل و پیامک"} ارسال خواهد شد`, {
         description: data.notificationMethod === "both" 
-          ? "User will receive login details via email and SMS" 
-          : `User will receive login details via ${data.notificationMethod}`
+          ? "کاربر اطلاعات ورود را از طریق ایمیل و پیامک دریافت خواهد کرد" 
+          : `کاربر اطلاعات ورود را از طریق ${data.notificationMethod === "email" ? "ایمیل" : "پیامک"} دریافت خواهد کرد`
       });
       
       if (!generatedPassword) {
@@ -127,7 +127,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       
       onUserAdded();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create user");
+      toast.error(error.response?.data?.message || "خطا در ایجاد کاربر");
     } finally {
       setIsSubmitting(false);
     }
@@ -146,20 +146,20 @@ export function UserForm({ onUserAdded }: UserFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4" dir="rtl">
         {generatedPassword ? (
           <div className="mb-6 space-y-4">
             <div className="rounded-lg border p-4 bg-muted/20">
               <h3 className="font-medium mb-2 flex items-center">
-                <Key className="h-4 w-4 mr-2 text-purple-500" />
-                Generated Password
+                <Key className="h-4 w-4 ml-2 text-purple-500" />
+                رمز عبور تولید شده
               </h3>
-              <p className="text-sm mb-2">A password has been generated for this user:</p>
+              <p className="text-sm mb-2">یک رمز عبور برای این کاربر تولید شده است:</p>
               <div className="font-mono bg-background p-3 rounded border text-center">
                 {generatedPassword}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                This password will be sent to the user via the selected notification method.
+                این رمز عبور از طریق روش اطلاع‌رسانی انتخاب شده به کاربر ارسال خواهد شد.
               </p>
             </div>
             <div className="flex justify-end space-x-2">
@@ -171,7 +171,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                   form.reset();
                 }}
               >
-                Create Another User
+                ایجاد کاربر دیگر
               </Button>
             </div>
           </div>
@@ -182,9 +182,9 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>نام و نام خانوادگی</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter full name" {...field} />
+                    <Input placeholder="نام و نام خانوادگی را وارد کنید" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,11 +197,11 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <AtSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Email
+                    <AtSign className="h-4 w-4 ml-1 text-muted-foreground" />
+                    ایمیل
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter email" type="email" {...field} />
+                    <Input placeholder="ایمیل را وارد کنید" type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -214,11 +214,11 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <Phone className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Cell Phone
+                    <Phone className="h-4 w-4 ml-1 text-muted-foreground" />
+                    شماره موبایل
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter cell phone number" {...field} />
+                    <Input placeholder="شماره موبایل را وارد کنید" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -231,12 +231,12 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <FileText className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Description
+                    <FileText className="h-4 w-4 ml-1 text-muted-foreground" />
+                    توضیحات
                   </FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Enter user description or notes (optional)" 
+                      placeholder="توضیحات یا یادداشت‌های کاربر را وارد کنید (اختیاری)" 
                       className="resize-none min-h-[80px]"
                       {...field} 
                     />
@@ -253,11 +253,11 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                   <div className="space-y-0.5">
                     <FormLabel className="flex items-center">
-                      <ShieldCheck className="h-4 w-4 mr-1 text-purple-500" />
-                      Administrator
+                      <ShieldCheck className="h-4 w-4 ml-1 text-purple-500" />
+                      مدیر سیستم
                     </FormLabel>
                     <FormDescription>
-                      Grant this user administrator privileges
+                      به این کاربر دسترسی‌های مدیریتی اعطا کنید
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -276,11 +276,11 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <Bell className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Notification Method
+                    <Bell className="h-4 w-4 ml-1 text-muted-foreground" />
+                    روش اطلاع‌رسانی
                   </FormLabel>
                   <FormDescription>
-                    How should we send the login credentials to this user?
+                    اطلاعات ورود به چه روشی به کاربر ارسال شود؟
                   </FormDescription>
                   <FormControl>
                     <RadioGroup
@@ -292,24 +292,24 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                         <FormControl>
                           <RadioGroupItem value="email" />
                         </FormControl>
-                        <FormLabel className="font-normal">
-                          Email only
+                        <FormLabel className="font-normal mr-3">
+                          فقط ایمیل
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="sms" />
                         </FormControl>
-                        <FormLabel className="font-normal">
-                          SMS only
+                        <FormLabel className="font-normal mr-3">
+                          فقط پیامک
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                           <RadioGroupItem value="both" />
                         </FormControl>
-                        <FormLabel className="font-normal">
-                          Both Email and SMS
+                        <FormLabel className="font-normal mr-3">
+                          هم ایمیل و هم پیامک
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
@@ -327,11 +327,11 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               render={() => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Roles
+                    <Users className="h-4 w-4 ml-1 text-muted-foreground" />
+                    نقش‌ها
                   </FormLabel>
                   <FormDescription>
-                    Assign one or more roles to this user
+                    یک یا چند نقش به این کاربر اختصاص دهید
                   </FormDescription>
                   <div className="mt-3 space-y-4">
                     {roles.length > 0 ? (
@@ -352,7 +352,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                                 onCheckedChange={() => handleRoleToggle(role.id)}
                                 className="data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
                               />
-                              <div>
+                              <div className="mr-2">
                                 <p className="font-medium">{role.name}</p>
                                 {role.permissions && role.permissions.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-1">
@@ -363,7 +363,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                                     ))}
                                     {role.permissions.length > 2 && (
                                       <Badge variant="outline" className="text-xs">
-                                        +{role.permissions.length - 2} more
+                                        +{role.permissions.length - 2} مورد دیگر
                                       </Badge>
                                     )}
                                   </div>
@@ -378,8 +378,8 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                       </div>
                     ) : (
                       <div className="rounded-lg border border-dashed p-6 text-center">
-                        <p className="text-muted-foreground">No roles available</p>
-                        <p className="text-sm text-muted-foreground mt-1">Create roles first to assign them to users</p>
+                        <p className="text-muted-foreground">هیچ نقشی موجود نیست</p>
+                        <p className="text-sm text-muted-foreground mt-1">ابتدا نقش‌ها را ایجاد کنید تا بتوانید به کاربران اختصاص دهید</p>
                       </div>
                     )}
                   </div>
@@ -389,7 +389,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
             />
 
             <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? "Creating..." : "Create User"}
+              {isSubmitting ? "در حال ایجاد..." : "ایجاد کاربر"}
             </Button>
           </>
         )}
