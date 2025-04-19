@@ -54,11 +54,11 @@ function SidebarItem({ icon: Icon, title, path, isActive }: SidebarItemProps) {
         isActive 
           ? "bg-sidebar-accent text-sidebar-accent-foreground" 
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-        collapsed ? "flex-col justify-center" : "flex-row-reverse" 
+        collapsed ? "flex-col justify-center" : "flex-row" 
       )}
     >
+      <span>{title}</span>
       <Icon className={cn("h-5 w-5", collapsed && "h-6 w-6")} />
-      {!collapsed && <span>{title}</span>}
     </Link>
   );
 }
