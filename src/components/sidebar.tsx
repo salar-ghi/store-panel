@@ -1,8 +1,7 @@
-
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/sidebar-store";
 import { 
-  Home, 
+  LayoutDashboard,
   Package, 
   ShoppingBag, 
   Users, 
@@ -12,7 +11,6 @@ import {
   Box,
   Tag,
   FolderTree,
-  LayoutDashboard,
   Image,
   PictureInPicture
 } from "lucide-react";
@@ -54,7 +52,7 @@ function SidebarItem({ icon: Icon, title, path, isActive }: SidebarItemProps) {
         isActive 
           ? "bg-sidebar-accent text-sidebar-accent-foreground" 
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-        collapsed ? "flex-col justify-center" : "flex-row-reverse" 
+        collapsed ? "justify-center" : "flex-row" 
       )}
     >
       <Icon className={cn("h-5 w-5", collapsed && "h-6 w-6")} />
@@ -70,7 +68,7 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col border-l bg-sidebar h-screen transition-all duration-300",
+        "flex flex-col border-r bg-sidebar h-screen transition-all duration-300",
         collapsed ? "w-[70px]" : "w-[240px]",
         className
       )}

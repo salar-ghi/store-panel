@@ -18,7 +18,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">{category.name}</CardTitle>
-          <div className="flex space-x-1">
+          <div className="flex space-x-1 rtl:space-x-reverse">
             <Button
               variant="ghost"
               size="icon"
@@ -27,6 +27,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
                 onEdit(category);
               }}
               className="h-8 w-8"
+              title="ویرایش"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -35,9 +36,12 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
               size="icon"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(category.id);
+                if (window.confirm('آیا از حذف این دسته‌بندی اطمینان دارید؟')) {
+                  onDelete(category.id);
+                }
               }}
               className="h-8 w-8 text-destructive"
+              title="حذف"
             >
               <Trash className="h-4 w-4" />
             </Button>
@@ -50,7 +54,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
         <div className="flex items-center gap-2 mb-3">
           <Package className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
-            <strong>{category.productCount || 0}</strong> products
+            <strong>{category.productCount || 0}</strong> محصول
           </span>
         </div>
         
@@ -58,7 +62,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Related brands:</span>
+              <span className="text-sm font-medium">برندهای مرتبط:</span>
             </div>
             <div className="flex flex-wrap gap-1 mt-1">
               {category.brandRelations.map((brand, idx) => (
@@ -71,7 +75,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
         )}
         
         <div className="mt-4 pt-2 border-t text-xs text-muted-foreground">
-          Created: {new Date(category.createdAt).toLocaleDateString()}
+          تاریخ ایجاد: {new Date(category.createdAt).toLocaleDateString('fa-IR')}
         </div>
       </CardContent>
     </Card>
