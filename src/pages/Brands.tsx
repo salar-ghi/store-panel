@@ -46,10 +46,10 @@ import { Brand } from "@/types/brand";
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: "Brand name must be at least 2 characters.",
+    message: "نام برند باید حداقل 2 کاراکتر باشد.",
   }),
   description: z.string().min(5, {
-    message: "Description must be at least 5 characters.",
+    message: "توضیحات باید حداقل 5 کاراکتر باشد.",
   }),
 });
 
@@ -97,12 +97,12 @@ export default function Brands() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
-      toast.success("Brand created successfully");
+      toast.success("برند با موفقیت ایجاد شد");
       setIsOpen(false);
       form.reset();
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create brand");
+      toast.error(error?.response?.data?.message || "خطا در ایجاد برند");
     },
   });
 
@@ -115,12 +115,12 @@ export default function Brands() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
-      toast.success("Brand updated successfully");
+      toast.success("برند با موفقیت به‌روزرسانی شد");
       setIsOpen(false);
       setEditingBrand(null);
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to update brand");
+      toast.error(error?.response?.data?.message || "خطا در به‌روزرسانی برند");
     },
   });
 
@@ -128,10 +128,10 @@ export default function Brands() {
     mutationFn: BrandService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
-      toast.success("Brand deleted successfully");
+      toast.success("برند با موفقیت حذف شد");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to delete brand");
+      toast.error(error?.response?.data?.message || "خطا در حذف برند");
     },
   });
 
@@ -149,7 +149,7 @@ export default function Brands() {
   }
 
   function handleDelete(id: number) {
-    if (confirm("Are you sure you want to delete this brand?")) {
+    if (confirm("آیا از حذف این برند اطمینان دارید؟")) {
       deleteMutation.mutate(id);
     }
   }
@@ -167,23 +167,26 @@ export default function Brands() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Brands</h2>
-          <p className="text-muted-foreground">Manage product brands</p>
+          <h2 className="text-3xl font-bold tracking-tight">برندها</h2>
+          <p className="text-muted-foreground">مدیریت برندهای محصولات</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openDialog} className="flex items-center gap-1">
-              <Plus className="h-4 w-4" />
-              Add Brand
+            <Button 
+              onClick={openDialog} 
+              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+            >
+              <Plus className="h-4 w-4 ml-1" />
+              افزودن برند
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>{editingBrand ? "Edit Brand" : "Add New Brand"}</DialogTitle>
+              <DialogTitle>{editingBrand ? "ویرایش برند" : "افزودن برند جدید"}</DialogTitle>
               <DialogDescription>
                 {editingBrand 
-                  ? "Update the brand details below"
-                  : "Fill in the details for the new brand"
+                  ? "اطلاعات برند را در زیر ویرایش کنید"
+                  : "مشخصات برند جدید را وارد کنید"
                 }
               </DialogDescription>
             </DialogHeader>
@@ -194,9 +197,9 @@ export default function Brands() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Brand Name</FormLabel>
+                      <FormLabel>نام برند</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter brand name" {...field} />
+                        <Input placeholder="نام برند را وارد کنید" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -207,9 +210,9 @@ export default function Brands() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>توضیحات</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter brand description" {...field} />
+                        <Input placeholder="توضیحات برند را وارد کنید" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -218,8 +221,8 @@ export default function Brands() {
                 <DialogFooter>
                   <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
                     {editingBrand 
-                      ? updateMutation.isPending ? "Updating..." : "Update Brand" 
-                      : createMutation.isPending ? "Creating..." : "Add Brand"
+                      ? updateMutation.isPending ? "در حال به‌روزرسانی..." : "به‌روزرسانی برند" 
+                      : createMutation.isPending ? "در حال ایجاد..." : "افزودن برند"
                     }
                   </Button>
                 </DialogFooter>
@@ -229,70 +232,74 @@ export default function Brands() {
         </Dialog>
       </div>
 
-      <Card className="border shadow-sm">
+      <Card className="border shadow-sm backdrop-blur-sm bg-white/60">
         <CardHeader className="pb-3">
-          <CardTitle>Manage Brands</CardTitle>
+          <CardTitle>مدیریت برندها</CardTitle>
           <CardDescription>
-            View and manage all your product brands here
+            مشاهده و مدیریت تمامی برندهای محصولات
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center py-8">Loading brands...</div>
+            <div className="flex justify-center py-8">در حال بارگذاری برندها...</div>
           ) : brands.length === 0 ? (
             <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center bg-muted/20">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Package className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-medium">No brands found</h3>
+              <h3 className="text-lg font-medium">هیچ برندی یافت نشد</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Get started by creating your first brand
+                با ایجاد اولین برند خود شروع کنید
               </p>
               <Button 
                 variant="outline" 
                 onClick={openDialog}
                 className="mt-2"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Brand
+                <Plus className="ml-2 h-4 w-4" />
+                افزودن برند
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {brands.map((brand) => (
-                  <TableRow key={brand.id}>
-                    <TableCell className="font-medium">{brand.name}</TableCell>
-                    <TableCell>{brand.description}</TableCell>
-                    <TableCell>{new Date(brand.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(brand)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(brand.id)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>نام</TableHead>
+                    <TableHead>توضیحات</TableHead>
+                    <TableHead>تاریخ ایجاد</TableHead>
+                    <TableHead className="text-left">عملیات</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {brands.map((brand) => (
+                    <TableRow key={brand.id}>
+                      <TableCell className="font-medium">{brand.name}</TableCell>
+                      <TableCell>{brand.description}</TableCell>
+                      <TableCell>{new Date(brand.createdAt).toLocaleDateString('fa-IR')}</TableCell>
+                      <TableCell className="text-left">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(brand)}
+                          className="hover:bg-primary/10"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(brand.id)}
+                          className="hover:bg-destructive/10 text-destructive"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
