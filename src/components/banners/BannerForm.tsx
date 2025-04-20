@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -27,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon, Image, Link2, LayoutTemplate, Megaphone, CircleHelp } from "lucide-react";
+import { CalendarIcon, Image, Link2, LayoutTemplate, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { BannerSize, BannerTargetLocation, BannerType } from "@/types/banner";
@@ -81,15 +80,14 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      // Ensure required fields are included in the request
       const bannerData = {
-        title: data.title, // Required field
+        title: data.title,
         description: data.description,
-        imageUrl: data.imageUrl, // Required field
+        imageUrl: data.imageUrl,
         linkUrl: data.linkUrl,
-        targetLocation: data.targetLocation as BannerTargetLocation, // Required field
-        size: data.size as BannerSize, // Required field
-        type: data.type as BannerType, // Required field
+        targetLocation: data.targetLocation as BannerTargetLocation,
+        size: data.size as BannerSize,
+        type: data.type as BannerType,
         active: data.active,
         startDate: data.startDate,
         endDate: data.endDate
@@ -109,7 +107,7 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} dir="rtl" className="space-y-6 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
             <FormField
@@ -117,9 +115,11 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Banner Title</FormLabel>
+                  <FormLabel className="flex items-center">
+                    عنوان بنر
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter banner title" {...field} />
+                    <Input placeholder="عنوان بنر را وارد کنید" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,10 +131,10 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>توضیحات</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Enter banner description (optional)" 
+                      placeholder="توضیحات بنر را وارد کنید (اختیاری)" 
                       className="resize-none min-h-[80px]"
                       {...field} 
                       value={field.value || ""}
@@ -151,17 +151,13 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <Image className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Image URL
+                    <Image className="h-4 w-4 ml-1 text-muted-foreground" />
+                    آدرس تصویر
                   </FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="https://example.com/banner-image.jpg" 
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        handleImageUrlChange(e.target.value);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -175,8 +171,8 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <Link2 className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Link URL (optional)
+                    <Link2 className="h-4 w-4 ml-1 text-muted-foreground" />
+                    لینک (اختیاری)
                   </FormLabel>
                   <FormControl>
                     <Input 
@@ -196,12 +192,12 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               <div className="rounded-lg overflow-hidden border bg-background aspect-video relative">
                 <img 
                   src={imagePreview} 
-                  alt="Banner preview" 
+                  alt="پیش‌نمایش بنر" 
                   className="w-full h-full object-cover"
                   onError={() => setImagePreview(null)} 
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
-                  Banner Preview
+                  پیش‌نمایش بنر
                 </div>
               </div>
             )}
@@ -212,8 +208,8 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <LayoutTemplate className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Display Location
+                    <LayoutTemplate className="h-4 w-4 ml-1 text-muted-foreground" />
+                    محل نمایش
                   </FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
@@ -221,15 +217,15 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select where to display the banner" />
+                        <SelectValue placeholder="محل نمایش بنر را انتخاب کنید" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="homepage">Homepage</SelectItem>
-                      <SelectItem value="product-list">Product Listing</SelectItem>
-                      <SelectItem value="category-page">Category Pages</SelectItem>
-                      <SelectItem value="checkout">Checkout</SelectItem>
-                      <SelectItem value="all-pages">All Pages</SelectItem>
+                      <SelectItem value="homepage">صفحه اصلی</SelectItem>
+                      <SelectItem value="product-list">لیست محصولات</SelectItem>
+                      <SelectItem value="category-page">صفحات دسته‌بندی</SelectItem>
+                      <SelectItem value="checkout">صفحه پرداخت</SelectItem>
+                      <SelectItem value="all-pages">همه صفحات</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -242,21 +238,21 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               name="size"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Banner Size</FormLabel>
+                  <FormLabel>اندازه بنر</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select banner size" />
+                        <SelectValue placeholder="اندازه بنر را انتخاب کنید" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="small">Small</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
-                      <SelectItem value="full-width">Full Width</SelectItem>
+                      <SelectItem value="small">کوچک</SelectItem>
+                      <SelectItem value="medium">متوسط</SelectItem>
+                      <SelectItem value="large">بزرگ</SelectItem>
+                      <SelectItem value="full-width">تمام عرض</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -270,8 +266,8 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center">
-                    <Megaphone className="h-4 w-4 mr-1 text-muted-foreground" />
-                    Banner Type
+                    <Megaphone className="h-4 w-4 ml-1 text-muted-foreground" />
+                    نوع بنر
                   </FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
@@ -279,15 +275,15 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select banner type" />
+                        <SelectValue placeholder="نوع بنر را انتخاب کنید" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="promotional">Promotional</SelectItem>
-                      <SelectItem value="informational">Informational</SelectItem>
-                      <SelectItem value="seasonal">Seasonal</SelectItem>
-                      <SelectItem value="featured-product">Featured Product</SelectItem>
-                      <SelectItem value="category-highlight">Category Highlight</SelectItem>
+                      <SelectItem value="promotional">تبلیغاتی</SelectItem>
+                      <SelectItem value="informational">اطلاع‌رسانی</SelectItem>
+                      <SelectItem value="seasonal">فصلی</SelectItem>
+                      <SelectItem value="featured-product">محصول ویژه</SelectItem>
+                      <SelectItem value="category-highlight">دسته‌بندی برجسته</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -301,21 +297,21 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
                 name="startDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Start Date</FormLabel>
+                    <FormLabel>تاریخ شروع</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={"outline"}
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-3 text-right font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                           >
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>انتخاب تاریخ</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -340,21 +336,21 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
                 name="endDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>End Date</FormLabel>
+                    <FormLabel>تاریخ پایان</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={"outline"}
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-3 text-right font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                           >
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>انتخاب تاریخ</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -385,9 +381,9 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                   <div className="space-y-0.5">
-                    <FormLabel>Active Status</FormLabel>
+                    <FormLabel>وضعیت فعال</FormLabel>
                     <FormDescription>
-                      Make this banner visible on the site
+                      نمایش بنر در سایت
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -402,8 +398,8 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
           </div>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Creating..." : "Create Banner"}
+        <Button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+          {isSubmitting ? "در حال ایجاد..." : "ایجاد بنر"}
         </Button>
       </form>
     </Form>

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,12 +21,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Settings() {
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">تنظیمات</h2>
       </div>
       
-      <Tabs defaultValue="general">
+      <Tabs defaultValue="general" dir="rtl">
         <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
           <TabsTrigger value="general">عمومی</TabsTrigger>
           <TabsTrigger value="notifications">اعلان‌ها</TabsTrigger>
@@ -36,26 +35,26 @@ export default function Settings() {
         </TabsList>
         
         <TabsContent value="general" className="mt-6 space-y-4">
-          <Card>
+          <Card className="backdrop-blur-sm bg-white/60 dark:bg-gray-800/60 border-0 shadow-xl">
             <CardHeader>
               <CardTitle>اطلاعات فروشگاه</CardTitle>
               <CardDescription>
-                بروزرسانی جزئیات و تنظیمات فروشگاه.
+                بروزرسانی جزئیات و تنظیمات فروشگاه
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
                 <Label htmlFor="store-name">نام فروشگاه</Label>
-                <Input id="store-name" defaultValue="فروشگاه عالی من" />
+                <Input id="store-name" defaultValue="فروشگاه عالی من" className="bg-white/50 dark:bg-gray-900/50" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="store-email">آدرس ایمیل</Label>
-                <Input id="store-email" defaultValue="contact@myawesomestore.com" />
+                <Input id="store-email" defaultValue="contact@myawesomestore.com" className="bg-white/50 dark:bg-gray-900/50" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="store-currency">واحد پول</Label>
                 <Select defaultValue="irr">
-                  <SelectTrigger id="store-currency">
+                  <SelectTrigger id="store-currency" className="bg-white/50 dark:bg-gray-900/50">
                     <SelectValue placeholder="یک واحد پول انتخاب کنید" />
                   </SelectTrigger>
                   <SelectContent>
@@ -69,7 +68,7 @@ export default function Settings() {
               <div className="grid gap-2">
                 <Label htmlFor="store-timezone">منطقه زمانی</Label>
                 <Select defaultValue="tehran">
-                  <SelectTrigger id="store-timezone">
+                  <SelectTrigger id="store-timezone" className="bg-white/50 dark:bg-gray-900/50">
                     <SelectValue placeholder="یک منطقه زمانی انتخاب کنید" />
                   </SelectTrigger>
                   <SelectContent>
@@ -84,22 +83,23 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>ذخیره تغییرات</Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+                ذخیره تغییرات
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
         
         <TabsContent value="notifications" className="mt-6 space-y-4">
-          <Card>
+          <Card className="backdrop-blur-sm bg-white/60 dark:bg-gray-800/60 border-0 shadow-xl">
             <CardHeader>
               <CardTitle>تنظیمات اعلان‌ها</CardTitle>
               <CardDescription>
-                سفارشی‌سازی زمان و نحوه دریافت اعلان‌ها.
+                سفارشی‌سازی زمان و نحوه دریافت اعلان‌ها
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start space-x-2">
-                <Checkbox id="notify-orders" defaultChecked />
                 <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="notify-orders"
@@ -108,9 +108,10 @@ export default function Settings() {
                     سفارش‌های جدید
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    دریافت اعلان هنگام ثبت سفارش‌های جدید.
+                    دریافت اعلان هنگام ثبت سفارش‌های جدید
                   </p>
                 </div>
+                <Checkbox id="notify-orders" defaultChecked className="ml-2" />
               </div>
               <div className="flex items-start space-x-2">
                 <Checkbox id="notify-products" defaultChecked />
@@ -142,17 +143,19 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>ذخیره تنظیمات</Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+                ذخیره تنظیمات
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
         
         <TabsContent value="payments" className="mt-6 space-y-4">
-          <Card>
+          <Card className="backdrop-blur-sm bg-white/60 dark:bg-gray-800/60 border-0 shadow-xl">
             <CardHeader>
               <CardTitle>روش‌های پرداخت</CardTitle>
               <CardDescription>
-                پیکربندی روش‌های پرداختی که فروشگاه شما می‌پذیرد.
+                پیکربندی روش‌های پرداختی که فروشگاه شما می‌پذیرد
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -200,34 +203,35 @@ export default function Settings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>ذخیره روش‌های پرداخت</Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+                ذخیره روش‌های پرداخت
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
         
         <TabsContent value="security" className="mt-6 space-y-4">
-          <Card>
+          <Card className="backdrop-blur-sm bg-white/60 dark:bg-gray-800/60 border-0 shadow-xl">
             <CardHeader>
               <CardTitle>تنظیمات امنیتی</CardTitle>
               <CardDescription>
-                مدیریت تنظیمات امنیتی حساب کاربری خود.
+                مدیریت تنظیمات امنیتی حساب کاربری خود
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
                 <Label htmlFor="current-password">رمز عبور فعلی</Label>
-                <Input id="current-password" type="password" />
+                <Input id="current-password" type="password" className="bg-white/50 dark:bg-gray-900/50" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="new-password">رمز عبور جدید</Label>
-                <Input id="new-password" type="password" />
+                <Input id="new-password" type="password" className="bg-white/50 dark:bg-gray-900/50" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">تأیید رمز عبور جدید</Label>
-                <Input id="confirm-password" type="password" />
+                <Input id="confirm-password" type="password" className="bg-white/50 dark:bg-gray-900/50" />
               </div>
               <div className="flex items-start space-x-2 pt-4">
-                <Checkbox id="two-factor" />
                 <div className="grid gap-1.5 mr-2">
                   <Label
                     htmlFor="two-factor"
@@ -236,13 +240,16 @@ export default function Settings() {
                     فعال‌سازی احراز هویت دو مرحله‌ای
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    یک لایه امنیتی اضافه به حساب خود اضافه کنید.
+                    یک لایه امنیتی اضافه به حساب خود اضافه کنید
                   </p>
                 </div>
+                <Checkbox id="two-factor" />
               </div>
             </CardContent>
             <CardFooter>
-              <Button>بروزرسانی تنظیمات امنیتی</Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+                بروزرسانی تنظیمات امنیتی
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>

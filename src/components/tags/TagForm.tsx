@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -20,16 +19,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tag, Palette } from "lucide-react";
 
 const COLORS = [
-  { value: "red", label: "Red", class: "bg-red-500" },
-  { value: "blue", label: "Blue", class: "bg-blue-500" },
-  { value: "green", label: "Green", class: "bg-green-500" },
-  { value: "yellow", label: "Yellow", class: "bg-yellow-500" },
-  { value: "purple", label: "Purple", class: "bg-purple-500" },
-  { value: "pink", label: "Pink", class: "bg-pink-500" },
-  { value: "indigo", label: "Indigo", class: "bg-indigo-500" },
-  { value: "cyan", label: "Cyan", class: "bg-cyan-500" },
-  { value: "orange", label: "Orange", class: "bg-orange-500" },
-  { value: "teal", label: "Teal", class: "bg-teal-500" },
+  { value: "red", label: "قرمز", class: "bg-red-500" },
+  { value: "blue", label: "آبی", class: "bg-blue-500" },
+  { value: "green", label: "سبز", class: "bg-green-500" },
+  { value: "yellow", label: "زرد", class: "bg-yellow-500" },
+  { value: "purple", label: "بنفش", class: "bg-purple-500" },
+  { value: "pink", label: "صورتی", class: "bg-pink-500" },
+  { value: "indigo", label: "نیلی", class: "bg-indigo-500" },
+  { value: "cyan", label: "فیروزه‌ای", class: "bg-cyan-500" },
+  { value: "orange", label: "نارنجی", class: "bg-orange-500" },
+  { value: "teal", label: "سبز آبی", class: "bg-teal-500" },
 ];
 
 const formSchema = z.object({
@@ -58,18 +57,17 @@ export function TagForm({ onTagAdded, initialData }: TagFormProps) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      // Ensure we're passing a valid CreateTagRequest with required name
       const tagData = {
-        name: data.name, // This is required by CreateTagRequest
+        name: data.name,
         description: data.description,
         color: data.color
       };
       await TagService.createTag(tagData);
-      toast.success("Tag created successfully!");
+      toast.success("برچسب ایجاد شد!");
       form.reset();
       onTagAdded();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create tag");
+      toast.error(error.response?.data?.message || "برچسب ایجاد نشد");
     } finally {
       setIsSubmitting(false);
     }
@@ -79,18 +77,18 @@ export function TagForm({ onTagAdded, initialData }: TagFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} dir="rtl" className="space-y-6 pt-4">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center">
-                <Tag className="h-4 w-4 mr-1 text-muted-foreground" />
-                Tag Name
+                <Tag className="h-4 w-4 ml-1 text-muted-foreground" />
+                نام برچسب
               </FormLabel>
               <FormControl>
-                <Input placeholder="Enter tag name" {...field} />
+                <Input placeholder="نام برچسب را وارد کنید" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -102,10 +100,10 @@ export function TagForm({ onTagAdded, initialData }: TagFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>توضیحات</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Enter tag description (optional)" 
+                  placeholder="توضیحات برچسب را وارد کنید (اختیاری)" 
                   className="resize-none min-h-[80px]"
                   {...field} 
                   value={field.value || ""}
@@ -122,11 +120,11 @@ export function TagForm({ onTagAdded, initialData }: TagFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center">
-                <Palette className="h-4 w-4 mr-1 text-muted-foreground" />
-                Color
+                <Palette className="h-4 w-4 ml-1 text-muted-foreground" />
+                رنگ
               </FormLabel>
               <FormDescription>
-                Choose a color for this tag
+                یک رنگ برای این برچسب انتخاب کنید
               </FormDescription>
               <div className="grid grid-cols-5 gap-2 pt-2">
                 {COLORS.map((color) => (
@@ -152,11 +150,9 @@ export function TagForm({ onTagAdded, initialData }: TagFormProps) {
           )}
         />
 
-        <div className="pt-4">
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Creating..." : "Create Tag"}
-          </Button>
-        </div>
+        <Button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
+          {isSubmitting ? "در حال ایجاد..." : "ایجاد برچسب"}
+        </Button>
       </form>
     </Form>
   );
