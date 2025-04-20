@@ -14,8 +14,8 @@ export const useColorStore = create<ColorState>()(
     (set) => ({
       primaryColor: '#9b87f5', // Default primary (purple)
       secondaryColor: '#7E69AB', // Default secondary (darker purple)
-      setPrimaryColor: (color) => set({ primaryColor }),
-      setSecondaryColor: (color) => set({ secondaryColor }),
+      setPrimaryColor: (color) => set({ primaryColor: color }),
+      setSecondaryColor: (color) => set({ secondaryColor: color }),
     }),
     {
       name: 'color-store',
