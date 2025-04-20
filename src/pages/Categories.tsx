@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Grid3X3 } from "lucide-react";
 import { CategoryCard } from "@/components/categories/CategoryCard";
 import { toast } from "sonner";
-import { Category } from "@/types/category";
+import { Category, CreateCategoryRequest } from "@/types/category";
 import { 
   Dialog, 
   DialogContent, 
@@ -51,7 +51,12 @@ export default function Categories() {
 
   const onSubmit = async (data: CategoryFormValues) => {
     try {
-      await CategoryService.create(data);
+      const categoryRequest: CreateCategoryRequest = {
+        name: data.name,
+        description: data.description
+      };
+      
+      await CategoryService.create(categoryRequest);
       toast.success(`دسته‌بندی "${data.name}" با موفقیت ایجاد شد`);
       setIsDialogOpen(false);
       form.reset();
