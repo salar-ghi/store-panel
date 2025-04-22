@@ -39,6 +39,13 @@ export function PaymentSettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="payment-credit" 
+              checked={payments.creditCard}
+              onCheckedChange={(checked) => 
+                setPayments(prev => ({ ...prev, creditCard: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="payment-credit"
@@ -50,13 +57,7 @@ export function PaymentSettings() {
                 پذیرش انواع کارت‌های بانکی شتاب.
               </p>
             </div>
-            <Checkbox 
-              id="payment-credit" 
-              checked={payments.creditCard}
-              onCheckedChange={(checked) => 
-                setPayments(prev => ({ ...prev, creditCard: checked === true }))}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
           
           <motion.div 
@@ -64,6 +65,13 @@ export function PaymentSettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="payment-zarinpal" 
+              checked={payments.zarinpal}
+              onCheckedChange={(checked) => 
+                setPayments(prev => ({ ...prev, zarinpal: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="payment-zarinpal"
@@ -75,13 +83,7 @@ export function PaymentSettings() {
                 پذیرش پرداخت از طریق درگاه زرین‌پال.
               </p>
             </div>
-            <Checkbox 
-              id="payment-zarinpal" 
-              checked={payments.zarinpal}
-              onCheckedChange={(checked) => 
-                setPayments(prev => ({ ...prev, zarinpal: checked === true }))}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
           
           <motion.div 
@@ -89,6 +91,13 @@ export function PaymentSettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="payment-wallet" 
+              checked={payments.digitalWallet}
+              onCheckedChange={(checked) => 
+                setPayments(prev => ({ ...prev, digitalWallet: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="payment-wallet"
@@ -100,13 +109,7 @@ export function PaymentSettings() {
                 پذیرش پرداخت از طریق کیف پول دیجیتال.
               </p>
             </div>
-            <Checkbox 
-              id="payment-wallet" 
-              checked={payments.digitalWallet}
-              onCheckedChange={(checked) => 
-                setPayments(prev => ({ ...prev, digitalWallet: checked === true }))}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
         </CardContent>
         <CardFooter>

@@ -78,6 +78,12 @@ export function SecuritySettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="two-factor" 
+              checked={twoFactor}
+              onCheckedChange={(checked) => setTwoFactor(checked === true)}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="two-factor"
@@ -89,12 +95,7 @@ export function SecuritySettings() {
                 یک لایه امنیتی اضافه به حساب خود اضافه کنید
               </p>
             </div>
-            <Checkbox 
-              id="two-factor" 
-              checked={twoFactor}
-              onCheckedChange={(checked) => setTwoFactor(checked === true)}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
         </CardContent>
         <CardFooter>

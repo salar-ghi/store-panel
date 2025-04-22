@@ -22,7 +22,7 @@ export function NotificationSection({ form }: NotificationSectionProps) {
           <FormDescription>
             اطلاعات ورود به چه روشی به کاربر ارسال شود؟
           </FormDescription>
-          <FormControl>
+          <FormControl dir="rtl">
             <RadioGroup
               onValueChange={field.onChange}
               defaultValue={field.value}
@@ -32,7 +32,7 @@ export function NotificationSection({ form }: NotificationSectionProps) {
                 <FormControl>
                   <RadioGroupItem value="email" />
                 </FormControl>
-                <FormLabel className="font-normal mr-3">
+                <FormLabel className="font-normal pr-3 mr-3">
                   فقط ایمیل
                 </FormLabel>
               </FormItem>
@@ -40,7 +40,7 @@ export function NotificationSection({ form }: NotificationSectionProps) {
                 <FormControl>
                   <RadioGroupItem value="sms" />
                 </FormControl>
-                <FormLabel className="font-normal mr-3">
+                <FormLabel className="font-normal pr-3 ml-3">
                   فقط پیامک
                 </FormLabel>
               </FormItem>
@@ -48,7 +48,7 @@ export function NotificationSection({ form }: NotificationSectionProps) {
                 <FormControl>
                   <RadioGroupItem value="both" />
                 </FormControl>
-                <FormLabel className="font-normal mr-3">
+                <FormLabel className="font-normal pr-3 ml-3">
                   هم ایمیل و هم پیامک
                 </FormLabel>
               </FormItem>

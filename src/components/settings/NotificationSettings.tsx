@@ -39,6 +39,13 @@ export function NotificationSettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="notify-orders" 
+              checked={notifications.orders}
+              onCheckedChange={(checked) => 
+                setNotifications(prev => ({ ...prev, orders: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="notify-orders"
@@ -50,13 +57,7 @@ export function NotificationSettings() {
                 دریافت اعلان هنگام ثبت سفارش‌های جدید
               </p>
             </div>
-            <Checkbox 
-              id="notify-orders" 
-              checked={notifications.orders}
-              onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, orders: checked === true }))}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
           
           <motion.div 
@@ -64,6 +65,13 @@ export function NotificationSettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="notify-products" 
+              checked={notifications.inventory}
+              onCheckedChange={(checked) => 
+                setNotifications(prev => ({ ...prev, inventory: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="notify-products"
@@ -75,13 +83,7 @@ export function NotificationSettings() {
                 دریافت اعلان هنگامی که موجودی محصولات کم است.
               </p>
             </div>
-            <Checkbox 
-              id="notify-products" 
-              checked={notifications.inventory}
-              onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, inventory: checked === true }))}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
           
           <motion.div 
@@ -89,6 +91,13 @@ export function NotificationSettings() {
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.2 }}
           >
+            <Checkbox 
+              id="notify-reviews" 
+              checked={notifications.reviews}
+              onCheckedChange={(checked) => 
+                setNotifications(prev => ({ ...prev, reviews: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
             <div className="grid gap-1.5 mr-2">
               <Label
                 htmlFor="notify-reviews"
@@ -100,13 +109,7 @@ export function NotificationSettings() {
                 دریافت اعلان برای نظرات جدید محصولات.
               </p>
             </div>
-            <Checkbox 
-              id="notify-reviews" 
-              checked={notifications.reviews}
-              onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, reviews: checked === true }))}
-              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
-            />
+            
           </motion.div>
         </CardContent>
         <CardFooter>

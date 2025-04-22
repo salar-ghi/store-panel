@@ -129,6 +129,16 @@
     @apply border-border selection:bg-primary/10 selection:text-primary;
   }
 
+  /* Hide scrollbar globally */
+  html::-webkit-scrollbar {
+    display: none;
+  }
+
+  html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
   body {
     @apply bg-background text-foreground antialiased font-vazirmatn;
     background-image: radial-gradient(

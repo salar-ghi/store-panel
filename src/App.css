@@ -5,6 +5,16 @@
   text-align: center;
 }
 
+/* Hide scrollbar globally */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

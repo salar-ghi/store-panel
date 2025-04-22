@@ -86,7 +86,7 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" dir="rtl">
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-4">
             <FormField

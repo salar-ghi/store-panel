@@ -211,7 +211,7 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
                     <LayoutTemplate className="h-4 w-4 ml-1 text-muted-foreground" />
                     محل نمایش
                   </FormLabel>
-                  <Select 
+                  <Select
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
@@ -239,7 +239,7 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>اندازه بنر</FormLabel>
-                  <Select 
+                  <Select
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >

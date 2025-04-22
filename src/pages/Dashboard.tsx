@@ -7,7 +7,7 @@ import { RecentOrders } from "@/components/dashboard/recent-orders";
 
 export default function Dashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 scrollbar-hidden">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">داشبورد</h2>
       </div>

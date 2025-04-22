@@ -41,7 +41,7 @@ export function CreateCategoryForm({ onSubmit, onCancel }: CreateCategoryFormPro
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" dir="rtl">
         <FormField
           control={form.control}
           name="name"
@@ -74,7 +74,9 @@ export function CreateCategoryForm({ onSubmit, onCancel }: CreateCategoryFormPro
           )}
         />
         
-        <DialogFooter>
+        <DialogFooter>          
+          <Button type="submit" className="mx-2">ایجاد دسته‌بندی</Button>
+
           <Button 
             type="button" 
             variant="outline" 
@@ -82,7 +84,6 @@ export function CreateCategoryForm({ onSubmit, onCancel }: CreateCategoryFormPro
           >
             انصراف
           </Button>
-          <Button type="submit">ایجاد دسته‌بندی</Button>
         </DialogFooter>
       </form>
     </Form>
