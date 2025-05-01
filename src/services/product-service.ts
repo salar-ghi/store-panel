@@ -4,26 +4,26 @@ import { CreateProductRequest, Product, UpdateProductRequest } from '@/types/pro
 
 export class ProductService {
   static async getAll(): Promise<Product[]> {
-    const response = await apiClient.get<Product[]>('/api/Product/products');
+    const response = await apiClient.get<Product[]>('/products');
     return response.data;
   }
 
   static async getById(id: number): Promise<Product> {
-    const response = await apiClient.get<Product>(`/api/Product/products/${id}`);
+    const response = await apiClient.get<Product>(`/products/${id}`);
     return response.data;
   }
 
   static async create(data: CreateProductRequest): Promise<Product> {
-    const response = await apiClient.post<Product>('/api/Product/products', data);
+    const response = await apiClient.post<Product>('/products', data);
     return response.data;
   }
 
   static async update(id: number, data: UpdateProductRequest): Promise<Product> {
-    const response = await apiClient.put<Product>(`/api/Product/products/${id}`, data);
+    const response = await apiClient.put<Product>(`/products/${id}`, data);
     return response.data;
   }
 
   static async delete(id: number): Promise<void> {
-    await apiClient.delete(`/api/Product/products/${id}`);
+    await apiClient.delete(`/products/${id}`);
   }
 }

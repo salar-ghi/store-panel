@@ -30,6 +30,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ProductListProps {
   searchQuery: string;
@@ -43,7 +44,7 @@ export function ProductList({
   onViewProduct 
 }: ProductListProps) {
   const queryClient = useQueryClient();
-  const { isLoading, data: products = [] } = useQuery({
+  const { isLoading, data: products = [], error } = useQuery({
     queryKey: ["products"],
     queryFn: ProductService.getAll,
   });
@@ -61,12 +62,30 @@ export function ProductList({
     mutationFn: ProductService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Product deleted successfully");
+      toast.success("محصول با موفقیت حذف شد");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete product");
+      toast.error(error.response?.data?.message || "خطا در حذف محصول");
     },
   });
+
+  // If there's an error fetching products
+  if (error) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center text-center">
+        <div>
+          <p className="text-lg font-medium text-red-600">خطا در بارگیری محصولات</p>
+          <p className="mt-2 text-muted-foreground">لطفا اتصال به سرور را بررسی کنید</p>
+          <Button 
+            className="mt-4" 
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
+          >
+            تلاش مجدد
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const categories = [...new Set(products.map(p => p.categoryName))];
   const brands = [...new Set(products.map(p => p.brandName))];
@@ -112,7 +131,7 @@ export function ProductList({
   if (isLoading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <p>Loading products...</p>
+        <p>در حال بارگیری محصولات...</p>
       </div>
     );
   }
@@ -122,11 +141,11 @@ export function ProductList({
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search products..."
-              className="w-full pl-8"
+              placeholder="جستجوی محصولات..."
+              className="w-full pr-8 text-right"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
             />
@@ -150,15 +169,15 @@ export function ProductList({
         </div>
         <div className="flex h-[50vh] items-center justify-center rounded-md border border-dashed">
           <div className="text-center">
-            <h3 className="text-lg font-medium">No products found</h3>
+            <h3 className="text-lg font-medium">محصولی یافت نشد</h3>
             <p className="text-sm text-muted-foreground">
               {searchQuery || categoryFilter || brandFilter ? 
-                "Try adjusting your filters" : 
-                "Get started by adding your first product"}
+                "فیلترهای خود را تنظیم کنید" : 
+                "اولین محصول خود را اضافه کنید"}
             </p>
             {(searchQuery || categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc") && (
               <Button variant="outline" className="mt-4" onClick={resetFilters}>
-                Reset Filters
+                حذف فیلترها
               </Button>
             )}
           </div>
@@ -171,11 +190,11 @@ export function ProductList({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search products..."
-            className="w-full pl-8"
+            placeholder="جستجوی محصولات..."
+            className="w-full pr-8 text-right"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -202,24 +221,24 @@ export function ProductList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Brand</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">نام محصول</TableHead>
+              <TableHead className="text-right">قیمت</TableHead>
+              <TableHead className="text-right">موجودی</TableHead>
+              <TableHead className="text-right">دسته بندی</TableHead>
+              <TableHead className="text-right">برند</TableHead>
+              <TableHead>عملیات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedProducts.map((product) => (
               <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>${product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.stockQuantity}</TableCell>
-                <TableCell>{product.categoryName}</TableCell>
-                <TableCell>{product.brandName}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                <TableCell className="font-medium text-right">{product.name}</TableCell>
+                <TableCell className="text-right">{product.price.toLocaleString()} تومان</TableCell>
+                <TableCell className="text-right">{product.stockQuantity}</TableCell>
+                <TableCell className="text-right">{product.categoryName}</TableCell>
+                <TableCell className="text-right">{product.brandName}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="icon"
@@ -230,7 +249,7 @@ export function ProductList({
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => toast.info("Edit functionality not implemented")}
+                      onClick={() => toast.info("قابلیت ویرایش هنوز پیاده‌سازی نشده است")}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -293,44 +312,57 @@ function FilterSort({
       <PopoverTrigger asChild>
         <Button variant={hasActiveFilters ? "default" : "outline"} className="gap-2">
           <SlidersHorizontal className="h-4 w-4" />
-          {hasActiveFilters ? "Filters Applied" : "Filter & Sort"}
+          {hasActiveFilters ? "فیلتر اعمال شده" : "فیلتر و مرتب‌سازی"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80">
+      <PopoverContent className="w-80" align="end">
         <div className="space-y-4">
           <div className="space-y-2">
-            <h3 className="font-medium">Sort By</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Select value={sortField} onValueChange={setSortField}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="price">Price</SelectItem>
-                  <SelectItem value="stockQuantity">Stock</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as "asc" | "desc")}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Order" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Ascending</SelectItem>
-                  <SelectItem value="desc">Descending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <h3 className="font-medium">مرتب سازی بر اساس</h3>
+            <RadioGroup 
+              value={`${sortField}-${sortOrder}`} 
+              onValueChange={(value) => {
+                const [field, order] = value.split('-');
+                setSortField(field);
+                setSortOrder(order as "asc" | "desc");
+              }}
+              className="flex flex-col space-y-1"
+            >
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="name-asc" id="name-asc" />
+                <Label htmlFor="name-asc">نام (صعودی)</Label>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="name-desc" id="name-desc" />
+                <Label htmlFor="name-desc">نام (نزولی)</Label>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="price-asc" id="price-asc" />
+                <Label htmlFor="price-asc">قیمت (کم به زیاد)</Label>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="price-desc" id="price-desc" />
+                <Label htmlFor="price-desc">قیمت (زیاد به کم)</Label>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="stockQuantity-asc" id="stock-asc" />
+                <Label htmlFor="stock-asc">موجودی (کم به زیاد)</Label>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="stockQuantity-desc" id="stock-desc" />
+                <Label htmlFor="stock-desc">موجودی (زیاد به کم)</Label>
+              </div>
+            </RadioGroup>
           </div>
 
           <div className="space-y-2">
-            <h3 className="font-medium">Filter by Category</h3>
+            <h3 className="font-medium">فیلتر بر اساس دسته‌بندی</h3>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Categories" />
+              <SelectTrigger className="text-right">
+                <SelectValue placeholder="همه دسته‌بندی‌ها" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+              <SelectContent align="end">
+                <SelectItem value="">همه دسته‌بندی‌ها</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -341,13 +373,13 @@ function FilterSort({
           </div>
 
           <div className="space-y-2">
-            <h3 className="font-medium">Filter by Brand</h3>
+            <h3 className="font-medium">فیلتر بر اساس برند</h3>
             <Select value={brandFilter} onValueChange={setBrandFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Brands" />
+              <SelectTrigger className="text-right">
+                <SelectValue placeholder="همه برندها" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Brands</SelectItem>
+              <SelectContent align="end">
+                <SelectItem value="">همه برندها</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -359,15 +391,15 @@ function FilterSort({
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <h3 className="font-medium">Price Range</h3>
+              <h3 className="font-medium">محدوده قیمت</h3>
               <span className="text-sm text-muted-foreground">
-                ${priceRange[0]} - ${priceRange[1]}
+                {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()} تومان
               </span>
             </div>
             <Slider
               defaultValue={[0, maxPrice]}
               max={maxPrice}
-              step={1}
+              step={1000}
               value={priceRange}
               onValueChange={(value) => setPriceRange(value as [number, number])}
               className="py-4"
@@ -376,10 +408,10 @@ function FilterSort({
 
           <div className="flex justify-between pt-2">
             <Button variant="outline" size="sm" onClick={resetFilters}>
-              Reset All
+              حذف فیلترها
             </Button>
             <Button size="sm" onClick={() => setOpen(false)}>
-              Apply
+              اعمال
             </Button>
           </div>
         </div>

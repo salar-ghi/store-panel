@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -46,7 +45,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 const App = () => {
   return (
     <React.StrictMode>
-      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+      <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <Toaster />
           <Sonner />
