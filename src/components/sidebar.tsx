@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/sidebar-store";
 import { 
@@ -12,9 +13,15 @@ import {
   Tag,
   FolderTree,
   Image,
-  PictureInPicture
+  PictureInPicture,
+  ChevronDown,
+  ChevronRight,
+  ShoppingCart,
+  Package as PackageIcon,
+  PackageX
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 interface SidebarProps {
   className?: string;
@@ -25,6 +32,9 @@ interface SidebarItemProps {
   title: string;
   path: string;
   isActive?: boolean;
+  hasSubItems?: boolean;
+  isExpanded?: boolean;
+  onClick?: () => void;
 }
 
 const sidebarItems = [
@@ -32,7 +42,15 @@ const sidebarItems = [
   { title: "محصولات", path: "/products", icon: Package },
   { title: "دسته‌بندی‌ها", path: "/categories", icon: FolderTree },
   { title: "برندها", path: "/brands", icon: Tag },
-  { title: "سفارشات", path: "/orders", icon: ShoppingBag },
+  { 
+    title: "سفارشات", 
+    path: "/orders", 
+    icon: ShoppingBag,
+    subItems: [
+      { title: "سفارشات جدید", path: "/orders", icon: ShoppingCart },
+      { title: "سفارشات مرجوعی", path: "/orders/returned", icon: PackageX },
+    ]
+  },
   { title: "کاربران", path: "/users", icon: Users },
   { title: "بنرها", path: "/banners", icon: Image },
   { title: "تگ‌ها", path: "/tags", icon: PictureInPicture },
@@ -41,29 +59,53 @@ const sidebarItems = [
   { title: "تنظیمات", path: "/settings", icon: Settings },
 ];
 
-function SidebarItem({ icon: Icon, title, path, isActive }: SidebarItemProps) {
+function SidebarItem({ 
+  icon: Icon, 
+  title, 
+  path, 
+  isActive,
+  hasSubItems,
+  isExpanded,
+  onClick
+}: SidebarItemProps) {
   const { collapsed } = useSidebarStore();
 
   return (
-    <Link
-      to={path}
+    <button
+      onClick={onClick}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-2 transition-colors",
+        "flex w-full items-center gap-2 rounded-md px-3 py-2 transition-colors",
         isActive 
           ? "bg-sidebar-accent text-sidebar-accent-foreground" 
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-        collapsed ? "justify-center" : "flex-row" 
+        collapsed ? "justify-center" : "flex-row justify-between" 
       )}
     >
-      <Icon className={cn("h-5 w-5", collapsed && "h-6 w-6")} />
-      {!collapsed && <span>{title}</span>}
-    </Link>
+      <div className="flex items-center gap-2">
+        <Icon className={cn("h-5 w-5", collapsed && "h-6 w-6")} />
+        {!collapsed && <span>{title}</span>}
+      </div>
+      {!collapsed && hasSubItems && (
+        <div className="mr-auto">
+          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </div>
+      )}
+    </button>
   );
 }
 
 export function Sidebar({ className }: SidebarProps) {
   const { collapsed } = useSidebarStore();
   const location = useLocation();
+  const [expandedItems, setExpandedItems] = useState<string[]>(["سفارشات"]);
+
+  const toggleExpanded = (title: string) => {
+    setExpandedItems(prev => 
+      prev.includes(title) 
+        ? prev.filter(item => item !== title) 
+        : [...prev, title]
+    );
+  };
 
   return (
     <div
@@ -82,15 +124,54 @@ export function Sidebar({ className }: SidebarProps) {
         )}
       </div>
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto scrollbar-hidden">
-        {sidebarItems.map((item) => (
-          <SidebarItem
-            key={item.title}
-            title={item.title}
-            icon={item.icon}
-            path={item.path}
-            isActive={location.pathname === item.path}
-          />
-        ))}
+        {sidebarItems.map((item) => {
+          const isExpanded = expandedItems.includes(item.title);
+          const hasSubItems = item.subItems && item.subItems.length > 0;
+          
+          return (
+            <div key={item.title} className="flex flex-col">
+              {hasSubItems ? (
+                <SidebarItem
+                  title={item.title}
+                  icon={item.icon}
+                  path={item.path}
+                  isActive={location.pathname === item.path && !location.pathname.includes('/returned')}
+                  hasSubItems={hasSubItems}
+                  isExpanded={isExpanded}
+                  onClick={() => toggleExpanded(item.title)}
+                />
+              ) : (
+                <Link to={item.path}>
+                  <SidebarItem
+                    title={item.title}
+                    icon={item.icon}
+                    path={item.path}
+                    isActive={location.pathname === item.path}
+                  />
+                </Link>
+              )}
+              
+              {hasSubItems && isExpanded && !collapsed && (
+                <div className="mr-4 mt-1 border-r pr-2 border-sidebar-border space-y-1 animate-fade-in">
+                  {item.subItems!.map(subItem => (
+                    <Link key={subItem.title} to={subItem.path}>
+                      <SidebarItem
+                        title={subItem.title}
+                        icon={subItem.icon}
+                        path={subItem.path}
+                        isActive={
+                          subItem.path === "/orders" 
+                            ? location.pathname === "/orders" && !location.pathname.includes('/returned')
+                            : location.pathname.includes(subItem.path)
+                        }
+                      />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
     </div>
   );
