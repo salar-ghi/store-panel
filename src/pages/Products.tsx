@@ -24,10 +24,10 @@ export default function Products() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">محصولات</h2>
-        <CreateProductDialog 
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-        />
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="flex items-center gap-1">
+          <Plus className="h-4 w-4" />
+          افزودن محصول
+        </Button>
       </div>
 
       <ProductList 
@@ -43,6 +43,11 @@ export default function Products() {
           product={selectedProduct}
         />
       )}
+
+      <CreateProductDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+      />
     </div>
   );
 }

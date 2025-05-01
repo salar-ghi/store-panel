@@ -31,6 +31,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { format, parse } from "date-fns";
 
 const discountFormSchema = z.object({
   code: z.string().min(3, {
@@ -62,6 +63,24 @@ interface DiscountFormProps {
 export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
   const { toast } = useToast();
 
+  const formatPersianDate = (dateStr: string): string => {
+    if (!dateStr) return '';
+    
+    try {
+      // Convert to Persian-friendly format (just for display purposes)
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      
+      // Format as YYYY/MM/DD for Persian display
+      return `${year}/${month < 10 ? '0' + month : month}/${day < 10 ? '0' + day : day}`;
+    } catch (e) {
+      console.error('Date formatting error:', e);
+      return dateStr;
+    }
+  };
+
   const form = useForm<DiscountFormValues>({
     resolver: zodResolver(discountFormSchema),
     defaultValues: {
@@ -80,11 +99,18 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
   });
 
   function onSubmit(data: DiscountFormValues) {
+    // Format dates for display
+    const formattedData = {
+      ...data,
+      startDate: formatPersianDate(data.startDate),
+      endDate: formatPersianDate(data.endDate),
+    };
+    
     toast({
       title: "کد تخفیف ایجاد شد",
       description: `کد تخفیف ${data.code} با موفقیت ایجاد شد.`,
     });
-    console.log(data);
+    console.log(formattedData);
     form.reset();
     onOpenChange(false);
   }
@@ -171,8 +197,14 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   <FormItem>
                     <FormLabel>تاریخ شروع</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input 
+                        type="date" 
+                        {...field}
+                      />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      {field.value ? formatPersianDate(field.value) : ''}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -185,8 +217,14 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   <FormItem>
                     <FormLabel>تاریخ پایان</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input 
+                        type="date"
+                        {...field} 
+                      />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      {field.value ? formatPersianDate(field.value) : ''}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
