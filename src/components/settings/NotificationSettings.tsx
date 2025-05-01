@@ -17,7 +17,10 @@ export function NotificationSettings() {
   const [notifications, setNotifications] = useState({
     orders: true,
     inventory: true,
-    reviews: false
+    reviews: false,
+    lowStock: true,
+    newProducts: false,
+    returns: true
   });
 
   return (
@@ -66,21 +69,73 @@ export function NotificationSettings() {
             transition={{ duration: 0.2 }}
           >
             <Checkbox 
-              id="notify-products" 
-              checked={notifications.inventory}
+              id="notify-lowstock" 
+              checked={notifications.lowStock}
               onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, inventory: checked === true }))}
+                setNotifications(prev => ({ ...prev, lowStock: checked === true }))}
               className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
             />
             <div className="grid gap-1.5 mr-2">
               <Label
-                htmlFor="notify-products"
+                htmlFor="notify-lowstock"
                 className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-vazirmatn"
               >
                 موجودی کم
               </Label>
               <p className="text-sm text-muted-foreground font-vazirmatn">
                 دریافت اعلان هنگامی که موجودی محصولات کم است.
+              </p>
+            </div>
+            
+          </motion.div>
+          
+          <motion.div 
+            className="flex items-start space-x-2"
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Checkbox 
+              id="notify-returns" 
+              checked={notifications.returns}
+              onCheckedChange={(checked) => 
+                setNotifications(prev => ({ ...prev, returns: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
+            <div className="grid gap-1.5 mr-2">
+              <Label
+                htmlFor="notify-returns"
+                className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-vazirmatn"
+              >
+                مرجوعات محصولات
+              </Label>
+              <p className="text-sm text-muted-foreground font-vazirmatn">
+                دریافت اعلان برای محصولات مرجوع شده.
+              </p>
+            </div>
+            
+          </motion.div>
+          
+          <motion.div 
+            className="flex items-start space-x-2"
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Checkbox 
+              id="notify-new-products" 
+              checked={notifications.newProducts}
+              onCheckedChange={(checked) => 
+                setNotifications(prev => ({ ...prev, newProducts: checked === true }))}
+              className="ml-2 data-[state=checked]:bg-primary data-[state=checked]:animate-pulse-once" 
+            />
+            <div className="grid gap-1.5 mr-2">
+              <Label
+                htmlFor="notify-new-products"
+                className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-vazirmatn"
+              >
+                محصولات جدید
+              </Label>
+              <p className="text-sm text-muted-foreground font-vazirmatn">
+                دریافت اعلان هنگام اضافه شدن محصولات جدید.
               </p>
             </div>
             

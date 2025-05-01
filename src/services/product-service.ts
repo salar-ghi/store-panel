@@ -26,4 +26,31 @@ export class ProductService {
   static async delete(id: number): Promise<void> {
     await apiClient.delete(`/products/${id}`);
   }
+
+  static async getLowStockProducts(): Promise<Product[]> {
+    const response = await apiClient.get<Product[]>('/products/low-stock');
+    return response.data;
+  }
+
+  static async bulkUpdateStock(updates: { id: number, quantity: number }[]): Promise<void> {
+    await apiClient.post('/products/stock/bulk-update', { updates });
+  }
+
+  static async transferStock(data: { 
+    productId: number, 
+    fromLocation: string, 
+    toLocation: string, 
+    quantity: number 
+  }): Promise<void> {
+    await apiClient.post('/products/stock/transfer', data);
+  }
+
+  static async adjustStock(data: {
+    productId: number,
+    quantity: number,
+    reason: string,
+    location?: string
+  }): Promise<void> {
+    await apiClient.post('/products/stock/adjust', data);
+  }
 }

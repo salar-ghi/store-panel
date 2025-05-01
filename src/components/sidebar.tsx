@@ -18,7 +18,11 @@ import {
   ChevronRight,
   ShoppingCart,
   Package as PackageIcon,
-  PackageX
+  PackageX,
+  Boxes,
+  Bell,
+  MessageSquare,
+  Inbox
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -40,6 +44,16 @@ interface SidebarItemProps {
 const sidebarItems = [
   { title: "داشبورد", path: "/", icon: LayoutDashboard },
   { title: "محصولات", path: "/products", icon: Package },
+  { 
+    title: "انبارداری", 
+    path: "/inventory", 
+    icon: Boxes,
+    subItems: [
+      { title: "موجودی", path: "/inventory", icon: Box },
+      { title: "مکان‌های انبار", path: "/inventory/locations", icon: PackageIcon },
+      { title: "ثبت ورودی", path: "/inventory/inputs", icon: Inbox },
+    ]
+  },
   { title: "دسته‌بندی‌ها", path: "/categories", icon: FolderTree },
   { title: "برندها", path: "/brands", icon: Tag },
   { 
@@ -53,6 +67,16 @@ const sidebarItems = [
   },
   { title: "کاربران", path: "/users", icon: Users },
   { title: "بنرها", path: "/banners", icon: Image },
+  { 
+    title: "اعلان‌ها و پیام‌ها", 
+    path: "/notifications", 
+    icon: Bell,
+    subItems: [
+      { title: "اعلان‌ها", path: "/notifications", icon: Bell },
+      { title: "پیام‌ها", path: "/messages", icon: MessageSquare },
+      { title: "تنظیمات اعلان‌ها", path: "/notification-settings", icon: Settings },
+    ]
+  },
   { title: "تگ‌ها", path: "/tags", icon: PictureInPicture },
   { title: "تحلیل‌ها", path: "/analytics", icon: BarChart3 },
   { title: "تخفیف‌ها", path: "/promotions", icon: Percent },
@@ -97,7 +121,7 @@ function SidebarItem({
 export function Sidebar({ className }: SidebarProps) {
   const { collapsed } = useSidebarStore();
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["سفارشات"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(["سفارشات", "انبارداری", "اعلان‌ها و پیام‌ها"]);
 
   const toggleExpanded = (title: string) => {
     setExpandedItems(prev => 

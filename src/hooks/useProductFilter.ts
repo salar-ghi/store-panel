@@ -9,6 +9,7 @@ export function useProductFilter(products: Product[]) {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [sortField, setSortField] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [stockFilter, setStockFilter] = useState<"all" | "inStock" | "lowStock" | "outOfStock">("all");
 
   const maxPrice = Math.max(...products.map(p => p.price), 1000);
   
@@ -19,7 +20,8 @@ export function useProductFilter(products: Product[]) {
   // Apply filters and search
   const filteredProducts = products
     .filter((product) => 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
     )
     .filter((product) => 
       categoryFilter ? product.categoryName === categoryFilter : true
@@ -29,7 +31,13 @@ export function useProductFilter(products: Product[]) {
     )
     .filter((product) => 
       product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
+    )
+    .filter((product) => {
+      if (stockFilter === "inStock") return product.stockQuantity > 0;
+      if (stockFilter === "lowStock") return product.stockQuantity > 0 && product.stockQuantity <= 5;
+      if (stockFilter === "outOfStock") return product.stockQuantity === 0;
+      return true; // "all" option
+    });
   
   // Apply sorting
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -46,14 +54,16 @@ export function useProductFilter(products: Product[]) {
   });
 
   const resetFilters = () => {
+    setSearchQuery("");
     setCategoryFilter("");
     setBrandFilter("");
     setPriceRange([0, maxPrice]);
     setSortField("name");
     setSortOrder("asc");
+    setStockFilter("all");
   };
 
-  const hasFilters = categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc" || priceRange[0] > 0 || priceRange[1] < maxPrice;
+  const hasFilters = categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc" || priceRange[0] > 0 || priceRange[1] < maxPrice || stockFilter !== "all";
 
   return {
     searchQuery,
@@ -68,6 +78,8 @@ export function useProductFilter(products: Product[]) {
     setSortField,
     sortOrder,
     setSortOrder,
+    stockFilter,
+    setStockFilter,
     maxPrice,
     categories,
     brands,
