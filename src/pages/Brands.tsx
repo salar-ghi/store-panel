@@ -164,7 +164,7 @@ export default function Brands() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6  py-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">برندها</h2>
@@ -174,7 +174,8 @@ export default function Brands() {
           <DialogTrigger asChild>
             <Button 
               onClick={openDialog} 
-              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              // className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4 ml-1" />
               افزودن برند

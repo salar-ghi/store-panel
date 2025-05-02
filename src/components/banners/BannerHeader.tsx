@@ -23,7 +23,8 @@ export function BannerHeader({ onBannerAdded }: BannerHeaderProps) {
       </div>
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+          {/* <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"> */}
+          <Button className="flex items-center gap-2">
             <PlusCircle className="ml-2 h-4 w-4" />
             افزودن بنر
           </Button>

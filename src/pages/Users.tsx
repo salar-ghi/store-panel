@@ -41,7 +41,7 @@ export default function Users() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6" dir="rtl">
+    <div className="space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">مدیریت کاربران</h1>

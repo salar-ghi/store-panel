@@ -148,7 +148,7 @@ export default function Orders() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 py-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">سفارش‌ها</h2>
       </div>

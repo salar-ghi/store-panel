@@ -47,7 +47,8 @@ export default function Categories() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6" dir="rtl">
+    // <div className="container mx-auto py-6 space-y-6" dir="rtl">
+    <div className="space-y-6  py-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">دسته‌بندی‌ها</h2>

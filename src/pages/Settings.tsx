@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 export default function Settings() {
   return (
-    <div className="container mx-auto space-y-6 py-8">
+    <div className="space-y-6 py-6">
       <motion.div 
         className="flex items-center justify-between" 
         initial={{ opacity: 0, y: -20 }}

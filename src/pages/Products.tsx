@@ -21,10 +21,10 @@ export default function Products() {
   }
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-6 py-6" dir="rtl">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">محصولات</h2>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="flex items-center gap-1">
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           افزودن محصول
         </Button>

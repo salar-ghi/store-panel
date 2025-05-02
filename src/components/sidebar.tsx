@@ -43,6 +43,9 @@ interface SidebarItemProps {
 
 const sidebarItems = [
   { title: "داشبورد", path: "/", icon: LayoutDashboard },
+  { title: "بنرها", path: "/banners", icon: Image },
+  { title: "دسته‌بندی‌ها", path: "/categories", icon: FolderTree },
+  { title: "برندها", path: "/brands", icon: Tag },
   { title: "محصولات", path: "/products", icon: Package },
   { 
     title: "انبارداری", 
@@ -54,8 +57,6 @@ const sidebarItems = [
       { title: "ثبت ورودی", path: "/inventory/inputs", icon: Inbox },
     ]
   },
-  { title: "دسته‌بندی‌ها", path: "/categories", icon: FolderTree },
-  { title: "برندها", path: "/brands", icon: Tag },
   { 
     title: "سفارشات", 
     path: "/orders", 
@@ -65,8 +66,7 @@ const sidebarItems = [
       { title: "سفارشات مرجوعی", path: "/orders/returned", icon: PackageX },
     ]
   },
-  { title: "کاربران", path: "/users", icon: Users },
-  { title: "بنرها", path: "/banners", icon: Image },
+  
   { 
     title: "اعلان‌ها و پیام‌ها", 
     path: "/notifications", 
@@ -78,8 +78,9 @@ const sidebarItems = [
     ]
   },
   { title: "تگ‌ها", path: "/tags", icon: PictureInPicture },
-  { title: "تحلیل‌ها", path: "/analytics", icon: BarChart3 },
   { title: "تخفیف‌ها", path: "/promotions", icon: Percent },
+  { title: "کاربران", path: "/users", icon: Users },
+  { title: "تحلیل‌ها", path: "/analytics", icon: BarChart3 },
   { title: "تنظیمات", path: "/settings", icon: Settings },
 ];
 
