@@ -27,4 +27,6 @@ export interface CreateSupplierRequest {
   categories?: number[];
 }
 
-export interface UpdateSupplierRequest extends CreateSupplierRequest {}
+// UpdateSupplierRequest is the same as CreateSupplierRequest
+export type UpdateSupplierRequest = CreateSupplierRequest;
+

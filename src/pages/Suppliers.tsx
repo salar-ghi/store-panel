@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash, Pencil, Plus, Truck, Check, X } from "lucide-react";
@@ -88,7 +87,7 @@ export default function Suppliers() {
   });
 
   // Reset form when editingSupplier changes
-  React.useEffect(() => {
+  useState(() => {
     if (editingSupplier) {
       form.reset({
         name: editingSupplier.name,
@@ -133,7 +132,7 @@ export default function Suppliers() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: FormData }) => {
+    mutationFn: ({ id, data }: { id: number; data: CreateSupplierRequest }) => {
       return SupplierService.update(id, data);
     },
     onSuccess: () => {
@@ -169,7 +168,18 @@ export default function Suppliers() {
     },
   });
 
-  function onSubmit(data: FormData) {
+  function onSubmit(formData: FormData) {
+    // Ensure all required properties are present
+    const data: CreateSupplierRequest = {
+      name: formData.name,
+      contactInfo: formData.contactInfo,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      description: formData.description,
+      website: formData.website,
+    };
+
     if (editingSupplier) {
       updateMutation.mutate({ id: editingSupplier.id, data });
     } else {

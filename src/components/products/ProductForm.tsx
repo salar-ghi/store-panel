@@ -173,12 +173,23 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
   });
 
   const handleSubmit = (data: FormData) => {
-    // Prepare complete product data
+    // Ensure all required properties are present by explicitly adding them
     const productData: CreateProductRequest = {
-      ...data,
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      stockQuantity: data.stockQuantity,
+      categoryId: data.categoryId,
+      brandId: data.brandId,
+      supplierId: data.supplierId,
       images: productImages,
       tags: selectedTags,
       attributes: attributes,
+      location: data.location,
+      reorderLevel: data.reorderLevel,
+      dimensions: data.dimensions,
+      stock: data.stock,
+      prices: data.prices,
     };
     
     onSubmit(productData);
