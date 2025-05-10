@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -347,9 +346,446 @@ export default function Notifications() {
                 </div>
               )}
             </TabsContent>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
+            
+            <TabsContent value="unread" className="mt-0">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[25%]">عنوان</TableHead>
+                      <TableHead className="w-[35%]">پیام</TableHead>
+                      <TableHead>نوع</TableHead>
+                      <TableHead>فوریت</TableHead>
+                      <TableHead>تاریخ</TableHead>
+                      <TableHead>عملیات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredNotifications.filter(notif => !notif.read).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                          <div className="flex flex-col items-center">
+                            <MailOpen className="h-10 w-10 mb-2" />
+                            <p>هیچ اعلانی یافت نشد</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredNotifications.filter(notif => !notif.read).map((notification) => {
+                        const TypeIcon = typeIconMap[notification.type];
+                        return (
+                          <TableRow key={notification.id} className={notification.read ? "" : "bg-blue-50/50 dark:bg-blue-900/10"}>
+                            <TableCell>
+                              <div className="font-medium flex items-center gap-2">
+                                {!notification.read && (
+                                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                )}
+                                {notification.title}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">{notification.message}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {TypeIcon && <TypeIcon className="h-4 w-4 text-muted-foreground" />}
+                                <span>
+                                  {notification.type === "inventory" ? "انبار" : 
+                                  notification.type === "order" ? "سفارش" :
+                                  notification.type === "user" ? "کاربر" :
+                                  notification.type === "return" ? "مرجوعی" :
+                                  notification.type === "system" ? "سیستم" :
+                                  "تخفیف"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`${priorityBadgeMap[notification.priority]}`}>
+                                {notification.priority === "high" ? "بالا" : 
+                                notification.priority === "medium" ? "متوسط" : "پایین"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {notification.date}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {!notification.read && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => markAsRead(notification.id)}
+                                    title="علامت‌گذاری به‌عنوان خوانده‌شده"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => deleteNotification(notification.id)}
+                                  title="حذف اعلان"
+                                  className="text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredNotifications.filter(notif => !notif.read).length > 0 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    نمایش {filteredNotifications.filter(notif => !notif.read).length} از {notifications.length} مورد
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 w-8">
+                      1
+                    </Button>
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="inventory" className="mt-0">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[25%]">عنوان</TableHead>
+                      <TableHead className="w-[35%]">پیام</TableHead>
+                      <TableHead>نوع</TableHead>
+                      <TableHead>فوریت</TableHead>
+                      <TableHead>تاریخ</TableHead>
+                      <TableHead>عملیات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredNotifications.filter(notif => notif.type === "inventory").length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                          <div className="flex flex-col items-center">
+                            <MailOpen className="h-10 w-10 mb-2" />
+                            <p>هیچ اعلانی یافت نشد</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredNotifications.filter(notif => notif.type === "inventory").map((notification) => {
+                        const TypeIcon = typeIconMap[notification.type];
+                        return (
+                          <TableRow key={notification.id} className={notification.read ? "" : "bg-blue-50/50 dark:bg-blue-900/10"}>
+                            <TableCell>
+                              <div className="font-medium flex items-center gap-2">
+                                {!notification.read && (
+                                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                )}
+                                {notification.title}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">{notification.message}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {TypeIcon && <TypeIcon className="h-4 w-4 text-muted-foreground" />}
+                                <span>
+                                  {notification.type === "inventory" ? "انبار" : 
+                                  notification.type === "order" ? "سفارش" :
+                                  notification.type === "user" ? "کاربر" :
+                                  notification.type === "return" ? "مرجوعی" :
+                                  notification.type === "system" ? "سیستم" :
+                                  "تخفیف"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`${priorityBadgeMap[notification.priority]}`}>
+                                {notification.priority === "high" ? "بالا" : 
+                                notification.priority === "medium" ? "متوسط" : "پایین"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {notification.date}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {!notification.read && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => markAsRead(notification.id)}
+                                    title="علامت‌گذاری به‌عنوان خوانده‌شده"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => deleteNotification(notification.id)}
+                                  title="حذف اعلان"
+                                  className="text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredNotifications.filter(notif => notif.type === "inventory").length > 0 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    نمایش {filteredNotifications.filter(notif => notif.type === "inventory").length} از {notifications.length} مورد
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 w-8">
+                      1
+                    </Button>
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="order" className="mt-0">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[25%]">عنوان</TableHead>
+                      <TableHead className="w-[35%]">پیام</TableHead>
+                      <TableHead>نوع</TableHead>
+                      <TableHead>فوریت</TableHead>
+                      <TableHead>تاریخ</TableHead>
+                      <TableHead>عملیات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredNotifications.filter(notif => notif.type === "order").length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                          <div className="flex flex-col items-center">
+                            <MailOpen className="h-10 w-10 mb-2" />
+                            <p>هیچ اعلانی یافت نشد</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredNotifications.filter(notif => notif.type === "order").map((notification) => {
+                        const TypeIcon = typeIconMap[notification.type];
+                        return (
+                          <TableRow key={notification.id} className={notification.read ? "" : "bg-blue-50/50 dark:bg-blue-900/10"}>
+                            <TableCell>
+                              <div className="font-medium flex items-center gap-2">
+                                {!notification.read && (
+                                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                )}
+                                {notification.title}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">{notification.message}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {TypeIcon && <TypeIcon className="h-4 w-4 text-muted-foreground" />}
+                                <span>
+                                  {notification.type === "inventory" ? "انبار" : 
+                                  notification.type === "order" ? "سفارش" :
+                                  notification.type === "user" ? "کاربر" :
+                                  notification.type === "return" ? "مرجوعی" :
+                                  notification.type === "system" ? "سیستم" :
+                                  "تخفیف"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`${priorityBadgeMap[notification.priority]}`}>
+                                {notification.priority === "high" ? "بالا" : 
+                                notification.priority === "medium" ? "متوسط" : "پایین"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {notification.date}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {!notification.read && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => markAsRead(notification.id)}
+                                    title="علامت‌گذاری به‌عنوان خوانده‌شده"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => deleteNotification(notification.id)}
+                                  title="حذف اعلان"
+                                  className="text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredNotifications.filter(notif => notif.type === "order").length > 0 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    نمایش {filteredNotifications.filter(notif => notif.type === "order").length} از {notifications.length} مورد
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 w-8">
+                      1
+                    </Button>
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="user" className="mt-0">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[25%]">عنوان</TableHead>
+                      <TableHead className="w-[35%]">پیام</TableHead>
+                      <TableHead>نوع</TableHead>
+                      <TableHead>فوریت</TableHead>
+                      <TableHead>تاریخ</TableHead>
+                      <TableHead>عملیات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredNotifications.filter(notif => notif.type === "user").length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                          <div className="flex flex-col items-center">
+                            <MailOpen className="h-10 w-10 mb-2" />
+                            <p>هیچ اعلانی یافت نشد</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredNotifications.filter(notif => notif.type === "user").map((notification) => {
+                        const TypeIcon = typeIconMap[notification.type];
+                        return (
+                          <TableRow key={notification.id} className={notification.read ? "" : "bg-blue-50/50 dark:bg-blue-900/10"}>
+                            <TableCell>
+                              <div className="font-medium flex items-center gap-2">
+                                {!notification.read && (
+                                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                )}
+                                {notification.title}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">{notification.message}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {TypeIcon && <TypeIcon className="h-4 w-4 text-muted-foreground" />}
+                                <span>
+                                  {notification.type === "inventory" ? "انبار" : 
+                                  notification.type === "order" ? "سفارش" :
+                                  notification.type === "user" ? "کاربر" :
+                                  notification.type === "return" ? "مرجوعی" :
+                                  notification.type === "system" ? "سیستم" :
+                                  "تخفیف"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`${priorityBadgeMap[notification.priority]}`}>
+                                {notification.priority === "high" ? "بالا" : 
+                                notification.priority === "medium" ? "متوسط" : "پایین"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {notification.date}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {!notification.read && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => markAsRead(notification.id)}
+                                    title="علامت‌گذاری به‌عنوان خوانده‌شده"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => deleteNotification(notification.id)}
+                                  title="حذف اعلان"
+                                  className="text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredNotifications.filter(notif => notif.type === "user").length > 0 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    نمایش {filteredNotifications.filter(notif => notif.type === "user").length} از {notifications.length} مورد
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" disabled>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm"
