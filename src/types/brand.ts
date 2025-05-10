@@ -3,7 +3,7 @@ export interface Brand {
   id: number;
   name: string;
   description: string;
-  createdAt: string;
+  createdTime: string;
 }
 
 export interface CreateBrandRequest {

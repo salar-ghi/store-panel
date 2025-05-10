@@ -42,6 +42,8 @@
     "@tanstack/react-query": "^5.56.2",
     "@tanstack/react-query-devtools": "^5.72.0",
     "axios": "^1.8.4",
+    "browserslist": "^4.24.5",
+    "caniuse-lite": "^1.0.30001716",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",

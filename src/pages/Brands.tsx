@@ -277,7 +277,7 @@ export default function Brands() {
                     <TableRow key={brand.id} className="border-gray-800 hover:bg-gray-900/50">
                       <TableCell className="font-medium">{brand.name}</TableCell>
                       <TableCell>{brand.description}</TableCell>
-                      <TableCell>{new Date(brand.createdAt).toLocaleDateString('fa-IR')}</TableCell>
+                      <TableCell>{new Date(brand.createdTime).toLocaleDateString('fa-IR')}</TableCell>
                       <TableCell className="text-left">
                         <Button
                           variant="ghost"
