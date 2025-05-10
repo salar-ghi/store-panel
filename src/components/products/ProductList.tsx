@@ -98,7 +98,7 @@ export function ProductList({
       {filteredProducts.length === 0 ? (
         <EmptyProductList 
           searchQuery={searchQuery}
-          hasFilters={hasFilters}
+          hasFilters={hasFilters === true}
           onResetFilters={resetFilters}
         />
       ) : (

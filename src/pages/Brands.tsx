@@ -106,6 +106,7 @@ export default function Brands() {
     },
   });
 
+  // Modified to send id and brand as separate parameters
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: FormData }) => {
       return BrandService.update(id, {
@@ -164,7 +165,7 @@ export default function Brands() {
   }
 
   return (
-    <div className="space-y-6  py-6">
+    <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">برندها</h2>
@@ -174,7 +175,6 @@ export default function Brands() {
           <DialogTrigger asChild>
             <Button 
               onClick={openDialog} 
-              // className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4 ml-1" />
@@ -233,23 +233,23 @@ export default function Brands() {
         </Dialog>
       </div>
 
-      <Card className="border shadow-sm backdrop-blur-sm bg-white/60">
+      <Card className="border shadow-sm bg-black text-white">
         <CardHeader className="pb-3">
           <CardTitle>مدیریت برندها</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-400">
             مشاهده و مدیریت تمامی برندهای محصولات
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center py-8">در حال بارگذاری برندها...</div>
+            <div className="flex justify-center py-8 text-gray-300">در حال بارگذاری برندها...</div>
           ) : brands.length === 0 ? (
-            <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center bg-muted/20">
+            <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center bg-gray-900">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Package className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-medium">هیچ برندی یافت نشد</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
+              <p className="text-sm text-gray-400 mt-1 mb-4">
                 با ایجاد اولین برند خود شروع کنید
               </p>
               <Button 
@@ -262,9 +262,9 @@ export default function Brands() {
               </Button>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border border-gray-800">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-gray-900">
                   <TableRow>
                     <TableHead>نام</TableHead>
                     <TableHead>توضیحات</TableHead>
@@ -274,7 +274,7 @@ export default function Brands() {
                 </TableHeader>
                 <TableBody>
                   {brands.map((brand) => (
-                    <TableRow key={brand.id}>
+                    <TableRow key={brand.id} className="border-gray-800 hover:bg-gray-900/50">
                       <TableCell className="font-medium">{brand.name}</TableCell>
                       <TableCell>{brand.description}</TableCell>
                       <TableCell>{new Date(brand.createdAt).toLocaleDateString('fa-IR')}</TableCell>

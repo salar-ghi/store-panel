@@ -7,7 +7,8 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CreateCategoryRequest } from "@/types/category";
+import { CreateCategoryRequest, Category } from "@/types/category";
+import { useEffect } from "react";
 
 const categoryFormSchema = z.object({
   name: z.string().min(2, { message: "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد" }),
@@ -17,18 +18,28 @@ const categoryFormSchema = z.object({
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 interface CreateCategoryFormProps {
+  initialData?: Category;
   onSubmit: (data: CreateCategoryRequest) => Promise<void>;
   onCancel: () => void;
 }
 
-export function CreateCategoryForm({ onSubmit, onCancel }: CreateCategoryFormProps) {
+export function CreateCategoryForm({ initialData, onSubmit, onCancel }: CreateCategoryFormProps) {
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: initialData?.name || "",
+      description: initialData?.description || "",
     },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        name: initialData.name,
+        description: initialData.description,
+      });
+    }
+  }, [initialData, form]);
 
   const handleSubmit = async (data: CategoryFormValues) => {
     const categoryRequest: CreateCategoryRequest = {
@@ -75,7 +86,9 @@ export function CreateCategoryForm({ onSubmit, onCancel }: CreateCategoryFormPro
         />
         
         <DialogFooter>          
-          <Button type="submit" className="mx-2">ایجاد دسته‌بندی</Button>
+          <Button type="submit" className="mx-2">
+            {initialData ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی"}
+          </Button>
 
           <Button 
             type="button" 

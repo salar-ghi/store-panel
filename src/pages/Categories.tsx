@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CategoryService } from "@/services/category-service";
@@ -18,6 +19,7 @@ import { CategoriesGrid } from "@/components/categories/CategoriesGrid";
 
 export default function Categories() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const { data: categories, isLoading, error, refetch } = useQuery({
     queryKey: ['categories'],
@@ -36,6 +38,21 @@ export default function Categories() {
     }
   };
 
+  const handleEditCategory = async (data: any) => {
+    try {
+      if (editingCategory) {
+        await CategoryService.update(editingCategory.id, data);
+        toast.success(`دسته‌بندی "${data.name}" با موفقیت ویرایش شد`);
+        setIsDialogOpen(false);
+        setEditingCategory(null);
+        refetch();
+      }
+    } catch (error) {
+      toast.error("خطا در ویرایش دسته‌بندی");
+      console.error(error);
+    }
+  };
+
   const handleDeleteCategory = async (id: number) => {
     try {
       await CategoryService.delete(id);
@@ -46,9 +63,13 @@ export default function Categories() {
     }
   };
 
+  const openEditDialog = (category: Category) => {
+    setEditingCategory(category);
+    setIsDialogOpen(true);
+  };
+
   return (
-    // <div className="container mx-auto py-6 space-y-6" dir="rtl">
-    <div className="space-y-6  py-6">
+    <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">دسته‌بندی‌ها</h2>
@@ -64,11 +85,15 @@ export default function Categories() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>ایجاد دسته‌بندی جدید</DialogTitle>
+              <DialogTitle>{editingCategory ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی جدید"}</DialogTitle>
             </DialogHeader>
             <CreateCategoryForm
-              onSubmit={handleCreateCategory}
-              onCancel={() => setIsDialogOpen(false)}
+              initialData={editingCategory || undefined}
+              onSubmit={editingCategory ? handleEditCategory : handleCreateCategory}
+              onCancel={() => {
+                setIsDialogOpen(false);
+                setEditingCategory(null);
+              }}
             />
           </DialogContent>
         </Dialog>
@@ -94,10 +119,7 @@ export default function Categories() {
       ) : categories && categories.length > 0 ? (
         <CategoriesGrid
           categories={categories}
-          onEditCategory={(category) => {
-            // TODO: Implement edit functionality
-            setIsDialogOpen(true);
-          }}
+          onEditCategory={openEditDialog}
           onDeleteCategory={handleDeleteCategory}
         />
       ) : (

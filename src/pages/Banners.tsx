@@ -30,10 +30,10 @@ export default function Banners() {
   };
 
   return (
-    <div className="space-y-6  py-6">
+    <div className="space-y-6 py-6">
       <BannerHeader onBannerAdded={handleBannerAdded} />
 
-      <Card className="backdrop-blur-sm bg-white/60 shadow-xl">
+      <Card className="border shadow-sm bg-black text-white">
         <CardHeader>
           <CardTitle>لیست بنرها</CardTitle>
         </CardHeader>

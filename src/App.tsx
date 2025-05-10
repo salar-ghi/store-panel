@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -19,6 +20,13 @@ import Categories from "@/pages/Categories";
 import Users from "@/pages/Users";
 import Banners from "@/pages/Banners";
 import Tags from "@/pages/Tags";
+import Inventory from "@/pages/Inventory";
+import InventoryLocations from "@/pages/inventory/InventoryLocations";
+import InventoryInputs from "@/pages/inventory/InventoryInputs";
+import ReturnedOrders from "@/pages/orders/ReturnedOrders";
+import Notifications from "@/pages/notifications/Notifications";
+import Messages from "@/pages/notifications/Messages";
+import NotificationSettings from "@/pages/notifications/NotificationSettings";
 import { useAuthStore } from "@/store/auth-store";
 
 // Create a client
@@ -94,6 +102,14 @@ const App = () => {
                 </ProtectedRoute>
               } />
               
+              <Route path="/orders/returned" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ReturnedOrders />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
               {/* Redirect /customers to /users */}
               <Route path="/customers" element={<Navigate to="/users" replace />} />
               
@@ -129,7 +145,6 @@ const App = () => {
                 </ProtectedRoute>
               } />
               
-              {/* Adding Banners Route */}
               <Route path="/banners" element={
                 <ProtectedRoute>
                   <Layout>
@@ -138,11 +153,60 @@ const App = () => {
                 </ProtectedRoute>
               } />
 
-              {/* Adding Tags Route */}
               <Route path="/tags" element={
                 <ProtectedRoute>
                   <Layout>
                     <Tags />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Inventory Routes */}
+              <Route path="/inventory" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Inventory />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/inventory/locations" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <InventoryLocations />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/inventory/inputs" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <InventoryInputs />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Notifications & Messages Routes */}
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Notifications />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/messages" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Messages />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/notification-settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <NotificationSettings />
                   </Layout>
                 </ProtectedRoute>
               } />
