@@ -18,6 +18,7 @@ import {
 import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { SupplierService } from "@/services/supplier-service";
+import { WarehouseService } from "@/services/warehouse-service";
 
 interface SelectFieldsProps {
   control: Control<any>;
@@ -39,6 +40,11 @@ export function SelectFields({ control }: SelectFieldsProps) {
     queryFn: SupplierService.getAll,
   });
 
+  const { data: warehouses = [] } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: WarehouseService.getAll,
+  });
+
   return (
     <div className="grid grid-cols-3 gap-4">
       <FormField
@@ -47,7 +53,7 @@ export function SelectFields({ control }: SelectFieldsProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>دسته‌بندی</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+            <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب دسته‌بندی" />
@@ -75,7 +81,7 @@ export function SelectFields({ control }: SelectFieldsProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>برند</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+            <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب برند" />
@@ -103,7 +109,7 @@ export function SelectFields({ control }: SelectFieldsProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>تامین‌کننده</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+            <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب تامین‌کننده" />
@@ -116,8 +122,14 @@ export function SelectFields({ control }: SelectFieldsProps) {
                     value={supplier.id.toString()}
                   >
                     {supplier.name}
+                    {supplier.isApproved ? '' : ' (در انتظار تایید)'}
                   </SelectItem>
                 ))}
+                {suppliers.length === 0 && (
+                  <SelectItem value="" disabled>
+                    تامین‌کننده‌ای موجود نیست
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
             <FormMessage />
