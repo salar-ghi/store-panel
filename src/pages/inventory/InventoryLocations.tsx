@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,8 +26,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 
+// Define the Location type to ensure consistency
+interface Location {
+  id: number;
+  name: string;
+  address: string;
+  capacity: number;
+  used: number;
+}
+
 // Mock data for inventory locations
-const mockLocations = [
+const mockLocations: Location[] = [
   { id: 1, name: "انبار مرکزی", address: "تهران، خیابان ولیعصر", capacity: 2000, used: 1450 },
   { id: 2, name: "انبار شرق", address: "مشهد، بلوار پیروزی", capacity: 1500, used: 980 },
   { id: 3, name: "انبار غرب", address: "تبریز، خیابان امام", capacity: 1000, used: 750 },
@@ -45,9 +53,9 @@ const locationFormSchema = z.object({
 type LocationFormValues = z.infer<typeof locationFormSchema>;
 
 export default function InventoryLocations() {
-  const [locations, setLocations] = useState(mockLocations);
+  const [locations, setLocations] = useState<Location[]>(mockLocations);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<any | null>(null);
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const form = useForm<LocationFormValues>({
@@ -71,15 +79,15 @@ export default function InventoryLocations() {
       );
       toast.success("مکان انبار با موفقیت به‌روزرسانی شد");
     } else {
-      // Add new location
-      setLocations([
-        ...locations,
-        {
-          id: locations.length + 1,
-          ...data,
-          used: 0,
-        },
-      ]);
+      // Add new location with required fields
+      const newLocation: Location = {
+        id: locations.length + 1,
+        name: data.name,
+        address: data.address,
+        capacity: data.capacity,
+        used: 0,
+      };
+      setLocations([...locations, newLocation]);
       toast.success("مکان انبار با موفقیت اضافه شد");
     }
     setIsDialogOpen(false);
@@ -87,7 +95,7 @@ export default function InventoryLocations() {
     setEditingLocation(null);
   };
 
-  const handleEdit = (location: any) => {
+  const handleEdit = (location: Location) => {
     setEditingLocation(location);
     form.reset({
       name: location.name,
