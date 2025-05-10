@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash, Pencil, Plus, Truck, Check, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -87,7 +88,7 @@ export default function Suppliers() {
   });
 
   // Reset form when editingSupplier changes
-  useState(() => {
+  useEffect(() => {
     if (editingSupplier) {
       form.reset({
         name: editingSupplier.name,

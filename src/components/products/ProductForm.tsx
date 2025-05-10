@@ -187,9 +187,26 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
       attributes: attributes,
       location: data.location,
       reorderLevel: data.reorderLevel,
-      dimensions: data.dimensions,
-      stock: data.stock,
-      prices: data.prices,
+      dimensions: data.dimensions ? {
+        length: data.dimensions.length || 0,
+        width: data.dimensions.width || 0,
+        height: data.dimensions.height || 0,
+        weight: data.dimensions.weight || 0,
+        unit: data.dimensions.unit || "cm"
+      } : undefined,
+      stock: data.stock ? {
+        quantity: data.stock.quantity || 0,
+        reorderThreshold: data.stock.reorderThreshold || 0,
+        warehouseId: data.stock.warehouseId || 0,
+        location: data.stock.location || ""
+      } : undefined,
+      prices: data.prices ? data.prices.map(price => ({
+        amount: price.amount || 0,
+        currency: price.currency || "USD",
+        pricingTier: price.pricingTier || "retail",
+        effectiveDate: price.effectiveDate || new Date().toISOString().split('T')[0],
+        expiryDate: price.expiryDate
+      })) : undefined,
     };
     
     onSubmit(productData);
