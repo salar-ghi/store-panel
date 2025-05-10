@@ -178,7 +178,7 @@ export default function InventoryInputs() {
                     <TableHead>مکان انبار</TableHead>
                     <TableHead>تعداد اقلام</TableHead>
                     <TableHead>وضعیت</TableHead>
-                    <TableHead>عملیات</TableHead>
+                    <TableHead className="text-left">عملیات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -203,7 +203,7 @@ export default function InventoryInputs() {
                           {input.status}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex justify-end">
                         <div className="flex gap-1">
                           <Button variant="ghost" size="icon" title="مشاهده جزئیات">
                             <FileText className="h-4 w-4" />

@@ -29,7 +29,7 @@ export const NotificationsContent = ({
   return (
     <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 col-span-3">
       <CardContent className="pt-6">
-        <Tabs defaultValue={currentTab} value={currentTab} onValueChange={setCurrentTab}>
+        <Tabs defaultValue={currentTab} value={currentTab} onValueChange={setCurrentTab} dir="rtl">
           <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto">
             <TabsTrigger value="all" className="py-2">
               همه

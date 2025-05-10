@@ -21,7 +21,7 @@ export const NotificationSettingsList: React.FC<NotificationSettingsListProps> =
     : settings.filter(setting => setting[currentTab]);
 
   return (
-    <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="w-full">
+    <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="w-full" dir="rtl">
       <TabsList className="grid grid-cols-5 h-auto">
         <TabsTrigger value="all">همه</TabsTrigger>
         <TabsTrigger value="email">ایمیل</TabsTrigger>

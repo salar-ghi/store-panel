@@ -195,7 +195,7 @@ export default function InventoryLocations() {
                           {usagePercent}% استفاده شده
                         </div>
                       </TableCell>
-                      <TableCell className="flex gap-1">
+                      <TableCell className="flex gap-1 justify-end">
                         <Button
                           variant="ghost"
                           size="icon"
