@@ -346,29 +346,210 @@ export default function NotificationSettings() {
               
               <TabsContent value="email" className="mt-0">
                 <div className="space-y-6">
-                  {/* Similar content to "all" tab but filtered for email */}
-                  {/* ... keep existing code or implement similar structure as "all" tab */}
+                  {filteredSettings
+                    .filter((setting) => setting.email)
+                    .map((setting) => {
+                      const SettingIcon = setting.icon;
+                      return (
+                        <div
+                          key={setting.id}
+                          className="flex items-start justify-between p-4 border rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <div className="flex gap-3">
+                            <div className="mt-1">
+                              <SettingIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{setting.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {setting.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-5">
+                            <div className="flex flex-col items-center gap-1">
+                              <Label
+                                htmlFor={`${setting.id}-email`}
+                                className="text-xs"
+                              >
+                                ایمیل
+                              </Label>
+                              <Switch
+                                id={`${setting.id}-email`}
+                                checked={setting.email}
+                                onCheckedChange={() =>
+                                  toggleSetting(setting.id, "email")
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {filteredSettings.filter((setting) => setting.email).length ===
+                    0 && (
+                    <div className="py-6 text-center text-muted-foreground">
+                      هیچ تنظیم اعلانی برای ایمیل یافت نشد
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
               <TabsContent value="push" className="mt-0">
                 <div className="space-y-6">
-                  {/* ... keep existing code or implement similar structure as "all" tab */}
+                  {filteredSettings
+                    .filter((setting) => setting.push)
+                    .map((setting) => {
+                      const SettingIcon = setting.icon;
+                      return (
+                        <div
+                          key={setting.id}
+                          className="flex items-start justify-between p-4 border rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <div className="flex gap-3">
+                            <div className="mt-1">
+                              <SettingIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{setting.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {setting.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-5">
+                            <div className="flex flex-col items-center gap-1">
+                              <Label
+                                htmlFor={`${setting.id}-push`}
+                                className="text-xs"
+                              >
+                                پوش
+                              </Label>
+                              <Switch
+                                id={`${setting.id}-push`}
+                                checked={setting.push}
+                                onCheckedChange={() =>
+                                  toggleSetting(setting.id, "push")
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {filteredSettings.filter((setting) => setting.push).length ===
+                    0 && (
+                    <div className="py-6 text-center text-muted-foreground">
+                      هیچ تنظیم اعلانی برای پوش یافت نشد
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
               <TabsContent value="sms" className="mt-0">
                 <div className="space-y-6">
-                  {/* ... keep existing code or implement similar structure as "all" tab */}
+                  {filteredSettings
+                    .filter((setting) => setting.sms)
+                    .map((setting) => {
+                      const SettingIcon = setting.icon;
+                      return (
+                        <div
+                          key={setting.id}
+                          className="flex items-start justify-between p-4 border rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <div className="flex gap-3">
+                            <div className="mt-1">
+                              <SettingIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{setting.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {setting.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-5">
+                            <div className="flex flex-col items-center gap-1">
+                              <Label
+                                htmlFor={`${setting.id}-sms`}
+                                className="text-xs"
+                              >
+                                پیامک
+                              </Label>
+                              <Switch
+                                id={`${setting.id}-sms`}
+                                checked={setting.sms}
+                                onCheckedChange={() =>
+                                  toggleSetting(setting.id, "sms")
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {filteredSettings.filter((setting) => setting.sms).length ===
+                    0 && (
+                    <div className="py-6 text-center text-muted-foreground">
+                      هیچ تنظیم اعلانی برای پیامک یافت نشد
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
               <TabsContent value="inApp" className="mt-0">
                 <div className="space-y-6">
-                  {/* ... keep existing code or implement similar structure as "all" tab */}
+                  {filteredSettings
+                    .filter((setting) => setting.inApp)
+                    .map((setting) => {
+                      const SettingIcon = setting.icon;
+                      return (
+                        <div
+                          key={setting.id}
+                          className="flex items-start justify-between p-4 border rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <div className="flex gap-3">
+                            <div className="mt-1">
+                              <SettingIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{setting.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {setting.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-5">
+                            <div className="flex flex-col items-center gap-1">
+                              <Label
+                                htmlFor={`${setting.id}-inApp`}
+                                className="text-xs"
+                              >
+                                درون برنامه‌ای
+                              </Label>
+                              <Switch
+                                id={`${setting.id}-inApp`}
+                                checked={setting.inApp}
+                                onCheckedChange={() =>
+                                  toggleSetting(setting.id, "inApp")
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {filteredSettings.filter((setting) => setting.inApp).length ===
+                    0 && (
+                    <div className="py-6 text-center text-muted-foreground">
+                      هیچ تنظیم اعلانی برای درون برنامه‌ای یافت نشد
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
+          </CardHeader>
+          <CardContent>
           </CardContent>
         </Card>
       </div>
