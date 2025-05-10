@@ -188,24 +188,24 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
       location: data.location,
       reorderLevel: data.reorderLevel,
       dimensions: data.dimensions ? {
-        length: data.dimensions.length || 0,
-        width: data.dimensions.width || 0,
-        height: data.dimensions.height || 0,
-        weight: data.dimensions.weight || 0,
-        unit: data.dimensions.unit || "cm"
+        length: data.dimensions.length,  // Required field - no fallback with ||
+        width: data.dimensions.width,    // Required field - no fallback with ||
+        height: data.dimensions.height,  // Required field - no fallback with ||
+        weight: data.dimensions.weight,  // Required field - no fallback with ||
+        unit: data.dimensions.unit       // Required field - no fallback with ||
       } : undefined,
       stock: data.stock ? {
-        quantity: data.stock.quantity || 0,
-        reorderThreshold: data.stock.reorderThreshold || 0,
-        warehouseId: data.stock.warehouseId || 0,
-        location: data.stock.location || ""
+        quantity: data.stock.quantity,   // Required field - no fallback with ||
+        reorderThreshold: data.stock.reorderThreshold, // Required field - no fallback with ||
+        warehouseId: data.stock.warehouseId,  // Required field - no fallback with ||
+        location: data.stock.location || ""  // Optional field, fallback is fine
       } : undefined,
       prices: data.prices ? data.prices.map(price => ({
-        amount: price.amount || 0,
-        currency: price.currency || "USD",
-        pricingTier: price.pricingTier || "retail",
-        effectiveDate: price.effectiveDate || new Date().toISOString().split('T')[0],
-        expiryDate: price.expiryDate
+        amount: price.amount,            // Required field - no fallback with ||
+        currency: price.currency,        // Required field - no fallback with ||
+        pricingTier: price.pricingTier,  // Required field - no fallback with ||
+        effectiveDate: price.effectiveDate, // Required field - no fallback with ||
+        expiryDate: price.expiryDate     // Optional field, can remain as is
       })) : undefined,
     };
     

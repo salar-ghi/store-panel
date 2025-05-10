@@ -29,4 +29,3 @@ export interface CreateSupplierRequest {
 
 // UpdateSupplierRequest is the same as CreateSupplierRequest
 export type UpdateSupplierRequest = CreateSupplierRequest;
-
