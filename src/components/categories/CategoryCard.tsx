@@ -4,7 +4,7 @@ import { Category } from '@/types/category';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash, Package, Tag } from "lucide-react";
+import { Pencil, Trash, Package, Tag, FolderTree } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -50,6 +50,15 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground text-sm mb-4">{category.description}</p>
+        
+        {category.parentId && category.parentName && (
+          <div className="flex items-center gap-2 mb-3">
+            <FolderTree className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">
+              دسته‌بندی والد: <strong>{category.parentName}</strong>
+            </span>
+          </div>
+        )}
         
         <div className="flex items-center gap-2 mb-3">
           <Package className="h-4 w-4 text-muted-foreground" />

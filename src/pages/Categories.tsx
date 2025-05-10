@@ -76,7 +76,10 @@ export default function Categories() {
           <p className="text-muted-foreground">مدیریت دسته‌بندی‌های محصولات</p>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setEditingCategory(null);
+        }}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
               <PlusCircle className="h-4 w-4" />
@@ -89,6 +92,7 @@ export default function Categories() {
             </DialogHeader>
             <CreateCategoryForm
               initialData={editingCategory || undefined}
+              availableCategories={categories || []}
               onSubmit={editingCategory ? handleEditCategory : handleCreateCategory}
               onCancel={() => {
                 setIsDialogOpen(false);

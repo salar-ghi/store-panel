@@ -43,6 +43,36 @@ const mockCategories: Category[] = [
     createdAt: new Date(2023, 4, 1).toISOString(),
     productCount: 67,
     brandRelations: ["L'Oreal", "Nivea", "Maybelline"]
+  },
+  {
+    id: 6, 
+    name: "Men's Clothing", 
+    description: "Clothing for men",
+    createdAt: new Date(2023, 5, 15).toISOString(),
+    productCount: 45,
+    brandRelations: ["Nike", "Adidas"],
+    parentId: 2,
+    parentName: "Clothing"
+  },
+  {
+    id: 7, 
+    name: "Women's Clothing", 
+    description: "Clothing for women",
+    createdAt: new Date(2023, 5, 20).toISOString(),
+    productCount: 62,
+    brandRelations: ["Zara", "H&M"],
+    parentId: 2,
+    parentName: "Clothing"
+  },
+  {
+    id: 8, 
+    name: "Smartphones", 
+    description: "Mobile phones and accessories",
+    createdAt: new Date(2023, 6, 5).toISOString(),
+    productCount: 78,
+    brandRelations: ["Apple", "Samsung", "Xiaomi"],
+    parentId: 1,
+    parentName: "Electronics"
   }
 ];
 
@@ -70,8 +100,33 @@ export const CategoryService = {
   },
   
   create: async (category: CreateCategoryRequest): Promise<Category> => {
-    const response = await apiClient.post<Category>('/api/Category/categories', category);
-    return response.data;
+    try {
+      const response = await apiClient.post<Category>('/api/Category/categories', category);
+      return response.data;
+    } catch (error) {
+      console.log('Using mock data due to API error:', error);
+      // For mock data, create a new category and add it to the list
+      const newCategory: Category = {
+        id: Math.max(...mockCategories.map(c => c.id)) + 1,
+        name: category.name,
+        description: category.description,
+        createdAt: new Date().toISOString(),
+        productCount: 0,
+        brandRelations: []
+      };
+      
+      // If parentId is provided, set the parent information
+      if (category.parentId) {
+        const parentCategory = mockCategories.find(c => c.id === category.parentId);
+        if (parentCategory) {
+          newCategory.parentId = parentCategory.id;
+          newCategory.parentName = parentCategory.name;
+        }
+      }
+      
+      mockCategories.push(newCategory);
+      return newCategory;
+    }
   },
   
   update: async (id: number, category: CreateCategoryRequest): Promise<Category> => {

@@ -6,11 +6,14 @@ export interface Category {
   createdAt: string;
   productCount?: number;
   brandRelations?: string[];
+  parentId?: number;
+  parentName?: string;
 }
 
 export interface CreateCategoryRequest {
   name: string;
   description: string;
+  parentId?: number;
 }
 
 export interface CategoryBrandRelation {
