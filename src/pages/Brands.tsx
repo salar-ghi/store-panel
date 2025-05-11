@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash, Pencil, Plus, Package } from "lucide-react";
+import { Trash, Pencil, Plus, Package, Upload, Image } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/card";
 import { BrandService } from "@/services/brand-service";
 import { Brand } from "@/types/brand";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -51,6 +52,7 @@ const formSchema = z.object({
   description: z.string().min(5, {
     message: "توضیحات باید حداقل 5 کاراکتر باشد.",
   }),
+  logo: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -59,12 +61,14 @@ export default function Brands() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
+      logo: "",
     },
   });
 
@@ -74,12 +78,16 @@ export default function Brands() {
       form.reset({
         name: editingBrand.name,
         description: editingBrand.description,
+        logo: editingBrand.logo || "",
       });
+      setLogoPreview(editingBrand.logo || null);
     } else {
       form.reset({
         name: "",
         description: "",
+        logo: "",
       });
+      setLogoPreview(null);
     }
   }, [editingBrand, form]);
 
@@ -92,7 +100,8 @@ export default function Brands() {
     mutationFn: (data: FormData) => {
       return BrandService.create({
         name: data.name,
-        description: data.description
+        description: data.description,
+        logo: data.logo
       });
     },
     onSuccess: () => {
@@ -100,6 +109,7 @@ export default function Brands() {
       toast.success("برند با موفقیت ایجاد شد");
       setIsOpen(false);
       form.reset();
+      setLogoPreview(null);
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "خطا در ایجاد برند");
@@ -111,7 +121,8 @@ export default function Brands() {
     mutationFn: ({ id, data }: { id: number; data: FormData }) => {
       return BrandService.update(id, {
         name: data.name,
-        description: data.description
+        description: data.description,
+        logo: data.logo
       });
     },
     onSuccess: () => {
@@ -119,6 +130,7 @@ export default function Brands() {
       toast.success("برند با موفقیت به‌روزرسانی شد");
       setIsOpen(false);
       setEditingBrand(null);
+      setLogoPreview(null);
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "خطا در به‌روزرسانی برند");
@@ -160,9 +172,24 @@ export default function Brands() {
     form.reset({
       name: "",
       description: "",
+      logo: "",
     });
+    setLogoPreview(null);
     setIsOpen(true);
   }
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setLogoPreview(result);
+        form.setValue("logo", result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="space-y-6 py-6">
@@ -193,6 +220,45 @@ export default function Brands() {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" dir="rtl">
+                <FormField
+                  control={form.control}
+                  name="logo"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-center">
+                      <FormLabel className="self-start">لوگوی برند</FormLabel>
+                      <FormControl>
+                        <div className="flex flex-col items-center gap-4">
+                          <Avatar className="h-24 w-24 border-2 border-dashed border-gray-300 p-1">
+                            {logoPreview ? (
+                              <AvatarImage src={logoPreview} alt="Brand logo" />
+                            ) : (
+                              <AvatarFallback className="bg-gray-100">
+                                <Image className="h-12 w-12 text-gray-400" />
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <input
+                            type="file"
+                            id="brand-logo"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleLogoChange}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById("brand-logo")?.click()}
+                            className="flex items-center gap-2"
+                          >
+                            <Upload className="h-4 w-4" />
+                            {logoPreview ? "تغییر لوگو" : "انتخاب لوگو"}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="name"
@@ -266,6 +332,7 @@ export default function Brands() {
               <Table>
                 <TableHeader className="bg-gray-900">
                   <TableRow>
+                    <TableHead className="w-16">لوگو</TableHead>
                     <TableHead>نام</TableHead>
                     <TableHead>توضیحات</TableHead>
                     <TableHead>تاریخ ایجاد</TableHead>
@@ -275,6 +342,17 @@ export default function Brands() {
                 <TableBody>
                   {brands.map((brand) => (
                     <TableRow key={brand.id} className="border-gray-800 hover:bg-gray-900/50">
+                      <TableCell>
+                        <Avatar className="h-10 w-10">
+                          {brand.logo ? (
+                            <AvatarImage src={brand.logo} alt={brand.name} />
+                          ) : (
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {brand.name.substring(0, 2)}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                      </TableCell>
                       <TableCell className="font-medium">{brand.name}</TableCell>
                       <TableCell>{brand.description}</TableCell>
                       <TableCell>{new Date(brand.createdTime).toLocaleDateString('fa-IR')}</TableCell>

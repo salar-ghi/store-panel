@@ -15,7 +15,8 @@ import { Menu, Search, User, LogOut, Bell } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export function Navbar() {
   const { toggle } = useSidebarStore();
@@ -27,6 +28,33 @@ export function Navbar() {
     logout();
     navigate('/login');
   };
+
+  // Function to handle marking a notification as read
+  const handleMarkAsRead = (notificationId: number) => {
+    // Decrease notification count by 1
+    setNotificationCount(prev => Math.max(0, prev - 1));
+    toast.success("اعلان به عنوان خوانده شده علامت گذاری شد");
+  };
+
+  // Function to handle viewing all notifications
+  const handleViewAllNotifications = () => {
+    navigate('/notifications');
+    // Reset notification count when viewing all
+    setNotificationCount(0);
+  };
+
+  // For demo purposes, let's add a notification randomly every 30-60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const shouldAddNotification = Math.random() > 0.7;
+      if (shouldAddNotification) {
+        setNotificationCount(prev => prev + 1);
+        toast.info("اعلان جدید دریافت شد");
+      }
+    }, Math.random() * 30000 + 30000); // Random between 30-60 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
@@ -60,24 +88,45 @@ export function Navbar() {
             <DropdownMenuLabel className="text-right">اعلان‌های جدید</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-80 overflow-y-auto text-right">
-              <DropdownMenuItem className="flex flex-col items-start">
-                <p className="font-medium">موجودی پایین محصول</p>
-                <span className="text-sm text-muted-foreground">محصول "گوشی سامسونگ A52" به حد پایین موجودی رسید.</span>
-                <span className="text-xs text-muted-foreground mt-1">20 دقیقه پیش</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start">
-                <p className="font-medium">سفارش جدید</p>
-                <span className="text-sm text-muted-foreground">یک سفارش جدید از کاربر "علی محمدی" ثبت شد.</span>
-                <span className="text-xs text-muted-foreground mt-1">1 ساعت پیش</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start">
-                <p className="font-medium">محصول جدید</p>
-                <span className="text-sm text-muted-foreground">محصول جدید "هندزفری بلوتوث" به انبار اضافه شد.</span>
-                <span className="text-xs text-muted-foreground mt-1">2 ساعت پیش</span>
-              </DropdownMenuItem>
+              {notificationCount > 0 ? (
+                <>
+                  <DropdownMenuItem 
+                    className="flex flex-col items-start"
+                    onClick={() => handleMarkAsRead(1)}
+                  >
+                    <p className="font-medium">موجودی پایین محصول</p>
+                    <span className="text-sm text-muted-foreground">محصول "گوشی سامسونگ A52" به حد پایین موجودی رسید.</span>
+                    <span className="text-xs text-muted-foreground mt-1">20 دقیقه پیش</span>
+                  </DropdownMenuItem>
+                  {notificationCount > 1 && (
+                    <DropdownMenuItem 
+                      className="flex flex-col items-start"
+                      onClick={() => handleMarkAsRead(2)}
+                    >
+                      <p className="font-medium">سفارش جدید</p>
+                      <span className="text-sm text-muted-foreground">یک سفارش جدید از کاربر "علی محمدی" ثبت شد.</span>
+                      <span className="text-xs text-muted-foreground mt-1">1 ساعت پیش</span>
+                    </DropdownMenuItem>
+                  )}
+                  {notificationCount > 2 && (
+                    <DropdownMenuItem 
+                      className="flex flex-col items-start"
+                      onClick={() => handleMarkAsRead(3)}
+                    >
+                      <p className="font-medium">محصول جدید</p>
+                      <span className="text-sm text-muted-foreground">محصول جدید "هندزفری بلوتوث" به انبار اضافه شد.</span>
+                      <span className="text-xs text-muted-foreground mt-1">2 ساعت پیش</span>
+                    </DropdownMenuItem>
+                  )}
+                </>
+              ) : (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  هیچ اعلان جدیدی وجود ندارد
+                </div>
+              )}
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/notifications')}>
+            <DropdownMenuItem onClick={handleViewAllNotifications}>
               <span className="mx-auto">مشاهده همه اعلان‌ها</span>
             </DropdownMenuItem>
           </DropdownMenuContent>

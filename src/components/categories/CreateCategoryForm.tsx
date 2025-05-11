@@ -8,13 +8,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateCategoryRequest, Category } from "@/types/category";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Upload, Image as ImageIcon } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const categoryFormSchema = z.object({
   name: z.string().min(2, { message: "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد" }),
   description: z.string().min(10, { message: "توضیحات باید حداقل ۱۰ کاراکتر باشد" }),
   parentId: z.string().optional(),
+  image: z.string().optional(),
 });
 
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>;
@@ -27,12 +30,15 @@ interface CreateCategoryFormProps {
 }
 
 export function CreateCategoryForm({ initialData, availableCategories, onSubmit, onCancel }: CreateCategoryFormProps) {
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: initialData?.name || "",
       description: initialData?.description || "",
       parentId: initialData?.parentId ? String(initialData.parentId) : undefined,
+      image: initialData?.image || "",
     },
   });
 
@@ -42,7 +48,11 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
         name: initialData.name,
         description: initialData.description,
         parentId: initialData.parentId ? String(initialData.parentId) : undefined,
+        image: initialData.image || "",
       });
+      if (initialData.image) {
+        setImagePreview(initialData.image);
+      }
     }
   }, [initialData, form]);
 
@@ -50,10 +60,24 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
     const categoryRequest: CreateCategoryRequest = {
       name: data.name,
       description: data.description,
-      parentId: data.parentId ? parseInt(data.parentId) : undefined,
+      parentId: data.parentId && data.parentId !== "none" ? parseInt(data.parentId) : undefined,
+      image: data.image,
     };
     await onSubmit(categoryRequest);
     form.reset();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        form.setValue("image", result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Filter out the current category when editing to avoid self-reference
@@ -64,6 +88,46 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" dir="rtl">
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem className="flex flex-col items-center">
+              <FormLabel className="self-start">تصویر دسته‌بندی</FormLabel>
+              <FormControl>
+                <div className="flex flex-col items-center gap-4">
+                  <Avatar className="h-24 w-24 border-2 border-dashed border-gray-300 p-1">
+                    {imagePreview ? (
+                      <AvatarImage src={imagePreview} alt="Category image" />
+                    ) : (
+                      <AvatarFallback className="bg-gray-100">
+                        <ImageIcon className="h-12 w-12 text-gray-400" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <input
+                    type="file"
+                    id="category-image"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("category-image")?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {imagePreview ? "تغییر تصویر" : "انتخاب تصویر"}
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <FormField
           control={form.control}
           name="name"

@@ -8,12 +8,14 @@ export interface Category {
   brandRelations?: string[];
   parentId?: number;
   parentName?: string;
+  image?: string;
 }
 
 export interface CreateCategoryRequest {
   name: string;
   description: string;
   parentId?: number;
+  image?: string;
 }
 
 export interface CategoryBrandRelation {
