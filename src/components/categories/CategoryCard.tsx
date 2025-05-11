@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Category } from "@/types/category";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Category as CategoryIcon, Edit, Trash } from "lucide-react";
+import { Folder, Edit, Trash } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -32,7 +32,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
             <AvatarImage src={category.image} alt={category.name} />
           ) : (
             <AvatarFallback className="bg-primary/10">
-              <CategoryIcon className="h-6 w-6 text-primary" />
+              <Folder className="h-6 w-6 text-primary" />
             </AvatarFallback>
           )}
         </Avatar>
