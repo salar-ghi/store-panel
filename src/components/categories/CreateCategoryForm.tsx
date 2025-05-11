@@ -112,7 +112,7 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">بدون دسته‌بندی والد</SelectItem>
+                  <SelectItem value="none">بدون دسته‌بندی والد</SelectItem>
                   {parentCategoryOptions.map((category) => (
                     <SelectItem key={category.id} value={String(category.id)}>
                       {category.name}

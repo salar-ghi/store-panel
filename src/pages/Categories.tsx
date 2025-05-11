@@ -28,7 +28,13 @@ export default function Categories() {
 
   const handleCreateCategory = async (data: any) => {
     try {
-      await CategoryService.create(data);
+      // Convert parentId if it's "none"
+      const categoryData = {
+        ...data,
+        parentId: data.parentId === "none" ? undefined : data.parentId
+      };
+      
+      await CategoryService.create(categoryData);
       toast.success(`دسته‌بندی "${data.name}" با موفقیت ایجاد شد`);
       setIsDialogOpen(false);
       refetch();
@@ -41,7 +47,13 @@ export default function Categories() {
   const handleEditCategory = async (data: any) => {
     try {
       if (editingCategory) {
-        await CategoryService.update(editingCategory.id, data);
+        // Convert parentId if it's "none"
+        const categoryData = {
+          ...data,
+          parentId: data.parentId === "none" ? undefined : data.parentId
+        };
+        
+        await CategoryService.update(editingCategory.id, categoryData);
         toast.success(`دسته‌بندی "${data.name}" با موفقیت ویرایش شد`);
         setIsDialogOpen(false);
         setEditingCategory(null);
