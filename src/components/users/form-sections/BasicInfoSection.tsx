@@ -1,9 +1,8 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AtSign, Phone } from "lucide-react";
+import { AtSign, Phone, User } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<any>;
@@ -12,19 +11,38 @@ interface BasicInfoSectionProps {
 export function BasicInfoSection({ form }: BasicInfoSectionProps) {
   return (
     <div className="space-y-4">
-      <FormField
-        control={form.control}
-        name="username"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>نام و نام خانوادگی</FormLabel>
-            <FormControl>
-              <Input placeholder="نام و نام خانوادگی را وارد کنید" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="firstName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center">
+                <User className="h-4 w-4 ml-1 text-muted-foreground" />
+                نام
+              </FormLabel>
+              <FormControl>
+                <Input placeholder="نام را وارد کنید" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="lastName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>نام خانوادگی</FormLabel>
+              <FormControl>
+                <Input placeholder="نام خانوادگی را وارد کنید" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
       <FormField
         control={form.control}

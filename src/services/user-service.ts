@@ -14,14 +14,25 @@ export class UserService {
   }
 
   static async createUser(userData: CreateUserRequest): Promise<User> {
-    // If generatePassword is true, create a random password
-
-    // if (userData.generatePassword) {
-    //   userData.password = this.generateRandomPassword();
-    // }
+    // Generate username from first name and last name if not provided
+    if (!userData.username && userData.firstName && userData.lastName) {
+      userData.username = `${userData.firstName} ${userData.lastName}`;
+    }
     
-    const response = await apiClient.post<User>('/api/User/users', userData);    
-    return response.data;
+    // If generatePassword is true, create a random password
+    if (userData.generatePassword) {
+      userData.password = this.generateRandomPassword();
+    }
+    
+    console.log('Creating user with data:', userData);
+    
+    try {
+      const response = await apiClient.post<User>('/api/User/users', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
 
   static async getAllRoles(): Promise<Role[]> {

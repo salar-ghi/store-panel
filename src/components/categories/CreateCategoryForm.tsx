@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Image as ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { uploadImage } from "@/lib/image-upload";
+import { toast } from "@/components/ui/use-toast";
 
 const categoryFormSchema = z.object({
   name: z.string().min(2, { message: "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد" }),
@@ -31,6 +33,8 @@ interface CreateCategoryFormProps {
 
 export function CreateCategoryForm({ initialData, availableCategories, onSubmit, onCancel }: CreateCategoryFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
@@ -57,24 +61,53 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
   }, [initialData, form]);
 
   const handleSubmit = async (data: CategoryFormValues) => {
-    const categoryRequest: CreateCategoryRequest = {
-      name: data.name,
-      description: data.description,
-      parentId: data.parentId && data.parentId !== "none" ? parseInt(data.parentId) : undefined,
-      image: data.image,
-    };
-    await onSubmit(categoryRequest);
-    form.reset();
+    try {
+      setIsUploading(true);
+      
+      // Upload image if one was selected
+      let imagePath = data.image;
+      if (imageFile) {
+        try {
+          imagePath = await uploadImage(imageFile, 'category');
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          toast({
+            title: "خطا در آپلود تصویر",
+            description: "لطفا دوباره تلاش کنید",
+            variant: "destructive",
+          });
+          setIsUploading(false);
+          return;
+        }
+      }
+      
+      const categoryRequest: CreateCategoryRequest = {
+        name: data.name,
+        description: data.description,
+        parentId: data.parentId && data.parentId !== "none" ? parseInt(data.parentId) : undefined,
+        image: imagePath,
+      };
+      
+      await onSubmit(categoryRequest);
+      form.reset();
+      setImageFile(null);
+      setImagePreview(null);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
         setImagePreview(result);
-        form.setValue("image", result);
+        form.setValue("image", result); // This will be replaced with the server path after upload
       };
       reader.readAsDataURL(file);
     }
@@ -190,8 +223,8 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
         />
         
         <DialogFooter>          
-          <Button type="submit" className="mx-2">
-            {initialData ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی"}
+          <Button type="submit" className="mx-2" disabled={isUploading}>
+            {isUploading ? "در حال آپلود..." : initialData ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی"}
           </Button>
 
           <Button 

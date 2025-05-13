@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { UserService } from "@/services/user-service";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -17,7 +17,8 @@ import { RolesSection } from "./form-sections/RolesSection";
 import { SuccessSection } from "./form-sections/SuccessSection";
 
 const formSchema = z.object({
-  username: z.string().min(3, "نام کاربری باید حداقل ۳ کاراکتر باشد"),
+  firstName: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
+  lastName: z.string().min(2, "نام خانوادگی باید حداقل ۲ کاراکتر باشد"),
   email: z.string().email("لطفاً یک ایمیل معتبر وارد کنید"),
   phoneNumber: z.string().min(10, "لطفاً یک شماره تلفن معتبر وارد کنید"),
   description: z.string().optional(),
@@ -46,7 +47,8 @@ export function UserForm({ onUserAdded }: UserFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phoneNumber: "",
       description: "",
@@ -71,34 +73,44 @@ export function UserForm({ onUserAdded }: UserFormProps) {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      const passwordToSend = UserService.generateRandomPassword();
+      const passwordToSend = data.generatePassword ? UserService.generateRandomPassword() : undefined;
+      
+      console.log('Form data to submit:', data);
+      console.log('Selected roles:', selectedRoles);
       
       const user = await UserService.createUser({
-        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         phoneNumber: data.phoneNumber,
         description: data.description,
         roleIds: data.roleIds,
-        generatePassword: true,
+        generatePassword: data.generatePassword,
+        password: passwordToSend,
         isAdmin: data.isAdmin,
         notificationMethod: data.notificationMethod
       });
 
-      setGeneratedPassword(passwordToSend);
+      if (passwordToSend) {
+        setGeneratedPassword(passwordToSend);
+      }
       
-      let successMessage = `کاربر ${data.username} با موفقیت ایجاد شد!`;
-      toast.success(successMessage);
+      let successMessage = `کاربر ${data.firstName} ${data.lastName} با موفقیت ایجاد شد!`;
+      toast({
+        title: "کاربر ایجاد شد",
+        description: successMessage,
+      });
       
       if (data.isAdmin) {
-        toast("نقش مدیر اختصاص داده شد", {
-          description: "به این کاربر دسترسی‌های مدیریتی داده شده است"
+        toast({
+          title: "نقش مدیر اختصاص داده شد",
+          description: "به این کاربر دسترسی‌های مدیریتی داده شده است",
         });
       }
       
-      toast.success(`اطلاعات ورود از طریق ${data.notificationMethod === "email" ? "ایمیل" : data.notificationMethod === "sms" ? "پیامک" : "ایمیل و پیامک"} ارسال خواهد شد`, {
-        description: data.notificationMethod === "both" 
-          ? "کاربر اطلاعات ورود را از طریق ایمیل و پیامک دریافت خواهد کرد" 
-          : `کاربر اطلاعات ورود را از طریق ${data.notificationMethod === "email" ? "ایمیل" : "پیامک"} دریافت خواهد کرد`
+      toast({
+        title: "ارسال اطلاعات ورود", 
+        description: `اطلاعات ورود از طریق ${data.notificationMethod === "email" ? "ایمیل" : data.notificationMethod === "sms" ? "پیامک" : "ایمیل و پیامک"} ارسال خواهد شد`
       });
       
       if (!generatedPassword) {
@@ -108,7 +120,12 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       
       onUserAdded();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "خطا در ایجاد کاربر");
+      console.error('Error creating user:', error);
+      toast({
+        title: "خطا",
+        description: error.response?.data?.message || "خطا در ایجاد کاربر",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
