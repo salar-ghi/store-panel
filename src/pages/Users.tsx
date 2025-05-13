@@ -57,7 +57,7 @@ export default function Users() {
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>ایجاد نقش جدید</SheetTitle>
+                <SheetTitle className="text-center mt-2">ایجاد نقش جدید</SheetTitle>
               </SheetHeader>
               <RoleForm onRoleAdded={handleRoleAdded} />
             </SheetContent>
@@ -70,9 +70,9 @@ export default function Users() {
                 افزودن کاربر
               </Button>
             </SheetTrigger>
-            <SheetContent className="sm:max-w-md">
+            <SheetContent className="sm:max-w-md" dir="rtl">
               <SheetHeader>
-                <SheetTitle>ایجاد کاربر جدید</SheetTitle>
+                <SheetTitle className="text-center mt-2">ایجاد کاربر جدید</SheetTitle>
               </SheetHeader>
               <UserForm onUserAdded={handleUserAdded} />
             </SheetContent>
@@ -80,13 +80,13 @@ export default function Users() {
         </div>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
+      <Tabs defaultValue="users" className="w-full" dir="rtl">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="users">لیست کاربران</TabsTrigger>
           <TabsTrigger value="roles">مدیریت نقش‌ها</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="users">
+        <TabsContent value="users" dir="rtl">
           <Card>
             <CardHeader>
               <CardTitle>لیست کاربران</CardTitle>
@@ -101,14 +101,14 @@ export default function Users() {
                   خطا در بارگذاری کاربران
                 </div>
               ) : (
-                <Table>
+                <Table dir="rtl">
                   <TableHeader>
                     <TableRow>
                       <TableHead>نام کاربری</TableHead>
                       <TableHead>ایمیل</TableHead>
                       <TableHead>شماره تلفن</TableHead>
                       <TableHead>نقش‌ها</TableHead>
-                      <TableHead className="text-center">مدیر</TableHead>
+                      <TableHead className="">مدیر</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

@@ -15,28 +15,12 @@ export class UserService {
 
   static async createUser(userData: CreateUserRequest): Promise<User> {
     // If generatePassword is true, create a random password
-    if (userData.generatePassword) {
-      userData.password = this.generateRandomPassword();
-    }
+
+    // if (userData.generatePassword) {
+    //   userData.password = this.generateRandomPassword();
+    // }
     
-    const response = await apiClient.post<User>('/api/User/users', userData);
-    
-    // In a real app, we would send credentials via the selected notification method
-    console.log(`User created with password: ${userData.password}`);
-    console.log(`Notification method: ${userData.notificationMethod || 'none'}`);
-    
-    if (userData.notificationMethod) {
-      if (userData.notificationMethod === 'email' || userData.notificationMethod === 'both') {
-        console.log(`Sending credentials to email: ${userData.email}`);
-        // In a real app, this would be an API call to send an email
-      }
-      
-      if (userData.notificationMethod === 'sms' || userData.notificationMethod === 'both') {
-        console.log(`Sending credentials to phone: ${userData.phoneNumber}`);
-        // In a real app, this would be an API call to send an SMS
-      }
-    }
-    
+    const response = await apiClient.post<User>('/api/User/users', userData);    
     return response.data;
   }
 
