@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -18,6 +17,7 @@ import Register from "@/pages/Register";
 import Brands from "@/pages/Brands";
 import Categories from "@/pages/Categories";
 import Users from "@/pages/Users";
+import RoleGrants from "@/pages/RoleGrants";
 import Banners from "@/pages/Banners";
 import Tags from "@/pages/Tags";
 import Inventory from "@/pages/Inventory";
@@ -121,6 +121,14 @@ const App = () => {
                 </ProtectedRoute>
               } />
               
+              <Route path="/role-grants" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RoleGrants />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
               <Route path="/analytics" element={
                 <ProtectedRoute>
                   <Layout>
@@ -152,7 +160,7 @@ const App = () => {
                   </Layout>
                 </ProtectedRoute>
               } />
-
+              
               <Route path="/tags" element={
                 <ProtectedRoute>
                   <Layout>

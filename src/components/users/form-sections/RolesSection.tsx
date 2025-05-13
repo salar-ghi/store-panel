@@ -35,8 +35,8 @@ export function RolesSection({ form, roles, selectedRoles, onRoleToggle }: Roles
                     key={role.id} 
                     className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-colors ${
                       selectedRoles.includes(role.id) 
-                        ? "bg-purple-50 border-purple-200" 
-                        : "hover:bg-gray-50"
+                        ? "bg-purple-100 border-purple-300 dark:bg-purple-900/30 dark:border-purple-700" 
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     }`}
                     onClick={() => onRoleToggle(role.id)}
                   >

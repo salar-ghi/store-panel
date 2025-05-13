@@ -71,6 +71,15 @@ export function UserForm({ onUserAdded }: UserFormProps) {
   };
 
   const onSubmit = async (data: FormValues) => {
+    if (selectedRoles.length === 0) {
+      toast({
+        title: "خطا",
+        description: "لطفاً حداقل یک نقش انتخاب کنید",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       const passwordToSend = data.generatePassword ? UserService.generateRandomPassword() : undefined;
@@ -84,7 +93,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         email: data.email,
         phoneNumber: data.phoneNumber,
         description: data.description,
-        roleIds: data.roleIds,
+        roleIds: selectedRoles,
         generatePassword: data.generatePassword,
         password: passwordToSend,
         isAdmin: data.isAdmin,
@@ -140,6 +149,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
             onReset={() => {
               setGeneratedPassword(null);
               form.reset();
+              setSelectedRoles([]);
             }}
           />
         ) : (

@@ -35,3 +35,7 @@ export interface CreateRoleRequest {
   name: string;
   permissions?: string[]; // Optional field for future permission-based access control
 }
+
+export type Permission = 'read' | 'write' | 'update' | 'delete' | 'all';
+
+export const AVAILABLE_PERMISSIONS: Permission[] = ['read', 'write', 'update', 'delete', 'all'];
