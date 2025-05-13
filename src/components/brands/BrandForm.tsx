@@ -22,13 +22,12 @@ const brandFormSchema = z.object({
 
 export type BrandFormValues = z.infer<typeof brandFormSchema>;
 
-interface BrandFormProps {
-  initialData?: Brand;
-  onSubmit: (data: CreateBrandRequest) => Promise<void>;
-  onCancel: () => void;
+export interface BrandFormProps {
+  editingBrand: Brand | null;
+  onSuccess: () => void;
 }
 
-export function BrandForm({ initialData, onSubmit, onCancel }: BrandFormProps) {
+export function BrandForm({ editingBrand, onSuccess }: BrandFormProps) {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -36,24 +35,24 @@ export function BrandForm({ initialData, onSubmit, onCancel }: BrandFormProps) {
   const form = useForm<BrandFormValues>({
     resolver: zodResolver(brandFormSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      description: initialData?.description || "",
-      logo: initialData?.logo || "",
+      name: editingBrand?.name || "",
+      description: editingBrand?.description || "",
+      logo: editingBrand?.logo || "",
     },
   });
 
   useEffect(() => {
-    if (initialData) {
+    if (editingBrand) {
       form.reset({
-        name: initialData.name,
-        description: initialData.description,
-        logo: initialData.logo || "",
+        name: editingBrand.name,
+        description: editingBrand.description,
+        logo: editingBrand.logo || "",
       });
-      if (initialData.logo) {
-        setLogoPreview(initialData.logo);
+      if (editingBrand.logo) {
+        setLogoPreview(editingBrand.logo);
       }
     }
-  }, [initialData, form]);
+  }, [editingBrand, form]);
 
   const handleSubmit = async (data: BrandFormValues) => {
     try {
@@ -82,12 +81,32 @@ export function BrandForm({ initialData, onSubmit, onCancel }: BrandFormProps) {
         logo: logoPath,
       };
       
-      await onSubmit(brandRequest);
+      // Handle create or update based on whether we have an editingBrand
+      if (editingBrand) {
+        await BrandService.update(editingBrand.id, brandRequest);
+        toast({
+          title: "برند با موفقیت ویرایش شد",
+          variant: "default",
+        });
+      } else {
+        await BrandService.create(brandRequest);
+        toast({
+          title: "برند با موفقیت ایجاد شد",
+          variant: "default",
+        });
+      }
+      
+      onSuccess();
       form.reset();
       setLogoFile(null);
       setLogoPreview(null);
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast({
+        title: "خطا در ثبت اطلاعات",
+        description: "لطفا دوباره تلاش کنید",
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
     }
@@ -184,13 +203,13 @@ export function BrandForm({ initialData, onSubmit, onCancel }: BrandFormProps) {
         
         <DialogFooter>          
           <Button type="submit" className="mx-2" disabled={isUploading}>
-            {isUploading ? "در حال آپلود..." : initialData ? "ویرایش برند" : "ایجاد برند"}
+            {isUploading ? "در حال آپلود..." : editingBrand ? "ویرایش برند" : "ایجاد برند"}
           </Button>
 
           <Button 
             type="button" 
             variant="outline" 
-            onClick={onCancel}
+            onClick={onSuccess}
           >
             انصراف
           </Button>
@@ -199,3 +218,6 @@ export function BrandForm({ initialData, onSubmit, onCancel }: BrandFormProps) {
     </Form>
   );
 }
+
+// Import here at the bottom to avoid circular dependencies
+import { BrandService } from "@/services/brand-service";
