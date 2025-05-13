@@ -60,31 +60,35 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
     }
     
     // Handle regular permission toggle
-    setSelectedPermissions(prev => {
-      // If 'all' is selected and we're unchecking something, remove 'all'
-      if (prev.includes('all')) {
-        const filteredPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== permission && p !== 'all');
-        form.setValue('permissions', filteredPermissions);
-        return filteredPermissions;
+    const newPermissions = [...selectedPermissions];
+    
+    if (newPermissions.includes(permission)) {
+      // Remove permission
+      const index = newPermissions.indexOf(permission);
+      newPermissions.splice(index, 1);
+      
+      // If 'all' was selected, remove it too
+      if (newPermissions.includes('all')) {
+        const allIndex = newPermissions.indexOf('all');
+        newPermissions.splice(allIndex, 1);
       }
+    } else {
+      // Add permission
+      newPermissions.push(permission);
       
-      const newSelection = prev.includes(permission)
-        ? prev.filter(p => p !== permission)
-        : [...prev, permission];
-      
-      // Check if all individual permissions are selected, then add 'all'
+      // If all individual permissions are selected, add 'all' too
       const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
-      const allIndividualSelected = individualPermissions.every(p => 
-        newSelection.includes(p) || p === permission && !prev.includes(permission)
+      const allSelected = individualPermissions.every(p => 
+        newPermissions.includes(p) || p === permission
       );
       
-      const finalSelection = allIndividualSelected 
-        ? [...individualPermissions, 'all']
-        : newSelection;
-      
-      form.setValue('permissions', finalSelection);
-      return finalSelection;
-    });
+      if (allSelected && !newPermissions.includes('all')) {
+        newPermissions.push('all');
+      }
+    }
+    
+    setSelectedPermissions(newPermissions);
+    form.setValue('permissions', newPermissions);
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -100,6 +104,7 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
         description: "نقش با موفقیت ایجاد شد!",
         variant: "default",
       });
+      
       form.reset();
       setSelectedPermissions([]);
       onRoleAdded();
@@ -149,21 +154,23 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
                       }`}
                       onClick={() => handlePermissionToggle(permission)}
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
                         <Checkbox 
+                          id={`perm-${permission}`}
                           checked={selectedPermissions.includes(permission)}
                           onCheckedChange={() => handlePermissionToggle(permission)}
                           className="data-[state=checked]:bg-green-600"
                         />
-                        <div className="mr-2">
-                          <p className="font-medium">
-                            {permission === 'read' && 'خواندن'}
-                            {permission === 'write' && 'نوشتن'}
-                            {permission === 'update' && 'به‌روزرسانی'}
-                            {permission === 'delete' && 'حذف'}
-                            {permission === 'all' && 'همه دسترسی‌ها'}
-                          </p>
-                        </div>
+                        <label 
+                          htmlFor={`perm-${permission}`} 
+                          className="mr-2 font-medium cursor-pointer"
+                        >
+                          {permission === 'read' && 'خواندن'}
+                          {permission === 'write' && 'نوشتن'}
+                          {permission === 'update' && 'به‌روزرسانی'}
+                          {permission === 'delete' && 'حذف'}
+                          {permission === 'all' && 'همه دسترسی‌ها'}
+                        </label>
                       </div>
                       {selectedPermissions.includes(permission) && (
                         <Check className="h-4 w-4 text-green-600" />

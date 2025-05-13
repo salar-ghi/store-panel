@@ -22,36 +22,30 @@ export function NotificationSection({ form }: NotificationSectionProps) {
           <FormDescription>
             اطلاعات ورود به چه روشی به کاربر ارسال شود؟
           </FormDescription>
-          <FormControl dir="rtl">
+          <FormControl>
             <RadioGroup
               onValueChange={field.onChange}
-              defaultValue={field.value}
+              value={field.value}
               className="flex flex-col space-y-1 mt-2"
             >
-              <FormItem className="flex items-center space-x-3 space-y-0">
-                <FormControl>
-                  <RadioGroupItem value="email" />
-                </FormControl>
-                <FormLabel className="font-normal pr-3 mr-3">
+              <div className="flex items-center space-x-2 space-y-0">
+                <RadioGroupItem value="email" id="email" />
+                <label htmlFor="email" className="font-normal pr-2 cursor-pointer">
                   فقط ایمیل
-                </FormLabel>
-              </FormItem>
-              <FormItem className="flex items-center space-x-3 space-y-0">
-                <FormControl>
-                  <RadioGroupItem value="sms" />
-                </FormControl>
-                <FormLabel className="font-normal pr-3 ml-3">
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 space-y-0">
+                <RadioGroupItem value="sms" id="sms" />
+                <label htmlFor="sms" className="font-normal pr-2 cursor-pointer">
                   فقط پیامک
-                </FormLabel>
-              </FormItem>
-              <FormItem className="flex items-center space-x-3 space-y-0">
-                <FormControl>
-                  <RadioGroupItem value="both" />
-                </FormControl>
-                <FormLabel className="font-normal pr-3 ml-3">
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 space-y-0">
+                <RadioGroupItem value="both" id="both" />
+                <label htmlFor="both" className="font-normal pr-2 cursor-pointer">
                   هم ایمیل و هم پیامک
-                </FormLabel>
-              </FormItem>
+                </label>
+              </div>
             </RadioGroup>
           </FormControl>
           <FormMessage />

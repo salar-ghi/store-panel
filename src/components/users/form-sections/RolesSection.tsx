@@ -40,14 +40,15 @@ export function RolesSection({ form, roles, selectedRoles, onRoleToggle }: Roles
                     }`}
                     onClick={() => onRoleToggle(role.id)}
                   >
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
                       <Checkbox 
+                        id={`role-${role.id}`}
                         checked={selectedRoles.includes(role.id)}
                         onCheckedChange={() => onRoleToggle(role.id)}
                         className="data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
                       />
                       <div className="mr-2">
-                        <p className="font-medium">{role.name}</p>
+                        <label htmlFor={`role-${role.id}`} className="font-medium cursor-pointer">{role.name}</label>
                         {role.permissions && role.permissions.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {role.permissions.slice(0, 2).map((permission, idx) => (
