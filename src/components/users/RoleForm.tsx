@@ -95,12 +95,20 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
         permissions: selectedPermissions.length > 0 ? selectedPermissions : undefined
       });
       
-      toast.success("نقش با موفقیت ایجاد شد!");
+      toast({
+        title: "موفقیت",
+        description: "نقش با موفقیت ایجاد شد!",
+        variant: "default",
+      });
       form.reset();
       setSelectedPermissions([]);
       onRoleAdded();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "خطا در ایجاد نقش");
+      toast({
+        title: "خطا",
+        description: error.response?.data?.message || "خطا در ایجاد نقش",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
