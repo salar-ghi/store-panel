@@ -44,51 +44,47 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
   });
 
   const handlePermissionToggle = (permission: string) => {
+    let newPermissions: string[];
+    
     // Special handling for 'all' permission
     if (permission === 'all') {
       if (selectedPermissions.includes('all')) {
         // If 'all' is already selected, unselect it and all other permissions
-        setSelectedPermissions([]);
-        form.setValue('permissions', []);
+        newPermissions = [];
       } else {
         // If 'all' is being selected, select all permissions
-        const allPermissions = AVAILABLE_PERMISSIONS;
-        setSelectedPermissions(allPermissions);
-        form.setValue('permissions', allPermissions);
-      }
-      return;
-    }
-    
-    // Handle regular permission toggle
-    const newPermissions = [...selectedPermissions];
-    
-    if (newPermissions.includes(permission)) {
-      // Remove permission
-      const index = newPermissions.indexOf(permission);
-      newPermissions.splice(index, 1);
-      
-      // If 'all' was selected, remove it too
-      if (newPermissions.includes('all')) {
-        const allIndex = newPermissions.indexOf('all');
-        newPermissions.splice(allIndex, 1);
+        newPermissions = [...AVAILABLE_PERMISSIONS];
       }
     } else {
-      // Add permission
-      newPermissions.push(permission);
+      // Handle regular permission toggle
+      newPermissions = [...selectedPermissions];
       
-      // If all individual permissions are selected, add 'all' too
-      const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
-      const allSelected = individualPermissions.every(p => 
-        newPermissions.includes(p) || p === permission
-      );
-      
-      if (allSelected && !newPermissions.includes('all')) {
-        newPermissions.push('all');
+      if (newPermissions.includes(permission)) {
+        // Remove permission
+        newPermissions = newPermissions.filter(p => p !== permission);
+        
+        // If 'all' was selected, remove it too
+        if (newPermissions.includes('all')) {
+          newPermissions = newPermissions.filter(p => p !== 'all');
+        }
+      } else {
+        // Add permission
+        newPermissions = [...newPermissions, permission];
+        
+        // If all individual permissions are selected, add 'all' too
+        const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
+        const allSelected = individualPermissions.every(p => 
+          newPermissions.includes(p)
+        );
+        
+        if (allSelected && !newPermissions.includes('all')) {
+          newPermissions = [...newPermissions, 'all'];
+        }
       }
     }
     
     setSelectedPermissions(newPermissions);
-    form.setValue('permissions', newPermissions);
+    form.setValue('permissions', newPermissions, { shouldValidate: true });
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -158,7 +154,7 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
                         <Checkbox 
                           id={`perm-${permission}`}
                           checked={selectedPermissions.includes(permission)}
-                          onCheckedChange={() => handlePermissionToggle(permission)}
+                          onCheckedChange={() => {}}
                           className="data-[state=checked]:bg-green-600"
                         />
                         <label 
