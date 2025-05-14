@@ -1,7 +1,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "./ProductForm";
 import { ProductService } from "@/services/product-service";
@@ -27,21 +27,23 @@ export function CreateProductDialog({ open, onOpenChange }: CreateProductDialogP
     try {
       await ProductService.create(data);
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("محصول با موفقیت ایجاد شد");
+      toast({
+        title: "موفقیت",
+        description: "محصول با موفقیت ایجاد شد",
+        variant: "default",
+      });
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "خطا در ایجاد محصول");
+      toast({
+        title: "خطا",
+        description: error.response?.data?.message || "خطا در ایجاد محصول",
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-1">
-          <Plus className="h-4 w-4" />
-          افزودن محصول
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[750px]">
         <DialogHeader>
           <DialogTitle>ایجاد محصول جدید</DialogTitle>

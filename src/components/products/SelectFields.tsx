@@ -68,6 +68,11 @@ export function SelectFields({ control }: SelectFieldsProps) {
                     {category.name}
                   </SelectItem>
                 ))}
+                {categories.length === 0 && (
+                  <SelectItem value="no-category" disabled>
+                    دسته‌بندی‌ای موجود نیست
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -96,6 +101,11 @@ export function SelectFields({ control }: SelectFieldsProps) {
                     {brand.name}
                   </SelectItem>
                 ))}
+                {brands.length === 0 && (
+                  <SelectItem value="no-brand" disabled>
+                    برندی موجود نیست
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -126,7 +136,7 @@ export function SelectFields({ control }: SelectFieldsProps) {
                   </SelectItem>
                 ))}
                 {suppliers.length === 0 && (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="no-supplier" disabled>
                     تامین‌کننده‌ای موجود نیست
                   </SelectItem>
                 )}
