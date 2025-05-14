@@ -71,7 +71,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
 
   // Update form value when selectedRoles changes
   useEffect(() => {
-    form.setValue('roleIds', selectedRoles, { shouldValidate: true });
+    form.setValue('roleIds', selectedRoles);
   }, [selectedRoles, form]);
 
   const onSubmit = async (data: FormValues) => {
@@ -87,9 +87,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
     setIsSubmitting(true);
     try {
       const passwordToSend = data.generatePassword ? UserService.generateRandomPassword() : undefined;
-      
-      console.log('Form data to submit:', data);
-      console.log('Selected roles:', selectedRoles);
       
       const user = await UserService.createUser({
         firstName: data.firstName,

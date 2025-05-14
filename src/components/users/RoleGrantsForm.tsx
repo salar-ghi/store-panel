@@ -45,47 +45,50 @@ export function RoleGrantsForm({ onRoleAdded }: RoleGrantsFormProps) {
   });
 
   const handlePermissionToggle = (permission: string) => {
-    let newPermissions: string[];
-    
-    // Special handling for 'all' permission
-    if (permission === 'all') {
-      if (selectedPermissions.includes('all')) {
-        // If 'all' is already selected, unselect it and all other permissions
-        newPermissions = [];
-      } else {
-        // If 'all' is being selected, select all permissions
-        newPermissions = [...AVAILABLE_PERMISSIONS];
-      }
-    } else {
-      // Handle regular permission toggle
-      newPermissions = [...selectedPermissions];
+    setSelectedPermissions(prevPermissions => {
+      let newPermissions: string[];
       
-      if (newPermissions.includes(permission)) {
-        // Remove permission
-        newPermissions = newPermissions.filter(p => p !== permission);
-        
-        // If 'all' was selected, remove it too
-        if (newPermissions.includes('all')) {
-          newPermissions = newPermissions.filter(p => p !== 'all');
+      // Special handling for 'all' permission
+      if (permission === 'all') {
+        if (prevPermissions.includes('all')) {
+          // If 'all' is already selected, unselect it and all other permissions
+          newPermissions = [];
+        } else {
+          // If 'all' is being selected, select all permissions
+          newPermissions = [...AVAILABLE_PERMISSIONS];
         }
       } else {
-        // Add permission
-        newPermissions = [...newPermissions, permission];
+        // Handle regular permission toggle
+        newPermissions = [...prevPermissions];
         
-        // If all individual permissions are selected, add 'all' too
-        const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
-        const allSelected = individualPermissions.every(p => 
-          newPermissions.includes(p)
-        );
-        
-        if (allSelected && !newPermissions.includes('all')) {
-          newPermissions = [...newPermissions, 'all'];
+        if (newPermissions.includes(permission)) {
+          // Remove permission
+          newPermissions = newPermissions.filter(p => p !== permission);
+          
+          // If 'all' was selected, remove it too
+          if (newPermissions.includes('all')) {
+            newPermissions = newPermissions.filter(p => p !== 'all');
+          }
+        } else {
+          // Add permission
+          newPermissions = [...newPermissions, permission];
+          
+          // If all individual permissions are selected, add 'all' too
+          const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
+          const allSelected = individualPermissions.every(p => 
+            newPermissions.includes(p)
+          );
+          
+          if (allSelected && !newPermissions.includes('all')) {
+            newPermissions = [...newPermissions, 'all'];
+          }
         }
       }
-    }
-    
-    setSelectedPermissions(newPermissions);
-    form.setValue('permissions', newPermissions, { shouldValidate: true });
+      
+      // Update the form value
+      form.setValue('permissions', newPermissions, { shouldValidate: true });
+      return newPermissions;
+    });
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -173,7 +176,6 @@ export function RoleGrantsForm({ onRoleAdded }: RoleGrantsFormProps) {
                           id={`permission-${permission}`}
                           checked={selectedPermissions.includes(permission)}
                           className="data-[state=checked]:bg-green-600 data-[state=checked]:text-white"
-                          onCheckedChange={() => {}}
                         />
                         <label 
                           htmlFor={`permission-${permission}`}

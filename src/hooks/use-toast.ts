@@ -1,11 +1,11 @@
-
 import * as React from "react";
 import {
+  Toast,
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast";
 
-const TOAST_LIMIT = 5;
+const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
 
 type ToasterToast = ToastProps & {
@@ -34,19 +34,19 @@ type ActionType = typeof actionTypes;
 type Action =
   | {
       type: ActionType["ADD_TOAST"];
-      toast: ToasterToast;
+      toast: Omit<ToasterToast, "id">;
     }
   | {
       type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast>;
+      toast: Partial<ToasterToast> & Pick<ToasterToast, "id">;
     }
   | {
       type: ActionType["DISMISS_TOAST"];
-      toastId?: string;
+      toastId?: ToasterToast["id"];
     }
   | {
       type: ActionType["REMOVE_TOAST"];
-      toastId?: string;
+      toastId?: ToasterToast["id"];
     };
 
 interface State {
@@ -60,7 +60,10 @@ const reducer = (state: State, action: Action): State => {
     case "ADD_TOAST":
       return {
         ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+        toasts: [
+          { id: genId(), ...action.toast },
+          ...state.toasts,
+        ].slice(0, TOAST_LIMIT),
       };
 
     case "UPDATE_TOAST":
@@ -74,16 +77,18 @@ const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action;
 
+      // ! Side effects ! - This could be extracted into a dismissToast() action,
+      // but I'll keep it here for simplicity
       if (toastId) {
-        toastTimeouts.forEach((_, key) => {
-          if (key === toastId) {
-            toastTimeouts.delete(key);
-          }
-        });
+        if (toastTimeouts.has(toastId)) {
+          clearTimeout(toastTimeouts.get(toastId));
+          toastTimeouts.delete(toastId);
+        }
       } else {
-        toastTimeouts.forEach((_, key) => {
-          toastTimeouts.delete(key);
-        });
+        for (const [id, timeout] of toastTimeouts.entries()) {
+          clearTimeout(timeout);
+          toastTimeouts.delete(id);
+        }
       }
 
       return {
@@ -123,7 +128,7 @@ function dispatch(action: Action) {
   });
 }
 
-interface Toast extends Omit<ToasterToast, "id"> {}
+type Toast = Omit<ToasterToast, "id">;
 
 function toast({ ...props }: Toast) {
   const id = genId();
@@ -174,4 +179,4 @@ function useToast() {
   };
 }
 
-export { toast, useToast };
+export { useToast, toast };

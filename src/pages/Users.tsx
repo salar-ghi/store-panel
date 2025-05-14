@@ -4,16 +4,33 @@ import { UsersHeader } from "@/components/users/UsersHeader";
 import { UsersTabContent, RolesTabContent } from "@/components/users/UsersTabContent";
 import { UserDetailsDialog } from "@/components/users/UserDetailsDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
+import { UserService } from "@/services/user-service";
 
 export default function Users() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  
+  const { refetch: refetchUsers } = useQuery({
+    queryKey: ['users', refreshCounter],
+    queryFn: UserService.getAllUsers,
+    enabled: false // We'll manually trigger this when needed
+  });
+  
+  const { refetch: refetchRoles } = useQuery({
+    queryKey: ['roles', refreshCounter],
+    queryFn: UserService.getAllRoles,
+    enabled: false // We'll manually trigger this when needed
+  });
 
   const handleUserAdded = () => {
-    // Refetch users data after a user is added
+    refetchUsers();
+    setRefreshCounter(prev => prev + 1);
   };
 
   const handleRoleAdded = () => {
-    // Refetch roles data after a role is added
+    refetchRoles();
+    setRefreshCounter(prev => prev + 1);
   };
 
   const handleUserClick = (userId: string) => {
@@ -50,7 +67,7 @@ export default function Users() {
       {selectedUserId && (
         <UserDetailsDialog 
           userId={selectedUserId} 
-          open={true}
+          open={!!selectedUserId}
           onClose={handleCloseDialog} 
         />
       )}
