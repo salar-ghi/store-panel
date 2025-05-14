@@ -46,6 +46,7 @@ export function RoleGrantsForm({ onRoleAdded }: RoleGrantsFormProps) {
 
   const handlePermissionToggle = (permission: string) => {
     setSelectedPermissions(prevPermissions => {
+      // Create a new array to avoid mutation
       let newPermissions: string[];
       
       // Special handling for 'all' permission
@@ -58,35 +59,38 @@ export function RoleGrantsForm({ onRoleAdded }: RoleGrantsFormProps) {
           newPermissions = [...AVAILABLE_PERMISSIONS];
         }
       } else {
-        // Handle regular permission toggle
         newPermissions = [...prevPermissions];
         
         if (newPermissions.includes(permission)) {
           // Remove permission
           newPermissions = newPermissions.filter(p => p !== permission);
           
-          // If 'all' was selected, remove it too
+          // If 'all' was selected, remove it too since we no longer have all permissions
           if (newPermissions.includes('all')) {
             newPermissions = newPermissions.filter(p => p !== 'all');
           }
         } else {
           // Add permission
-          newPermissions = [...newPermissions, permission];
+          if (!newPermissions.includes(permission)) {
+            newPermissions.push(permission);
+          }
           
-          // If all individual permissions are selected, add 'all' too
+          // Check if all individual permissions (except 'all') are selected
           const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
-          const allSelected = individualPermissions.every(p => 
+          const allIndividualSelected = individualPermissions.every(p => 
             newPermissions.includes(p)
           );
           
-          if (allSelected && !newPermissions.includes('all')) {
-            newPermissions = [...newPermissions, 'all'];
+          // If all individual permissions are selected, also select 'all'
+          if (allIndividualSelected && !newPermissions.includes('all')) {
+            newPermissions.push('all');
           }
         }
       }
       
-      // Update the form value
+      // Update the form value without causing a render loop
       form.setValue('permissions', newPermissions, { shouldValidate: true });
+      
       return newPermissions;
     });
   };
@@ -175,6 +179,7 @@ export function RoleGrantsForm({ onRoleAdded }: RoleGrantsFormProps) {
                         <Checkbox 
                           id={`permission-${permission}`}
                           checked={selectedPermissions.includes(permission)}
+                          onCheckedChange={() => {}}
                           className="data-[state=checked]:bg-green-600 data-[state=checked]:text-white"
                         />
                         <label 

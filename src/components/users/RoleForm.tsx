@@ -46,11 +46,11 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
   const handlePermissionToggle = (permission: string) => {
     setSelectedPermissions(prev => {
       // Create a new array to avoid state mutation
-      let newPermissions = [...prev];
+      let newPermissions: string[];
       
       // Special handling for 'all' permission
       if (permission === 'all') {
-        if (newPermissions.includes('all')) {
+        if (prev.includes('all')) {
           // If 'all' is already selected, unselect it and all other permissions
           newPermissions = [];
         } else {
@@ -58,7 +58,8 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
           newPermissions = [...AVAILABLE_PERMISSIONS];
         }
       } else {
-        // Handle regular permission toggle
+        newPermissions = [...prev];
+        
         if (newPermissions.includes(permission)) {
           // Remove permission
           newPermissions = newPermissions.filter(p => p !== permission);
@@ -68,22 +69,24 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
             newPermissions = newPermissions.filter(p => p !== 'all');
           }
         } else {
-          // Add permission
-          newPermissions = [...newPermissions, permission];
+          // Add permission if not already included
+          if (!newPermissions.includes(permission)) {
+            newPermissions.push(permission);
+          }
           
-          // If all individual permissions are selected, add 'all' too
+          // Check if all individual permissions are selected
           const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
           const allSelected = individualPermissions.every(p => 
             newPermissions.includes(p)
           );
           
           if (allSelected && !newPermissions.includes('all')) {
-            newPermissions = [...newPermissions, 'all'];
+            newPermissions.push('all');
           }
         }
       }
       
-      // Update form value
+      // Update form value without causing a render loop
       form.setValue('permissions', newPermissions, { shouldValidate: true });
       return newPermissions;
     });
@@ -156,6 +159,7 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
                         <Checkbox 
                           id={`perm-${permission}`}
                           checked={selectedPermissions.includes(permission)}
+                          onCheckedChange={() => {}}
                           className="data-[state=checked]:bg-green-600"
                         />
                         <label 
