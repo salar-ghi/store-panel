@@ -20,6 +20,11 @@ export default function Users() {
     setSelectedUserId(userId);
   };
 
+  // Close dialog handler
+  const handleCloseDialog = () => {
+    setSelectedUserId(null);
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       <UsersHeader 
@@ -45,8 +50,8 @@ export default function Users() {
       {selectedUserId && (
         <UserDetailsDialog 
           userId={selectedUserId} 
-          open={!!selectedUserId} 
-          onClose={() => setSelectedUserId(null)} 
+          open={true}
+          onClose={handleCloseDialog} 
         />
       )}
     </div>

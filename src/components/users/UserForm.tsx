@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,10 +65,14 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         ? prev.filter(id => id !== roleId)
         : [...prev, roleId];
       
-      form.setValue('roleIds', newSelection);
       return newSelection;
     });
   };
+
+  // Update form value when selectedRoles changes
+  useEffect(() => {
+    form.setValue('roleIds', selectedRoles, { shouldValidate: true });
+  }, [selectedRoles, form]);
 
   const onSubmit = async (data: FormValues) => {
     if (selectedRoles.length === 0) {

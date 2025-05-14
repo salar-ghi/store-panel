@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,48 +44,53 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
   });
 
   const handlePermissionToggle = (permission: string) => {
-    let newPermissions: string[];
-    
-    // Special handling for 'all' permission
-    if (permission === 'all') {
-      if (selectedPermissions.includes('all')) {
-        // If 'all' is already selected, unselect it and all other permissions
-        newPermissions = [];
-      } else {
-        // If 'all' is being selected, select all permissions
-        newPermissions = [...AVAILABLE_PERMISSIONS];
-      }
-    } else {
-      // Handle regular permission toggle
-      newPermissions = [...selectedPermissions];
+    setSelectedPermissions(prev => {
+      // Create a new array to avoid state mutation
+      const newPermissions = [...prev];
       
-      if (newPermissions.includes(permission)) {
-        // Remove permission
-        newPermissions = newPermissions.filter(p => p !== permission);
-        
-        // If 'all' was selected, remove it too
+      // Special handling for 'all' permission
+      if (permission === 'all') {
         if (newPermissions.includes('all')) {
-          newPermissions = newPermissions.filter(p => p !== 'all');
+          // If 'all' is already selected, unselect it and all other permissions
+          return [];
+        } else {
+          // If 'all' is being selected, select all permissions
+          return [...AVAILABLE_PERMISSIONS];
         }
       } else {
-        // Add permission
-        newPermissions = [...newPermissions, permission];
-        
-        // If all individual permissions are selected, add 'all' too
-        const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
-        const allSelected = individualPermissions.every(p => 
-          newPermissions.includes(p)
-        );
-        
-        if (allSelected && !newPermissions.includes('all')) {
-          newPermissions = [...newPermissions, 'all'];
+        // Handle regular permission toggle
+        if (newPermissions.includes(permission)) {
+          // Remove permission
+          const filtered = newPermissions.filter(p => p !== permission);
+          
+          // If 'all' was selected, remove it too
+          if (filtered.includes('all')) {
+            return filtered.filter(p => p !== 'all');
+          }
+          return filtered;
+        } else {
+          // Add permission
+          const added = [...newPermissions, permission];
+          
+          // If all individual permissions are selected, add 'all' too
+          const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
+          const allSelected = individualPermissions.every(p => 
+            added.includes(p)
+          );
+          
+          if (allSelected && !added.includes('all')) {
+            return [...added, 'all'];
+          }
+          return added;
         }
       }
-    }
-    
-    setSelectedPermissions(newPermissions);
-    form.setValue('permissions', newPermissions, { shouldValidate: true });
+    });
   };
+
+  // Effect to update form value when selectedPermissions changes
+  useEffect(() => {
+    form.setValue('permissions', selectedPermissions, { shouldValidate: true });
+  }, [selectedPermissions, form]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -154,7 +159,6 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
                         <Checkbox 
                           id={`perm-${permission}`}
                           checked={selectedPermissions.includes(permission)}
-                          onCheckedChange={() => {}}
                           className="data-[state=checked]:bg-green-600"
                         />
                         <label 
