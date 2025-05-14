@@ -21,6 +21,7 @@ export async function uploadImage(
       const randomString = Math.random().toString(36).substring(2, 10);
       const extension = file.name.split('.').pop();
       const filename = `${entityType}-${timestamp}-${randomString}.${extension}`;
+      console.log("category image file url path : =>", filename);
       
       // Simulate server storage path
       const path = `/uploads/${entityType}s/${filename}`;
