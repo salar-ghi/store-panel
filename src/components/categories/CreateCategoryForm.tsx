@@ -12,8 +12,8 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Image as ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { uploadImage } from "@/lib/image-upload";
-import { toast } from "@/components/ui/use-toast";
+import { uploadImage, getImageFromStorage } from "@/lib/image-upload";
+import { toast } from "sonner";
 
 const categoryFormSchema = z.object({
   name: z.string().min(2, { message: "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد" }),
@@ -54,8 +54,16 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
         parentId: initialData.parentId ? String(initialData.parentId) : undefined,
         image: initialData.image || "",
       });
+      
+      // If there's an image path, get the image from storage
       if (initialData.image) {
-        setImagePreview(initialData.image);
+        const storedImage = getImageFromStorage(initialData.image);
+        if (storedImage) {
+          setImagePreview(storedImage);
+        } else {
+          // If not in storage (likely from API), use the path directly
+          setImagePreview(initialData.image);
+        }
       }
     }
   }, [initialData, form]);
@@ -71,10 +79,8 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
           imagePath = await uploadImage(imageFile, 'category');
         } catch (error) {
           console.error("Error uploading image:", error);
-          toast({
-            title: "خطا در آپلود تصویر",
+          toast("خطا در آپلود تصویر", {
             description: "لطفا دوباره تلاش کنید",
-            variant: "destructive",
           });
           setIsUploading(false);
           return;
@@ -103,11 +109,11 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      // Create a temporary preview
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
         setImagePreview(result);
-        form.setValue("image", result); // This will be replaced with the server path after upload
       };
       reader.readAsDataURL(file);
     }

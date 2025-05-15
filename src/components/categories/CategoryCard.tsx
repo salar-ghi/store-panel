@@ -1,107 +1,96 @@
 
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Category } from "@/types/category";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Folder, Edit, Trash } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { 
+  Card, 
+  CardContent, 
+  CardFooter, 
+  CardHeader, 
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Edit, Trash } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getImageFromStorage } from "@/lib/image-upload";
 
 interface CategoryCardProps {
   category: Category;
   onEdit: (category: Category) => void;
-  onDelete: (id: number) => Promise<void>;
+  onDelete: (id: number) => void;
 }
 
 export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
-  const formattedDate = new Date(category.createdAt).toLocaleDateString('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Try to get the image from storage if path exists
+    if (category.image) {
+      const storedImage = getImageFromStorage(category.image);
+      if (storedImage) {
+        setImageUrl(storedImage);
+      } else {
+        // If not in storage (direct URL from API), use it directly
+        setImageUrl(category.image);
+      }
+    }
+  }, [category.image]);
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="pb-2 flex flex-row items-center gap-3">
-        <Avatar className="h-12 w-12">
-          {category.image ? (
-            <AvatarImage src={category.image} alt={category.name} />
+      <div className="relative">
+        <AspectRatio ratio={16 / 9}>
+          {imageUrl ? (
+            <img 
+              src={imageUrl} 
+              alt={category.name}
+              className="w-full h-full object-cover"
+              onError={() => setImageUrl("/placeholder.svg")}
+            />
           ) : (
-            <AvatarFallback className="bg-primary/10">
-              <Folder className="h-6 w-6 text-primary" />
-            </AvatarFallback>
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground">{category.name[0]}</span>
+            </div>
           )}
-        </Avatar>
-        <div>
-          <h3 className="text-lg font-semibold">{category.name}</h3>
-          {category.parentName && (
-            <p className="text-sm text-muted-foreground">
-              زیرمجموعه: {category.parentName}
-            </p>
-          )}
+        </AspectRatio>
+      </div>
+      
+      <CardHeader className="p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-semibold text-lg">{category.name}</h3>
+            {category.parentName && (
+              <span className="text-sm text-muted-foreground">
+                {category.parentName}
+              </span>
+            )}
+          </div>
+          <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full">
+            {category.productCount} محصول
+          </span>
         </div>
       </CardHeader>
-      <CardContent className="pb-2">
-        <p className="text-muted-foreground text-sm mb-1">{category.description}</p>
-        
-        <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">تاریخ ایجاد:</span>
-            <span className="font-medium">{formattedDate}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">محصولات:</span>
-            <span className="font-medium">{category.productCount || 0}</span>
-          </div>
-        </div>
-        
-        {category.brandRelations && category.brandRelations.length > 0 && (
-          <div className="mt-2">
-            <span className="text-sm text-muted-foreground">برندها:</span>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {category.brandRelations.slice(0, 3).map((brand, idx) => (
-                <TooltipProvider key={idx}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/10 dark:text-blue-300 dark:ring-blue-700/30">
-                        {brand}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{brand}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-              {category.brandRelations.length > 3 && (
-                <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/30">
-                  +{category.brandRelations.length - 3}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+      
+      <CardContent className="p-4 pt-0">
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {category.description}
+        </p>
       </CardContent>
-      <CardFooter className="flex justify-between pt-2">
+      
+      <CardFooter className="p-4 pt-0 flex justify-end gap-2">
         <Button 
-          variant="ghost" 
-          size="sm"
+          variant="outline" 
+          size="sm" 
+          className="w-full"
           onClick={() => onEdit(category)}
-          className="flex items-center gap-1"
         >
-          <Edit className="h-4 w-4" />
+          <Edit className="mr-2 h-4 w-4" />
           ویرایش
         </Button>
         <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 flex items-center gap-1"
+          variant="destructive" 
+          size="sm"
           onClick={() => onDelete(category.id)}
         >
           <Trash className="h-4 w-4" />
-          حذف
         </Button>
       </CardFooter>
     </Card>
