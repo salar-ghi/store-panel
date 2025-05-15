@@ -6,11 +6,8 @@
 
 // Configuration for physical storage
 const STORAGE_CONFIG = {
-  baseCloudUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
-  uploadCloudFolder: 'C:/Users/sAlAr/uploads', // Physical path on server (simulated for demo)
-  
-  baseUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
-  uploadFolder: 'C:/Users/sAlAr/uploads', // Physical path on server (simulated for demo)
+  baseUrl: 'C:\\', // Base URL for accessing uploaded files (local path)
+  uploadFolder: 'C:\\', // Physical path on server
 };
 
 export async function uploadImage(
@@ -26,8 +23,8 @@ export async function uploadImage(
       const filename = `${entityType}-${timestamp}-${randomString}.${extension}`;
       
       // Define storage path
-      const storagePath = `/${entityType}s`;
-      const fullPath = `${storagePath}/${filename}`;
+      const storagePath = `${entityType}s`;
+      const fullPath = `${storagePath}\\${filename}`;
       
       // In a real production environment, this would use a file upload API
       // For demo purposes, we'll simulate by using FormData and storing metadata
@@ -81,16 +78,19 @@ export function getImageFromStorage(url: string): string | null {
     // For our simulation, we'll check if we have metadata about this file
     const fileStorage = JSON.parse(localStorage.getItem('fileStorage') || '{}');
     
+    // Return the URL as is for local file paths
+    if (url.startsWith('C:\\')) {
+      return url;
+    }
+    
     // Extract the path from the URL
-    const urlObj = new URL(url);
-    const path = urlObj.pathname;
+    const path = url.replace(/^(http|https):\/\/[^/]+\//, '');
     
     const fileInfo = Object.values(fileStorage).find(
       (file: any) => file.url && file.url.includes(path)
     );
     
     if (fileInfo) {
-      // In production, we would just return the URL as is
       return url;
     }
     
