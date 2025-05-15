@@ -59,7 +59,7 @@ export default function Users() {
           <UsersTabContent onUserClick={handleUserClick} />
         </TabsContent>
         
-        <TabsContent value="roles">
+        <TabsContent value="roles" dir="rtl">
           <RolesTabContent onRoleAdded={handleRoleAdded} />
         </TabsContent>
       </Tabs>

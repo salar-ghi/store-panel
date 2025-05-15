@@ -69,7 +69,7 @@ export default function Tags() {
           </SheetTrigger>
           <SheetContent side="right">
             <SheetHeader>
-              <SheetTitle>ایجاد برچسب جدید</SheetTitle>
+              <SheetTitle className="text-center">ایجاد برچسب جدید</SheetTitle>
             </SheetHeader>
             <TagForm onTagAdded={handleTagAdded} />
           </SheetContent>
