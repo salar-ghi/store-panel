@@ -3,6 +3,8 @@ import { useState, useCallback } from "react";
 import { Trash2, Upload, Image as ImageIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { uploadImage } from "@/lib/image-upload";
+import { toast } from "@/components/ui/use-toast";
 
 interface ProductImageUploadProps {
   value: string[];
@@ -16,6 +18,7 @@ export function ProductImageUpload({
   maxImages = 5 
 }: ProductImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -37,24 +40,40 @@ export function ProductImageUpload({
     }
   }, [value, maxImages]);
 
-  const handleFileChange = (files: FileList) => {
+  const handleFileChange = async (files: FileList) => {
     if (!files || files.length === 0) return;
 
     const remainingSlots = maxImages - value.length;
     const filesToProcess = Math.min(remainingSlots, files.length);
     
-    for (let i = 0; i < filesToProcess; i++) {
-      const file = files[i];
-      
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            onChange([...value, e.target.result.toString()]);
+    setIsUploading(true);
+    const newImageUrls = [...value];
+    
+    try {
+      for (let i = 0; i < filesToProcess; i++) {
+        const file = files[i];
+        
+        if (file.type.startsWith('image/')) {
+          try {
+            // Direct upload to physical storage
+            const imageUrl = await uploadImage(file, 'product');
+            newImageUrls.push(imageUrl);
+          } catch (error) {
+            console.error("Error uploading image:", error);
+            toast({
+              title: "خطا در آپلود تصویر",
+              description: `تصویر "${file.name}" آپلود نشد`,
+              variant: "destructive",
+            });
           }
-        };
-        reader.readAsDataURL(file);
+        }
       }
+      
+      onChange(newImageUrls);
+    } catch (error) {
+      console.error("Error in batch upload:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -98,13 +117,16 @@ export function ProductImageUpload({
           <div
             className={cn(
               "flex flex-col items-center justify-center border-2 border-dashed rounded-md aspect-square cursor-pointer hover:bg-muted/50 transition-colors",
-              dragActive && "border-primary bg-primary/10"
+              dragActive && "border-primary bg-primary/10",
+              isUploading && "opacity-50 cursor-not-allowed"
             )}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
             onClick={() => {
+              if (isUploading) return;
+              
               const input = document.createElement('input');
               input.type = 'file';
               input.multiple = true;
@@ -118,17 +140,19 @@ export function ProductImageUpload({
           >
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                {dragActive ? (
+                {isUploading ? (
+                  <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : dragActive ? (
                   <Upload className="h-5 w-5 text-primary" />
                 ) : (
                   <Plus className="h-5 w-5 text-primary" />
                 )}
               </div>
               <span className="text-sm font-medium">
-                {dragActive ? "Drop image here" : "Add image"}
+                {isUploading ? "جاری آپلود..." : dragActive ? "رها کنید" : "افزودن تصویر"}
               </span>
               <span className="text-xs text-center">
-                {`${value.length}/${maxImages}`} images
+                {`${value.length}/${maxImages}`} تصاویر
               </span>
             </div>
           </div>
@@ -136,7 +160,7 @@ export function ProductImageUpload({
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Drag and drop images or click to browse. Maximum {maxImages} images.
+        تصاویر را بکشید و رها کنید یا برای انتخاب کلیک کنید. حداکثر {maxImages} تصویر.
       </p>
     </div>
   );
