@@ -1,7 +1,6 @@
 
 import * as React from "react";
 import {
-  Toast,
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast";
@@ -9,11 +8,16 @@ import {
 const TOAST_LIMIT = 20;
 const TOAST_REMOVE_DELAY = 1000000;
 
-type ToasterToast = Toast & {
-  id: string;
+// Define the base toast properties
+type BaseToastProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
+};
+
+// Define ToasterToast type without circular reference
+type ToasterToast = ToastProps & BaseToastProps & {
+  id: string;
 };
 
 const actionTypes = {
@@ -141,9 +145,10 @@ function dispatch(action: Action) {
   });
 }
 
+// Define Toast type without circular reference
 type Toast = Omit<ToasterToast, "id">;
 
-function toast({ ...props }: Toast) {
+function toast(props: Toast) {
   const id = genId();
 
   const update = (props: ToasterToast) =>
