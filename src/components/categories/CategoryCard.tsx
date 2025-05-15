@@ -22,8 +22,9 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // For physical storage approach, we can directly use the URL
+    // For physical storage approach, we directly use the URL
     if (category.image) {
+      // Use the path directly since it's already a local path
       setImageUrl(category.image);
     }
   }, [category.image]);
