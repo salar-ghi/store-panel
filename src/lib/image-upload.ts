@@ -6,8 +6,11 @@
 
 // Configuration for physical storage
 const STORAGE_CONFIG = {
+  baseCloudUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
+  uploadCloudFolder: 'C:/Users/sAlAr/uploads', // Physical path on server (simulated for demo)
+  
   baseUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
-  uploadFolder: '/var/www/uploads', // Physical path on server (simulated for demo)
+  uploadFolder: 'C:/Users/sAlAr/uploads', // Physical path on server (simulated for demo)
 };
 
 export async function uploadImage(
@@ -57,7 +60,8 @@ export async function uploadImage(
       
       // Return the URL that would be stored in the database
       // This is the public URL that would point to the file in storage
-      resolve(`${STORAGE_CONFIG.baseUrl}${fullPath}`);
+      // resolve(`${STORAGE_CONFIG.baseUrl}${fullPath}`);
+      resolve(`${STORAGE_CONFIG.uploadFolder}${fullPath}`);
       
     } catch (error) {
       console.error("Error in upload process:", error);
