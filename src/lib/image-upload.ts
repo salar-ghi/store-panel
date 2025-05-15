@@ -6,6 +6,9 @@
 
 // Configuration for physical storage
 const STORAGE_CONFIG = {
+  baseCloudUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
+  uploadCloudFolder: 'C:/Users/sAlAr/uploads', // Physical path on server (simulated for demo)
+
   baseUrl: 'C:\\', // Base URL for accessing uploaded files (local path)
   uploadFolder: 'C:\\', // Physical path on server
 };
