@@ -1,8 +1,15 @@
 
 /**
  * Handles image uploads for various entities like products, categories, brands, etc.
- * Saves files to local storage with unique filenames
+ * Saves files to physical storage with unique filenames
  */
+
+// Configuration for physical storage
+const STORAGE_CONFIG = {
+  baseUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
+  uploadFolder: '/var/www/uploads', // Physical path on server (simulated for demo)
+};
+
 export async function uploadImage(
   file: File, 
   entityType: 'category' | 'brand' | 'product' | 'banner'
@@ -16,44 +23,42 @@ export async function uploadImage(
       const filename = `${entityType}-${timestamp}-${randomString}.${extension}`;
       
       // Define storage path
-      const storagePath = `/uploads/${entityType}s`;
+      const storagePath = `/${entityType}s`;
       const fullPath = `${storagePath}/${filename}`;
       
-      // In a real production environment, this would use a file storage service
-      // For now, we'll simulate by storing to localStorage for demo purposes
-      // (This is just a simulation - in a real app we'd use actual file storage)
+      // In a real production environment, this would use a file upload API
+      // For demo purposes, we'll simulate by using FormData and storing metadata
       
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        try {
-          // Store file info in localStorage (simulating file storage)
-          const fileMap = JSON.parse(localStorage.getItem('fileStorage') || '{}');
-          fileMap[fullPath] = {
-            name: filename,
-            type: file.type,
-            size: file.size,
-            lastModified: new Date().toISOString(),
-            url: reader.result
-          };
-          localStorage.setItem('fileStorage', JSON.stringify(fileMap));
-          
-          console.log(`File uploaded to storage path: ${fullPath}`);
-          
-          // Return the path that would be stored in the database
-          // This is the URL that would point to the file in storage
-          resolve(fullPath);
-        } catch (err) {
-          console.error("Error storing file:", err);
-          reject(err);
-        }
+      // Simulate file upload to physical storage
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('path', `${STORAGE_CONFIG.uploadFolder}${fullPath}`);
+      
+      // In a real app, you would make an API call here:
+      // const response = await fetch('/api/upload', { method: 'POST', body: formData });
+      
+      // For simulation, we'll store a record in localStorage
+      const fileInfo = {
+        name: filename,
+        type: file.type,
+        size: file.size,
+        path: `${STORAGE_CONFIG.uploadFolder}${fullPath}`,
+        url: `${STORAGE_CONFIG.baseUrl}${fullPath}`,
+        uploadedAt: new Date().toISOString()
       };
       
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-        reject(error);
-      };
+      // Store file metadata in localStorage (simulating database record)
+      const fileStorage = JSON.parse(localStorage.getItem('fileStorage') || '{}');
+      fileStorage[fullPath] = fileInfo;
+      localStorage.setItem('fileStorage', JSON.stringify(fileStorage));
       
-      reader.readAsDataURL(file);
+      console.log(`File would be uploaded to: ${STORAGE_CONFIG.uploadFolder}${fullPath}`);
+      console.log(`File would be accessible at: ${STORAGE_CONFIG.baseUrl}${fullPath}`);
+      
+      // Return the URL that would be stored in the database
+      // This is the public URL that would point to the file in storage
+      resolve(`${STORAGE_CONFIG.baseUrl}${fullPath}`);
+      
     } catch (error) {
       console.error("Error in upload process:", error);
       reject(error);
@@ -62,21 +67,33 @@ export async function uploadImage(
 }
 
 /**
- * Retrieves an image from storage by its path
+ * Retrieves an image from storage by its URL
  */
-export function getImageFromStorage(path: string): string | null {
+export function getImageFromStorage(url: string): string | null {
   try {
-    const fileMap = JSON.parse(localStorage.getItem('fileStorage') || '{}');
-    const fileInfo = fileMap[path];
+    // In a production environment, this function would not be necessary
+    // as the URL would point directly to a publicly accessible file
     
-    if (fileInfo && fileInfo.url) {
-      return fileInfo.url;
+    // For our simulation, we'll check if we have metadata about this file
+    const fileStorage = JSON.parse(localStorage.getItem('fileStorage') || '{}');
+    
+    // Extract the path from the URL
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    
+    const fileInfo = Object.values(fileStorage).find(
+      (file: any) => file.url && file.url.includes(path)
+    );
+    
+    if (fileInfo) {
+      // In production, we would just return the URL as is
+      return url;
     }
     
-    console.warn(`Image not found in storage: ${path}`);
-    return null;
+    console.warn(`Image not found in storage: ${url}`);
+    return url; // Return the URL anyway, it might be accessible
   } catch (error) {
     console.error("Error retrieving image from storage:", error);
-    return null;
+    return url; // Return the URL anyway, it might be accessible
   }
 }

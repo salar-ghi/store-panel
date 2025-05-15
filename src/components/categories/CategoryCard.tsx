@@ -22,15 +22,9 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // Try to get the image from storage if path exists
+    // For physical storage approach, we can directly use the URL
     if (category.image) {
-      const storedImage = getImageFromStorage(category.image);
-      if (storedImage) {
-        setImageUrl(storedImage);
-      } else {
-        // If not in storage (direct URL from API), use it directly
-        setImageUrl(category.image);
-      }
+      setImageUrl(category.image);
     }
   }, [category.image]);
 

@@ -12,14 +12,14 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Image as ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { uploadImage, getImageFromStorage } from "@/lib/image-upload";
-import { toast } from "sonner";
+import { uploadImage } from "@/lib/image-upload";
+import { toast } from "@/components/ui/use-toast";
 
 const categoryFormSchema = z.object({
   name: z.string().min(2, { message: "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد" }),
   description: z.string().min(10, { message: "توضیحات باید حداقل ۱۰ کاراکتر باشد" }),
   parentId: z.string().optional(),
-  image: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>;
@@ -42,7 +42,7 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
       name: initialData?.name || "",
       description: initialData?.description || "",
       parentId: initialData?.parentId ? String(initialData.parentId) : undefined,
-      image: initialData?.image || "",
+      imageUrl: initialData?.image || "",
     },
   });
 
@@ -52,18 +52,12 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
         name: initialData.name,
         description: initialData.description,
         parentId: initialData.parentId ? String(initialData.parentId) : undefined,
-        image: initialData.image || "",
+        imageUrl: initialData.image || "",
       });
       
-      // If there's an image path, get the image from storage
+      // If there's an image URL, set it as preview
       if (initialData.image) {
-        const storedImage = getImageFromStorage(initialData.image);
-        if (storedImage) {
-          setImagePreview(storedImage);
-        } else {
-          // If not in storage (likely from API), use the path directly
-          setImagePreview(initialData.image);
-        }
+        setImagePreview(initialData.image);
       }
     }
   }, [initialData, form]);
@@ -73,14 +67,16 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
       setIsUploading(true);
       
       // Upload image if one was selected
-      let imagePath = data.image;
+      let imageUrl = data.imageUrl;
       if (imageFile) {
         try {
-          imagePath = await uploadImage(imageFile, 'category');
+          imageUrl = await uploadImage(imageFile, 'category');
         } catch (error) {
           console.error("Error uploading image:", error);
-          toast("خطا در آپلود تصویر", {
+          toast({
+            title: "خطا در آپلود تصویر",
             description: "لطفا دوباره تلاش کنید",
+            variant: "destructive",
           });
           setIsUploading(false);
           return;
@@ -91,7 +87,7 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
         name: data.name,
         description: data.description,
         parentId: data.parentId && data.parentId !== "none" ? parseInt(data.parentId) : undefined,
-        image: imagePath,
+        image: imageUrl,
       };
       
       await onSubmit(categoryRequest);
@@ -109,13 +105,13 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      // Create a temporary preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImagePreview(result);
-      };
-      reader.readAsDataURL(file);
+      
+      // Create a temporary preview for UI only
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+      
+      // Clean up the temporary object URL when we're done with it
+      return () => URL.revokeObjectURL(objectUrl);
     }
   };
 
@@ -129,7 +125,7 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" dir="rtl">
         <FormField
           control={form.control}
-          name="image"
+          name="imageUrl"
           render={({ field }) => (
             <FormItem className="flex flex-col items-center">
               <FormLabel className="self-start">تصویر دسته‌بندی</FormLabel>
