@@ -44,7 +44,6 @@ export function RolesSection({ form, roles, selectedRoles, onRoleToggle }: Roles
                       <Checkbox 
                         id={`role-${role.id}`}
                         checked={selectedRoles.includes(role.id)}
-                        onCheckedChange={() => {}}
                         className="data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
                       />
                       <div className="mr-2">

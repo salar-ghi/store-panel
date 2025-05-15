@@ -45,7 +45,6 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
 
   const handlePermissionToggle = (permission: string) => {
     setSelectedPermissions(prev => {
-      // Create a new array to avoid state mutation
       let newPermissions: string[];
       
       // Special handling for 'all' permission
@@ -86,7 +85,7 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
         }
       }
       
-      // Update form value without causing a render loop
+      // Update form value without using useEffect
       form.setValue('permissions', newPermissions, { shouldValidate: true });
       return newPermissions;
     });
@@ -159,7 +158,6 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
                         <Checkbox 
                           id={`perm-${permission}`}
                           checked={selectedPermissions.includes(permission)}
-                          onCheckedChange={() => {}}
                           className="data-[state=checked]:bg-green-600"
                         />
                         <label 

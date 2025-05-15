@@ -179,7 +179,6 @@ export function RoleGrantsForm({ onRoleAdded }: RoleGrantsFormProps) {
                         <Checkbox 
                           id={`permission-${permission}`}
                           checked={selectedPermissions.includes(permission)}
-                          onCheckedChange={() => {}}
                           className="data-[state=checked]:bg-green-600 data-[state=checked]:text-white"
                         />
                         <label 

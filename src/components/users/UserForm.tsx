@@ -65,14 +65,11 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         ? prev.filter(id => id !== roleId)
         : [...prev, roleId];
       
+      // Directly update form value without triggering useEffect
+      form.setValue('roleIds', newSelection, { shouldValidate: true });
       return newSelection;
     });
   };
-
-  // Update form value when selectedRoles changes
-  useEffect(() => {
-    form.setValue('roleIds', selectedRoles);
-  }, [selectedRoles, form]);
 
   const onSubmit = async (data: FormValues) => {
     if (selectedRoles.length === 0) {
