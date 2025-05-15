@@ -26,22 +26,13 @@ export function ProductList({
   });
   
   const {
-    categoryFilter,
-    setCategoryFilter,
-    brandFilter,
-    setBrandFilter,
-    priceRange,
-    setPriceRange,
-    sortField,
-    setSortField,
-    sortOrder,
-    setSortOrder,
-    maxPrice,
-    categories,
-    brands,
-    filteredProducts,
-    resetFilters,
-    hasFilters
+    categoryFilter, setCategoryFilter,
+    brandFilter, setBrandFilter,
+    priceRange, setPriceRange,
+    sortField, setSortField,
+    sortOrder, setSortOrder,
+    maxPrice, categories, brands, filteredProducts,
+    resetFilters, hasFilters
   } = useProductFilter(products);
 
   // If there's an error fetching products

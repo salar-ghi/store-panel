@@ -231,7 +231,7 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" dir="rtl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
           <TabsList className="grid grid-cols-4 mb-8">
             <TabsTrigger value="basic">اطلاعات اولیه</TabsTrigger>
             <TabsTrigger value="inventory">موجودی و انبار</TabsTrigger>
@@ -239,7 +239,7 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
             <TabsTrigger value="attributes">ویژگی‌ها و تگ‌ها</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-4">
+          <TabsContent value="basic" className="space-y-4" >
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-4">
                 <FormField
@@ -332,7 +332,7 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
             <SelectFields control={form.control} />
           </TabsContent>
 
-          <TabsContent value="inventory" className="space-y-6">
+          <TabsContent value="inventory" className="space-y-6" >
             <Card>
               <CardHeader>
                 <CardTitle>اطلاعات انبار و موجودی</CardTitle>
