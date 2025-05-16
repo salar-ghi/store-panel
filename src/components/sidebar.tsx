@@ -22,7 +22,8 @@ import {
   Boxes,
   Bell,
   MessageSquare,
-  Inbox
+  Inbox,
+  Truck
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -47,6 +48,7 @@ const sidebarItems = [
   { title: "دسته‌بندی‌ها", path: "/categories", icon: FolderTree },
   { title: "برندها", path: "/brands", icon: Tag },
   { title: "محصولات", path: "/products", icon: Package },
+  { title: "تامین‌کنندگان", path: "/suppliers", icon: Truck },
   { 
     title: "انبارداری", 
     path: "/inventory", 

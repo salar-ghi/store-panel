@@ -27,6 +27,8 @@ import ReturnedOrders from "@/pages/orders/ReturnedOrders";
 import Notifications from "@/pages/notifications/Notifications";
 import Messages from "@/pages/notifications/Messages";
 import NotificationSettings from "@/pages/notifications/NotificationSettings";
+import Suppliers from "@/pages/Suppliers";
+import SupplierDetails from "@/pages/SupplierDetails";
 import { useAuthStore } from "@/store/auth-store";
 
 // Create a client
@@ -215,6 +217,23 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <NotificationSettings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Suppliers Routes */}
+              <Route path="/suppliers" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Suppliers />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/suppliers/:id" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SupplierDetails />
                   </Layout>
                 </ProtectedRoute>
               } />

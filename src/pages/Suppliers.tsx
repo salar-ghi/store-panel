@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -401,7 +402,11 @@ export default function Suppliers() {
                 <TableBody>
                   {suppliers.map((supplier) => (
                     <TableRow key={supplier.id} className="border-gray-800 hover:bg-gray-900/50">
-                      <TableCell className="font-medium">{supplier.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link to={`/suppliers/${supplier.id}`} className="hover:text-blue-400 hover:underline">
+                          {supplier.name}
+                        </Link>
+                      </TableCell>
                       <TableCell>{supplier.contactInfo}</TableCell>
                       <TableCell>{supplier.email || '-'}</TableCell>
                       <TableCell>
