@@ -1,168 +1,127 @@
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { CategoryService } from "@/services/category-service";
+import { Category, CreateCategoryRequest } from "@/types/category";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CreateCategoryRequest, Category } from "@/types/category";
-import { useEffect, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, Image as ImageIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { uploadImage } from "@/lib/image-upload";
-import { toast } from "@/components/ui/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ImageUpload } from "@/components/ui/image-upload";
 
-const categoryFormSchema = z.object({
-  name: z.string().min(2, { message: "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد" }),
-  description: z.string().min(10, { message: "توضیحات باید حداقل ۱۰ کاراکتر باشد" }),
-  parentId: z.string().optional(),
-  imageUrl: z.string().optional(),
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "نام دسته‌بندی باید حداقل 2 کاراکتر باشد.",
+  }),
+  description: z.string().min(10, {
+    message: "توضیحات باید حداقل 10 کاراکتر باشد.",
+  }),
+  parentId: z.number().optional(),
+  image: z.string().optional(),
 });
 
-export type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+type FormData = z.infer<typeof formSchema>;
 
 interface CreateCategoryFormProps {
-  initialData?: Category;
-  availableCategories: Category[];
-  onSubmit: (data: CreateCategoryRequest) => Promise<void>;
-  onCancel: () => void;
+  onSuccess?: () => void;
+  editingCategory?: Category | null;
 }
 
-export function CreateCategoryForm({ initialData, availableCategories, onSubmit, onCancel }: CreateCategoryFormProps) {
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+export function CreateCategoryForm({ onSuccess, editingCategory }: CreateCategoryFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
-  const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(categoryFormSchema),
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: CategoryService.getAllCategories,
+  });
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      description: initialData?.description || "",
-      parentId: initialData?.parentId ? String(initialData.parentId) : undefined,
-      imageUrl: initialData?.image || "",
+      name: editingCategory?.name || "",
+      description: editingCategory?.description || "",
+      parentId: editingCategory?.parentId || undefined,
+      image: editingCategory?.image || "",
     },
   });
 
-  useEffect(() => {
-    if (initialData) {
-      form.reset({
-        name: initialData.name,
-        description: initialData.description,
-        parentId: initialData.parentId ? String(initialData.parentId) : undefined,
-        imageUrl: initialData.image || "",
-      });
-      
-      // If there's an image URL, set it as preview
-      if (initialData.image) {
-        setImagePreview(initialData.image);
-      }
-    }
-  }, [initialData, form]);
+  const createMutation = useMutation({
+    mutationFn: CategoryService.createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("دسته‌بندی با موفقیت ایجاد شد");
+      form.reset();
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "خطا در ایجاد دسته‌بندی");
+    },
+  });
 
-  const handleSubmit = async (data: CategoryFormValues) => {
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: CreateCategoryRequest }) =>
+      CategoryService.updateCategory(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("دسته‌بندی با موفقیت به‌روزرسانی شد");
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "خطا در به‌روزرسانی دسته‌بندی");
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
     try {
-      setIsUploading(true);
-      
-      // Upload image if one was selected
-      let imageUrl = data.imageUrl;
-      if (imageFile) {
-        try {
-          imageUrl = await uploadImage(imageFile, 'category');
-        } catch (error) {
-          console.error("Error uploading image:", error);
-          toast({
-            title: "خطا در آپلود تصویر",
-            description: "لطفا دوباره تلاش کنید",
-            variant: "destructive",
-          });
-          setIsUploading(false);
-          return;
-        }
-      }
-      
-      const categoryRequest: CreateCategoryRequest = {
+      const categoryData: CreateCategoryRequest = {
         name: data.name,
         description: data.description,
-        parentId: data.parentId && data.parentId !== "none" ? parseInt(data.parentId) : undefined,
-        image: imageUrl,
+        parentId: data.parentId,
+        image: data.image,
       };
-      
-      await onSubmit(categoryRequest);
-      form.reset();
-      setImageFile(null);
-      setImagePreview(null);
+
+      if (editingCategory) {
+        await updateMutation.mutateAsync({ id: editingCategory.id, data: categoryData });
+      } else {
+        await createMutation.mutateAsync(categoryData);
+      }
     } catch (error) {
-      console.error("Error submitting form:", error);
+      // Error handling is done in mutation callbacks
     } finally {
-      setIsUploading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      
-      // Create a temporary preview for UI only
-      const objectUrl = URL.createObjectURL(file);
-      setImagePreview(objectUrl);
-      
-      // Clean up the temporary object URL when we're done with it
-      return () => URL.revokeObjectURL(objectUrl);
-    }
+  const handleImageUpload = (imageUrl: string) => {
+    form.setValue("image", imageUrl);
   };
 
-  // Filter out the current category when editing to avoid self-reference
-  const parentCategoryOptions = availableCategories.filter(category => 
-    !initialData || category.id !== initialData.id
-  );
+  // Filter out current category from parent options to prevent circular reference
+  const parentOptions = categories.filter(cat => cat.id !== editingCategory?.id);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" dir="rtl">
-        <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem className="flex flex-col items-center">
-              <FormLabel className="self-start">تصویر دسته‌بندی</FormLabel>
-              <FormControl>
-                <div className="flex flex-col items-center gap-4">
-                  <Avatar className="h-24 w-24 border-2 border-dashed border-gray-300 p-1">
-                    {imagePreview ? (
-                      <AvatarImage src={imagePreview} alt="Category image" />
-                    ) : (
-                      <AvatarFallback className="bg-gray-100">
-                        <ImageIcon className="h-12 w-12 text-gray-400" />
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <input
-                    type="file"
-                    id="category-image"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("category-image")?.click()}
-                    className="flex items-center gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    {imagePreview ? "تغییر تصویر" : "انتخاب تصویر"}
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" dir="rtl">
         <FormField
           control={form.control}
           name="name"
@@ -170,13 +129,13 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
             <FormItem>
               <FormLabel>نام دسته‌بندی</FormLabel>
               <FormControl>
-                <Input placeholder="مثال: الکترونیک" {...field} />
+                <Input placeholder="نام دسته‌بندی را وارد کنید" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="description"
@@ -186,8 +145,8 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
               <FormControl>
                 <Textarea 
                   placeholder="توضیحات دسته‌بندی را وارد کنید" 
-                  {...field} 
                   className="min-h-[100px]"
+                  {...field} 
                 />
               </FormControl>
               <FormMessage />
@@ -200,20 +159,20 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
           name="parentId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>دسته‌بندی والد</FormLabel>
+              <FormLabel>دسته‌بندی والد (اختیاری)</FormLabel>
               <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
+                onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
+                value={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="انتخاب دسته‌بندی والد (اختیاری)" />
+                    <SelectValue placeholder="دسته‌بندی والد را انتخاب کنید" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="none">بدون دسته‌بندی والد</SelectItem>
-                  {parentCategoryOptions.map((category) => (
-                    <SelectItem key={category.id} value={String(category.id)}>
+                  <SelectItem value="">هیچ والدی انتخاب نشده</SelectItem>
+                  {parentOptions.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -223,20 +182,33 @@ export function CreateCategoryForm({ initialData, availableCategories, onSubmit,
             </FormItem>
           )}
         />
-        
-        <DialogFooter>          
-          <Button type="submit" className="mx-2" disabled={isUploading}>
-            {isUploading ? "در حال آپلود..." : initialData ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی"}
-          </Button>
 
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-          >
-            انصراف
-          </Button>
-        </DialogFooter>
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem>
+              <ImageUpload
+                onImageUpload={handleImageUpload}
+                entityType="category"
+                currentImage={field.value}
+                label="تصویر دسته‌بندی"
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="w-full"
+        >
+          {isSubmitting 
+            ? (editingCategory ? "در حال به‌روزرسانی..." : "در حال ایجاد...") 
+            : (editingCategory ? "به‌روزرسانی دسته‌بندی" : "ایجاد دسته‌بندی")
+          }
+        </Button>
       </form>
     </Form>
   );

@@ -26,16 +26,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon, Image, Link2, LayoutTemplate, Megaphone } from "lucide-react";
+import { CalendarIcon, Link2, LayoutTemplate, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { BannerSize, BannerTargetLocation, BannerType } from "@/types/banner";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().optional(),
-  imageUrl: z.string().url("Please enter a valid image URL"),
-  linkUrl: z.string().url("Please enter a valid URL").optional(),
+  imageUrl: z.string().min(1, "Please upload an image"),
+  linkUrl: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
   targetLocation: z.string() as z.ZodType<BannerTargetLocation>,
   size: z.string() as z.ZodType<BannerSize>,
   type: z.string() as z.ZodType<BannerType>,
@@ -51,7 +52,6 @@ interface BannerFormProps {
 
 export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,12 +69,8 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
     },
   });
 
-  const handleImageUrlChange = (url: string) => {
-    if (url && url.startsWith("http")) {
-      setImagePreview(url);
-    } else {
-      setImagePreview(null);
-    }
+  const handleImageUpload = (imageUrl: string) => {
+    form.setValue("imageUrl", imageUrl);
   };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -96,7 +92,6 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
       await BannerService.createBanner(bannerData);
       toast.success("Banner created successfully!");
       form.reset();
-      setImagePreview(null);
       onBannerAdded();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to create banner");
@@ -150,16 +145,12 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center">
-                    <Image className="h-4 w-4 ml-1 text-muted-foreground" />
-                    آدرس تصویر
-                  </FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="https://example.com/banner-image.jpg" 
-                      {...field}
-                    />
-                  </FormControl>
+                  <ImageUpload
+                    onImageUpload={handleImageUpload}
+                    entityType="banner"
+                    currentImage={field.value}
+                    label="تصویر بنر"
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -188,20 +179,6 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
           </div>
 
           <div className="space-y-6">
-            {imagePreview && (
-              <div className="rounded-lg overflow-hidden border bg-background aspect-video relative">
-                <img 
-                  src={imagePreview} 
-                  alt="پیش‌نمایش بنر" 
-                  className="w-full h-full object-cover"
-                  onError={() => setImagePreview(null)} 
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
-                  پیش‌نمایش بنر
-                </div>
-              </div>
-            )}
-
             <FormField
               control={form.control}
               name="targetLocation"
