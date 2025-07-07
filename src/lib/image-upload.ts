@@ -9,8 +9,8 @@ const STORAGE_CONFIG = {
   baseCloudUrl: 'http://localhost:3001/uploads', // Base URL for accessing uploaded files
   uploadCloudFolder: 'C:/Users/sAlAr/uploads', // Physical path on server (simulated for demo)
 
-  baseUrl: 'C:\\', // Base URL for accessing uploaded files (local path)
-  uploadFolder: 'C:\\', // Physical path on server
+  baseUrl: '/uploads/', // Base URL for accessing uploaded files (local path)
+  uploadFolder: '/uploads/', // Physical path on server
 };
 
 export async function uploadImage(
@@ -35,7 +35,9 @@ export async function uploadImage(
       // Simulate file upload to physical storage
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('path', `${STORAGE_CONFIG.uploadFolder}${fullPath}`);
+      formData.append('entityType', entityType);
+
+      // formData.append('path', `${STORAGE_CONFIG.uploadFolder}${fullPath}`);
       
       // In a real app, you would make an API call here:
       // const response = await fetch('/api/upload', { method: 'POST', body: formData });
