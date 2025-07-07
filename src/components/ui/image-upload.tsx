@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, X, Image } from "lucide-react";
-import { uploadImage, createImagePreview, validateImageFile } from "@/lib/image-upload";
+import { uploadImage, fileToBase64, validateImageFile, base64ToImageUrl } from "@/lib/image-upload";
 import { toast } from "sonner";
 
 interface ImageUploadProps {
-  onImageUpload: (url: string) => void;
+  onImageUpload: (base64: string) => void;
   entityType: 'category' | 'brand' | 'product' | 'banner';
   currentImage?: string;
   label?: string;
@@ -23,7 +23,9 @@ export function ImageUpload({
   className = ""
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    currentImage ? base64ToImageUrl(currentImage) : null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,21 +36,24 @@ export function ImageUpload({
       // Validate the file
       validateImageFile(file);
       
-      // Create preview
-      const preview = createImagePreview(file);
+      // Create preview from file
+      const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
       
-      // Upload to backend
+      // Convert to base64 and upload
       setIsUploading(true);
-      const uploadedUrl = await uploadImage(file, entityType);
+      const base64String = await fileToBase64(file);
       
-      // Call the callback with the uploaded URL
-      onImageUpload(uploadedUrl);
+      // Send to backend (you can modify this to send directly or use uploadImage)
+      const uploadedBase64 = await uploadImage(file, entityType);
+      
+      // Call the callback with the base64 string
+      onImageUpload(uploadedBase64);
       toast.success("تصویر با موفقیت آپلود شد");
       
     } catch (error: any) {
       toast.error(error.message || "خطا در آپلود تصویر");
-      setPreviewUrl(currentImage || null);
+      setPreviewUrl(currentImage ? base64ToImageUrl(currentImage) : null);
     } finally {
       setIsUploading(false);
     }

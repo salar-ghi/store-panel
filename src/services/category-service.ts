@@ -1,26 +1,26 @@
 
 import apiClient from '@/lib/api-client';
 import { Category, CreateCategoryRequest, CategoryBrandRelation } from '@/types/category';
-import { getImageUrl } from '@/lib/image-upload';
+import { base64ToImageUrl } from '@/lib/image-upload';
 
 export class CategoryService {
   static async getAllCategories(): Promise<Category[]> {
     const response = await apiClient.get<Category[]>('/api/Category/categories');
     
-    // Process image URLs for display
+    // Process base64 images for display
     return response.data.map(category => ({
       ...category,
-      image: category.image ? getImageUrl(category.image) : undefined
+      image: category.image ? base64ToImageUrl(category.image) : undefined
     }));
   }
 
   static async getCategoryById(id: number): Promise<Category> {
     const response = await apiClient.get<Category>(`/api/Category/categories/${id}`);
     
-    // Process image URL for display
+    // Process base64 image for display
     return {
       ...response.data,
-      image: response.data.image ? getImageUrl(response.data.image) : undefined
+      image: response.data.image ? base64ToImageUrl(response.data.image) : undefined
     };
   }
 

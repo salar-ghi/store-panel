@@ -1,6 +1,7 @@
+
 /**
  * Handles image uploads for various entities like products, categories, brands, etc.
- * Sends files to backend API and returns the URL for database storage
+ * Converts images to base64 and sends to backend API
  */
 
 // Configuration for backend API
@@ -9,20 +10,60 @@ const UPLOAD_CONFIG = {
   baseImageUrl: 'https://localhost:5000/uploads', // Base URL for accessing uploaded files
 };
 
+/**
+ * Converts a file to base64 string
+ */
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Failed to convert file to base64'));
+      }
+    };
+    reader.onerror = error => reject(error);
+  });
+}
+
+/**
+ * Converts base64 string to image URL for display
+ */
+export function base64ToImageUrl(base64String: string): string {
+  if (!base64String) return '';
+  
+  // If it's already a data URL, return as is
+  if (base64String.startsWith('data:')) {
+    return base64String;
+  }
+  
+  // If it's a regular base64 string, add the data URL prefix
+  return `data:image/jpeg;base64,${base64String}`;
+}
+
 export async function uploadImage(
   file: File, 
   entityType: 'category' | 'brand' | 'product' | 'banner'
 ): Promise<string> {
   try {
-    // Create FormData to send the file
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('entityType', entityType);
+    // Validate the file first
+    validateImageFile(file);
     
-    // Send to backend API
+    // Convert file to base64
+    const base64String = await fileToBase64(file);
+    
+    // Send base64 to backend API
     const response = await fetch(UPLOAD_CONFIG.apiUrl, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image: base64String,
+        entityType: entityType,
+      }),
     });
     
     if (!response.ok) {
@@ -31,8 +72,8 @@ export async function uploadImage(
     
     const result = await response.json();
     
-    // Return the full URL that will be stored in the database
-    return result.url || result.filePath;
+    // Return the base64 string that will be stored in the database
+    return result.base64 || base64String;
     
   } catch (error) {
     console.error("Error uploading image:", error);
@@ -66,16 +107,8 @@ export function validateImageFile(file: File): boolean {
 }
 
 /**
- * Gets the full image URL for display
+ * Gets the full image URL for display from base64
  */
-export function getImageUrl(imagePath: string): string {
-  if (!imagePath) return '';
-  
-  // If it's already a full URL, return as is
-  if (imagePath.startsWith('http')) {
-    return imagePath;
-  }
-  
-  // Otherwise, prepend the base URL
-  return `${UPLOAD_CONFIG.baseImageUrl}/${imagePath}`;
+export function getImageUrl(base64String: string): string {
+  return base64ToImageUrl(base64String);
 }
