@@ -27,7 +27,7 @@ interface SelectFieldsProps {
 export function SelectFields({ control }: SelectFieldsProps) {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
-    queryFn: CategoryService.getAll,
+    queryFn: CategoryService.getAllCategories,
   });
 
   const { data: brands = [] } = useQuery({

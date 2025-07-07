@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Edit, Trash } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getImageFromStorage } from "@/lib/image-upload";
 
 interface CategoryCardProps {
   category: Category;
@@ -22,9 +21,8 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // For physical storage approach, we directly use the URL
+    // Use the image URL directly from the category
     if (category.image) {
-      // Use the path directly since it's already a local path
       setImageUrl(category.image);
     }
   }, [category.image]);

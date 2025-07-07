@@ -21,9 +21,9 @@ export default function Categories() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  const { data: categories, isLoading, error, refetch } = useQuery({
+  const { data: categories = [], isLoading, error, refetch } = useQuery({
     queryKey: ['categories'],
-    queryFn: CategoryService.getAll,
+    queryFn: CategoryService.getAllCategories,
   });
 
   const handleCreateCategory = async (data: any) => {
@@ -34,7 +34,7 @@ export default function Categories() {
         parentId: data.parentId === "none" ? undefined : data.parentId
       };
       
-      await CategoryService.create(categoryData);
+      await CategoryService.createCategory(categoryData);
       toast.success(`دسته‌بندی "${data.name}" با موفقیت ایجاد شد`);
       setIsDialogOpen(false);
       refetch();
@@ -53,7 +53,7 @@ export default function Categories() {
           parentId: data.parentId === "none" ? undefined : data.parentId
         };
         
-        await CategoryService.update(editingCategory.id, categoryData);
+        await CategoryService.updateCategory(editingCategory.id, categoryData);
         toast.success(`دسته‌بندی "${data.name}" با موفقیت ویرایش شد`);
         setIsDialogOpen(false);
         setEditingCategory(null);
@@ -67,7 +67,7 @@ export default function Categories() {
 
   const handleDeleteCategory = async (id: number) => {
     try {
-      await CategoryService.delete(id);
+      await CategoryService.deleteCategory(id);
       toast.success("دسته‌بندی با موفقیت حذف شد");
       refetch();
     } catch (error) {
@@ -103,12 +103,11 @@ export default function Categories() {
               <DialogTitle>{editingCategory ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی جدید"}</DialogTitle>
             </DialogHeader>
             <CreateCategoryForm
-              initialData={editingCategory || undefined}
-              availableCategories={categories || []}
-              onSubmit={editingCategory ? handleEditCategory : handleCreateCategory}
-              onCancel={() => {
+              editingCategory={editingCategory}
+              onSuccess={() => {
                 setIsDialogOpen(false);
                 setEditingCategory(null);
+                refetch();
               }}
             />
           </DialogContent>
