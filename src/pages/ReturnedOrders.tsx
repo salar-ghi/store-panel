@@ -113,12 +113,12 @@ export default function ReturnedOrders() {
           <div className="flex flex-col md:flex-row gap-4 justify-between md:items-center">
             <CardTitle>فیلتر سفارشات</CardTitle>
             <div className="flex gap-2">
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select value={filterStatus || "all"} onValueChange={(value) => setFilterStatus(value === "all" ? "" : value)}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="وضعیت سفارش" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">همه</SelectItem>
+                  <SelectItem value="all">همه</SelectItem>
                   <SelectItem value="pending">در انتظار بررسی</SelectItem>
                   <SelectItem value="approved">تایید شده</SelectItem>
                   <SelectItem value="rejected">رد شده</SelectItem>
