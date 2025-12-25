@@ -161,8 +161,8 @@ export function CreateCategoryForm({ onSuccess, editingCategory }: CreateCategor
             <FormItem>
               <FormLabel>دسته‌بندی والد (اختیاری)</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
-                value={field.value?.toString()}
+                onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))}
+                value={field.value?.toString() || "none"}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -170,7 +170,7 @@ export function CreateCategoryForm({ onSuccess, editingCategory }: CreateCategor
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">هیچ والدی انتخاب نشده</SelectItem>
+                  <SelectItem value="none">هیچ والدی انتخاب نشده</SelectItem>
                   {parentOptions.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}

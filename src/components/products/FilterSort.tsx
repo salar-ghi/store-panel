@@ -104,12 +104,12 @@ export function FilterSort({
 
           <div className="space-y-2">
             <h3 className="font-medium">فیلتر بر اساس دسته‌بندی</h3>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={categoryFilter || "all"} onValueChange={(value) => setCategoryFilter(value === "all" ? "" : value)}>
               <SelectTrigger className="text-right">
                 <SelectValue placeholder="همه دسته‌بندی‌ها" />
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectItem value="">همه دسته‌بندی‌ها</SelectItem>
+                <SelectItem value="all">همه دسته‌بندی‌ها</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -121,12 +121,12 @@ export function FilterSort({
 
           <div className="space-y-2">
             <h3 className="font-medium">فیلتر بر اساس برند</h3>
-            <Select value={brandFilter} onValueChange={setBrandFilter}>
+            <Select value={brandFilter || "all"} onValueChange={(value) => setBrandFilter(value === "all" ? "" : value)}>
               <SelectTrigger className="text-right">
                 <SelectValue placeholder="همه برندها" />
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectItem value="">همه برندها</SelectItem>
+                <SelectItem value="all">همه برندها</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
