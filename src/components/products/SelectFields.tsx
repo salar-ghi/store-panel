@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { Control } from "react-hook-form";
+import { Control, useWatch } from "react-hook-form";
+import { useMemo } from "react";
 import {
   FormControl,
   FormField,
@@ -18,19 +19,24 @@ import {
 import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { SupplierService } from "@/services/supplier-service";
-import { WarehouseService } from "@/services/warehouse-service";
 
 interface SelectFieldsProps {
   control: Control<any>;
 }
 
 export function SelectFields({ control }: SelectFieldsProps) {
+  // Watch the categoryId field to filter brands
+  const selectedCategoryId = useWatch({
+    control,
+    name: "categoryId",
+  });
+
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: CategoryService.getAllCategories,
   });
 
-  const { data: brands = [] } = useQuery({
+  const { data: allBrands = [] } = useQuery({
     queryKey: ["brands"],
     queryFn: BrandService.getAll,
   });
@@ -40,10 +46,21 @@ export function SelectFields({ control }: SelectFieldsProps) {
     queryFn: SupplierService.getAll,
   });
 
-  const { data: warehouses = [] } = useQuery({
-    queryKey: ["warehouses"],
-    queryFn: WarehouseService.getAll,
-  });
+  // Filter brands based on selected category
+  const filteredBrands = useMemo(() => {
+    if (!selectedCategoryId) {
+      return allBrands;
+    }
+    
+    return allBrands.filter(brand => {
+      // If brand has no categoryIds, show it for all categories
+      if (!brand.categoryIds || brand.categoryIds.length === 0) {
+        return true;
+      }
+      // Check if brand belongs to the selected category
+      return brand.categoryIds.includes(Number(selectedCategoryId));
+    });
+  }, [allBrands, selectedCategoryId]);
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -93,7 +110,7 @@ export function SelectFields({ control }: SelectFieldsProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {brands.map((brand) => (
+                {filteredBrands.map((brand) => (
                   <SelectItem
                     key={brand.id}
                     value={brand.id.toString()}
@@ -101,9 +118,9 @@ export function SelectFields({ control }: SelectFieldsProps) {
                     {brand.name}
                   </SelectItem>
                 ))}
-                {brands.length === 0 && (
+                {filteredBrands.length === 0 && (
                   <SelectItem value="no-brand" disabled>
-                    برندی موجود نیست
+                    {selectedCategoryId ? "برندی برای این دسته‌بندی موجود نیست" : "برندی موجود نیست"}
                   </SelectItem>
                 )}
               </SelectContent>

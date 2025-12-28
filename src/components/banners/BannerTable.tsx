@@ -80,25 +80,25 @@ export function BannerTable({ banners, isLoading, onToggleStatus }: BannerTableP
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>بنر</TableHead>
-            <TableHead>موقعیت</TableHead>
-            <TableHead>نوع</TableHead>
-            <TableHead>اندازه</TableHead>
-            <TableHead>مدت زمان</TableHead>
-            <TableHead className="text-center">وضعیت</TableHead>
-            <TableHead className="text-right">عملیات</TableHead>
+          <TableRow className="bg-muted/50 hover:bg-muted/50">
+            <TableHead className="text-foreground">بنر</TableHead>
+            <TableHead className="text-foreground">موقعیت</TableHead>
+            <TableHead className="text-foreground">نوع</TableHead>
+            <TableHead className="text-foreground">اندازه</TableHead>
+            <TableHead className="text-foreground">مدت زمان</TableHead>
+            <TableHead className="text-center text-foreground">وضعیت</TableHead>
+            <TableHead className="text-right text-foreground">عملیات</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {banners.map((banner) => (
-            <TableRow key={banner.id}>
+            <TableRow key={banner.id} className="border-border hover:bg-muted/30">
               <TableCell>
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-16 rounded overflow-hidden bg-gray-100">
+                  <div className="h-12 w-16 rounded overflow-hidden bg-muted">
                     <img 
                       src={banner.imageUrl} 
                       alt={banner.title} 
@@ -109,7 +109,7 @@ export function BannerTable({ banners, isLoading, onToggleStatus }: BannerTableP
                     />
                   </div>
                   <div>
-                    <div className="font-medium">{banner.title}</div>
+                    <div className="font-medium text-foreground">{banner.title}</div>
                     {banner.description && (
                       <div className="text-xs text-muted-foreground line-clamp-1">
                         {banner.description}

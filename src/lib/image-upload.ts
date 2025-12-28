@@ -39,6 +39,11 @@ export function base64ToImageUrl(base64String: string): string {
     return base64String;
   }
   
+  // If it's a URL, return as is
+  if (base64String.startsWith('http://') || base64String.startsWith('https://') || base64String.startsWith('/')) {
+    return base64String;
+  }
+  
   // If it's a regular base64 string, add the data URL prefix
   return `data:image/jpeg;base64,${base64String}`;
 }
@@ -54,30 +59,13 @@ export async function uploadImage(
     // Convert file to base64
     const base64String = await fileToBase64(file);
     
-    // Send base64 to backend API
-    const response = await fetch(UPLOAD_CONFIG.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image: base64String,
-        entityType: entityType,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    
-    // Return the base64 string that will be stored in the database
-    return result.base64 || base64String;
+    // For now, just return the base64 string directly
+    // The backend will receive this and can store it
+    return base64String;
     
   } catch (error) {
     console.error("Error uploading image:", error);
-    throw new Error("Failed to upload image");
+    throw error;
   }
 }
 
@@ -89,18 +77,38 @@ export function createImagePreview(file: File): string {
 }
 
 /**
- * Validates if a file is a valid image
+ * Validates if a file is a valid image - supports all common image formats
  */
 export function validateImageFile(file: File): boolean {
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  const validTypes = [
+    'image/jpeg', 
+    'image/jpg', 
+    'image/png', 
+    'image/gif', 
+    'image/webp',
+    'image/svg+xml',
+    'image/bmp',
+    'image/tiff',
+    'image/avif',
+    'image/heic',
+    'image/heif'
+  ];
+  const maxSize = 10 * 1024 * 1024; // 10MB
   
-  if (!validTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Please upload a valid image file.');
+  // Also check by extension if type is empty or generic
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'avif', 'heic', 'heif'];
+  
+  const isValidType = validTypes.includes(file.type) || 
+                      (extension && validExtensions.includes(extension)) ||
+                      file.type.startsWith('image/');
+  
+  if (!isValidType) {
+    throw new Error('فرمت فایل نامعتبر است. لطفا یک تصویر معتبر آپلود کنید.');
   }
   
   if (file.size > maxSize) {
-    throw new Error('File size too large. Please upload an image smaller than 5MB.');
+    throw new Error('حجم فایل بیش از حد مجاز است. لطفا تصویری کمتر از ۱۰ مگابایت آپلود کنید.');
   }
   
   return true;
