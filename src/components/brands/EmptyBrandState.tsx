@@ -8,12 +8,12 @@ interface EmptyBrandStateProps {
 
 export function EmptyBrandState({ onAddBrand }: EmptyBrandStateProps) {
   return (
-    <div className="flex h-[200px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center bg-gray-900">
+    <div className="flex h-[200px] flex-col items-center justify-center rounded-lg border border-dashed border-border p-8 text-center bg-muted/30">
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
         <Package className="h-6 w-6 text-primary" />
       </div>
-      <h3 className="text-lg font-medium">هیچ برندی یافت نشد</h3>
-      <p className="text-sm text-gray-400 mt-1 mb-4">
+      <h3 className="text-lg font-medium text-foreground">هیچ برندی یافت نشد</h3>
+      <p className="text-sm text-muted-foreground mt-1 mb-4">
         با ایجاد اولین برند خود شروع کنید
       </p>
       <Button 
