@@ -72,8 +72,9 @@ export function Navbar() {
           />
         </div>
       </div>
+
       <div className="flex items-center gap-4">
-        <DropdownMenu>
+        <DropdownMenu dir="rtl">
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
@@ -84,8 +85,9 @@ export function Navbar() {
               )}
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel className="text-right">اعلان‌های جدید</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-auto">اعلان‌های جدید</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-80 overflow-y-auto text-right">
               {notificationCount > 0 ? (
@@ -130,9 +132,10 @@ export function Navbar() {
               <span className="mx-auto">مشاهده همه اعلان‌ها</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
+          
         </DropdownMenu>
         <ThemeToggle />
-        <DropdownMenu>
+        <DropdownMenu dir="rtl">
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
