@@ -16,6 +16,7 @@ import {
   PictureInPicture,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   ShoppingCart,
   Package as PackageIcon,
   PackageX,
@@ -114,7 +115,7 @@ function SidebarItem({
       </div>
       {!collapsed && hasSubItems && (
         <div className="mr-auto">
-          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </div>
       )}
     </button>
@@ -178,7 +179,7 @@ export function Sidebar({ className }: SidebarProps) {
                 </Link>
               )}
               
-              {hasSubItems && isExpanded && !collapsed && (
+              {hasSubItems && !isExpanded && !collapsed && (
                 <div className="mr-4 mt-1 border-r pr-2 border-sidebar-border space-y-1 animate-fade-in">
                   {item.subItems!.map(subItem => (
                     <Link key={subItem.title} to={subItem.path}>
