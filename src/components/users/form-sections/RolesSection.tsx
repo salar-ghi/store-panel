@@ -13,7 +13,7 @@ interface RolesSectionProps {
   onRoleToggle: (roleId: string) => void;
 }
 
-export function RolesSection({ form, roles, selectedRoles }: RolesSectionProps) {
+export function RolesSection({ form, roles, selectedRoles, onRoleToggle }: RolesSectionProps) {
   return (
     <FormField
       control={form.control}
