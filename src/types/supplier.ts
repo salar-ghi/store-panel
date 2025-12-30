@@ -6,7 +6,7 @@ export interface Supplier {
   email?: string;
   phone?: string;
   address?: string;
-  isApproved?: boolean;
+  status?: boolean;
   rating?: number;
   joinDate?: Date;
   userId?: string; // Link to a user account

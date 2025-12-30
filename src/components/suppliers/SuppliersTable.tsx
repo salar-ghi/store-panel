@@ -81,7 +81,7 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
               <TableCell>{supplier.contactInfo}</TableCell>
               <TableCell>{supplier.email || '-'}</TableCell>
               <TableCell>
-                {supplier.isApproved ? (
+                {supplier.status ? (
                   <Badge variant="outline" className="bg-green-900/20 text-green-500 border-green-500/50">
                     تایید شده
                   </Badge>
@@ -102,7 +102,7 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
                     <Pencil className="h-4 w-4" />
                   </Button>
                   
-                  {!supplier.isApproved && (
+                  {!supplier.status && (
                     <Button
                       variant="ghost"
                       size="icon"

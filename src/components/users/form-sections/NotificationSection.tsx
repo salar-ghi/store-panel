@@ -22,8 +22,8 @@ export function NotificationSection({ form }: NotificationSectionProps) {
           <FormDescription>
             اطلاعات ورود به چه روشی به کاربر ارسال شود؟
           </FormDescription>
-          <FormControl>
-            <RadioGroup
+          <FormControl >
+            <RadioGroup dir="rtl"
               onValueChange={field.onChange}
               value={field.value}
               className="flex flex-col space-y-1 mt-2"

@@ -1,7 +1,7 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AtSign, Phone, User } from "lucide-react";
+import { AtSign, Phone, User, User2, Users } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 interface BasicInfoSectionProps {
@@ -11,7 +11,7 @@ interface BasicInfoSectionProps {
 export function BasicInfoSection({ form }: BasicInfoSectionProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 pt-2 md:grid-cols-2 gap-4 flex items-center">
         <FormField
           control={form.control}
           name="firstName"
@@ -34,7 +34,10 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>نام خانوادگی</FormLabel>
+              <FormLabel className="flex items-center" >
+                <User className="h-4 w-4 ml-1 text-muted-foreground" />
+                نام خانوادگی
+                </FormLabel>
               <FormControl>
                 <Input placeholder="نام خانوادگی را وارد کنید" {...field} />
               </FormControl>
