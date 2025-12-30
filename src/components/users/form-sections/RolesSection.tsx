@@ -1,6 +1,4 @@
-
 import { FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Check, Users } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
@@ -14,14 +12,20 @@ interface RolesSectionProps {
 }
 
 export function RolesSection({ form, roles, selectedRoles, onRoleToggle }: RolesSectionProps) {
+  const handleRoleClick = (e: React.MouseEvent, roleId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRoleToggle(roleId);
+  };
+
   return (
     <FormField
       control={form.control}
       name="roleIds"
       render={() => (
         <FormItem>
-          <FormLabel className="flex items-center">
-            <Users className="h-4 w-4 ml-1 text-muted-foreground" />
+          <FormLabel className="flex items-center gap-1">
+            <Users className="h-4 w-4 text-muted-foreground" />
             نقش‌ها
           </FormLabel>
           <FormDescription>
@@ -30,45 +34,58 @@ export function RolesSection({ form, roles, selectedRoles, onRoleToggle }: Roles
           <div className="mt-3 space-y-4">
             {roles.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {roles.map((role) => (
-                  <div 
-                    key={role.id} 
-                    className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-colors ${
-                      selectedRoles.includes(role.id) 
-                        ? "bg-purple-100 border-purple-300 dark:bg-purple-900/30 dark:border-purple-700" 
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                    }`}
-                    onClick={() => onRoleToggle(role.id)}
-                  >
-                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                      <Checkbox 
-                        id={`role-${role.id}`}
-                        checked={selectedRoles.includes(role.id)}
-                        className="data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
-                      />
-                      <div className="mr-2">
-                        <label htmlFor={`role-${role.id}`} className="font-medium cursor-pointer">{role.name}</label>
-                        {role.permissions && role.permissions.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {role.permissions.slice(0, 2).map((permission, idx) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
-                                {permission}
-                              </Badge>
-                            ))}
-                            {role.permissions.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{role.permissions.length - 2} مورد دیگر
-                              </Badge>
-                            )}
-                          </div>
-                        )}
+                {roles.map((role) => {
+                  const isSelected = selectedRoles.includes(role.id);
+                  return (
+                    <div 
+                      key={role.id} 
+                      role="button"
+                      tabIndex={0}
+                      className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-all duration-200 ${
+                        isSelected 
+                          ? "bg-primary/10 border-primary ring-1 ring-primary/20" 
+                          : "hover:bg-muted/50 hover:border-muted-foreground/20"
+                      }`}
+                      onClick={(e) => handleRoleClick(e, role.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onRoleToggle(role.id);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                          isSelected 
+                            ? "bg-primary border-primary" 
+                            : "border-muted-foreground/30"
+                        }`}>
+                          {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                        </div>
+                        <div>
+                          <span className="font-medium">{role.name}</span>
+                          {role.permissions && role.permissions.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {role.permissions.slice(0, 2).map((permission, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs">
+                                  {permission}
+                                </Badge>
+                              ))}
+                              {role.permissions.length > 2 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{role.permissions.length - 2} مورد دیگر
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
+                      {isSelected && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
                     </div>
-                    {selectedRoles.includes(role.id) && (
-                      <Check className="h-4 w-4 text-purple-500" />
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-lg border border-dashed p-6 text-center">

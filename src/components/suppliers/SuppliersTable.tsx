@@ -1,8 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Pencil, Trash, Check } from "lucide-react";
+import { Pencil, Trash, Power, PowerOff } from "lucide-react";
 
 import {
   Table,
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 
 import { SupplierService } from "@/services/supplier-service";
 import { Supplier } from "@/types/supplier";
@@ -37,14 +37,15 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
     },
   });
 
-  const approveMutation = useMutation({
-    mutationFn: SupplierService.approve,
-    onSuccess: () => {
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ id, isApproved }: { id: number; isApproved: boolean }) => 
+      SupplierService.toggleStatus(id, isApproved),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-      toast.success("تامین‌کننده با موفقیت تایید شد");
+      toast.success(variables.isApproved ? "تامین‌کننده فعال شد" : "تامین‌کننده غیرفعال شد");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "خطا در تایید تامین‌کننده");
+      toast.error(error?.response?.data?.message || "خطا در تغییر وضعیت تامین‌کننده");
     },
   });
 
@@ -54,14 +55,15 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
     }
   }
   
-  function handleApprove(id: number) {
-    approveMutation.mutate(id);
+  function handleToggleStatus(supplier: Supplier) {
+    const newStatus = !supplier.isApproved;
+    toggleStatusMutation.mutate({ id: supplier.id, isApproved: newStatus });
   }
 
   return (
-    <div className="rounded-md border border-gray-800">
+    <div className="rounded-md border">
       <Table>
-        <TableHeader className="bg-gray-900">
+        <TableHeader>
           <TableRow>
             <TableHead>نام</TableHead>
             <TableHead>اطلاعات تماس</TableHead>
@@ -72,27 +74,34 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
         </TableHeader>
         <TableBody>
           {suppliers.map((supplier) => (
-            <TableRow key={supplier.id} className="border-gray-800 hover:bg-gray-900/50">
+            <TableRow key={supplier.id}>
               <TableCell className="font-medium">
-                <Link to={`/suppliers/${supplier.id}`} className="hover:text-blue-400 hover:underline">
+                <Link to={`/suppliers/${supplier.id}`} className="hover:text-primary hover:underline">
                   {supplier.name}
                 </Link>
               </TableCell>
               <TableCell>{supplier.contactInfo}</TableCell>
               <TableCell>{supplier.email || '-'}</TableCell>
               <TableCell>
-                {supplier.status ? (
-                  <Badge variant="outline" className="bg-green-900/20 text-green-500 border-green-500/50">
-                    تایید شده
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-yellow-900/20 text-yellow-500 border-yellow-500/50">
-                    در انتظار تایید
-                  </Badge>
-                )}
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={supplier.isApproved !== false}
+                    onCheckedChange={() => handleToggleStatus(supplier)}
+                    disabled={toggleStatusMutation.isPending}
+                  />
+                  {supplier.isApproved !== false ? (
+                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                      فعال
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
+                      غیرفعال
+                    </Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-left">
-                <div className="flex space-x-2">
+                <div className="flex gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -101,17 +110,6 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  
-                  {!supplier.status && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleApprove(supplier.id)}
-                      className="hover:bg-green-500/10 text-green-500"
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  )}
                   
                   <Button
                     variant="ghost"
