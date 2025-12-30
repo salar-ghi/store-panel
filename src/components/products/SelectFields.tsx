@@ -143,13 +143,13 @@ export function SelectFields({ control }: SelectFieldsProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {suppliers.map((supplier) => (
+              {suppliers.map((supplier) => (
                   <SelectItem
                     key={supplier.id}
                     value={supplier.id.toString()}
                   >
                     {supplier.name}
-                    {supplier.isApproved ? '' : ' (در انتظار تایید)'}
+                    {supplier.isApproved === false ? ' (در انتظار تایید)' : ''}
                   </SelectItem>
                 ))}
                 {suppliers.length === 0 && (

@@ -76,13 +76,13 @@ export default function SupplierDetails() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-3xl font-bold tracking-tight">{supplier.name}</h2>
-        {supplier.isApproved ? (
+        {supplier.isApproved !== false ? (
           <Badge variant="outline" className="bg-green-900/20 text-green-500 border-green-500/50">
-            تایید شده
+            فعال
           </Badge>
         ) : (
           <Badge variant="outline" className="bg-yellow-900/20 text-yellow-500 border-yellow-500/50">
-            در انتظار تایید
+            غیرفعال
           </Badge>
         )}
       </div>
@@ -157,15 +157,15 @@ export default function SupplierDetails() {
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">وضعیت</span>
               <div className="flex items-center gap-2">
-                {supplier.isApproved ? (
+                {supplier.isApproved !== false ? (
                   <>
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-green-500">تایید شده</span>
+                    <span className="text-green-500">فعال</span>
                   </>
                 ) : (
                   <>
                     <AlertCircle className="h-4 w-4 text-yellow-500" />
-                    <span className="text-yellow-500">در انتظار تایید</span>
+                    <span className="text-yellow-500">غیرفعال</span>
                   </>
                 )}
               </div>

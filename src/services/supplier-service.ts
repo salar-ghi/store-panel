@@ -41,6 +41,11 @@ export class SupplierService {
     return response.data;
   }
   
+  static async toggleStatus(id: number, isApproved: boolean): Promise<Supplier> {
+    const response = await apiClient.put<Supplier>(`/api/Supplier/suppliers/${id}/status`, { isApproved });
+    return response.data;
+  }
+  
   static async getSupplierProducts(supplierId: number): Promise<any[]> {
     const response = await apiClient.get<any[]>(`/api/Supplier/suppliers/${supplierId}/products`);
     return response.data;

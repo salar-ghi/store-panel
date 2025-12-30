@@ -1,4 +1,3 @@
-
 export interface Supplier {
   id: number;
   name: string;
@@ -7,12 +6,13 @@ export interface Supplier {
   phone?: string;
   address?: string;
   status?: boolean;
+  isApproved?: boolean;
   rating?: number;
   joinDate?: Date;
-  userId?: string; // Link to a user account
+  userId?: string;
   description?: string;
   website?: string;
-  categories?: number[]; // Categories they supply
+  categories?: number[];
 }
 
 export interface CreateSupplierRequest {
@@ -27,5 +27,4 @@ export interface CreateSupplierRequest {
   categories?: number[];
 }
 
-// UpdateSupplierRequest is the same as CreateSupplierRequest
 export type UpdateSupplierRequest = CreateSupplierRequest;
