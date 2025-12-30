@@ -138,7 +138,7 @@ export function BrandForm({ editingBrand, onSuccess }: BrandFormProps) {
           name="logo"
           render={({ field }) => (
             <FormItem className="flex flex-col items-center">
-              <FormLabel className="self-start">لوگوی برند</FormLabel>
+              {/* <FormLabel className="self-start">لوگوی برند</FormLabel> */}
               <FormControl>
                 <div className="flex flex-col items-center gap-4 w-full">
                   <div className="relative">
@@ -236,7 +236,7 @@ export function BrandForm({ editingBrand, onSuccess }: BrandFormProps) {
                 ))}
               </div>
             )}
-            <ScrollArea className="h-32">
+            <ScrollArea className="h-32" dir="rtl">
               <div className="space-y-2">
                 {categories.map((category) => (
                   <div key={category.id} className="flex items-center space-x-2 space-x-reverse">
