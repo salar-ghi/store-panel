@@ -1,9 +1,9 @@
-
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Shield } from "lucide-react";
 import { UserForm } from "@/components/users/UserForm";
 import { RoleForm } from "@/components/users/RoleForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface UsersHeaderProps {
   onUserAdded: () => void;
@@ -40,11 +40,13 @@ export function UsersHeader({ onUserAdded, onRoleAdded }: UsersHeaderProps) {
               افزودن کاربر
             </Button>
           </SheetTrigger>
-          <SheetContent className="sm:max-w-md" dir="rtl">
-            <SheetHeader>
+          <SheetContent className="sm:max-w-md p-0" dir="rtl">
+            <SheetHeader className="p-6 pb-0">
               <SheetTitle className="text-center mt-2">ایجاد کاربر جدید</SheetTitle>
             </SheetHeader>
-            <UserForm onUserAdded={onUserAdded} />
+            <ScrollArea className="h-[calc(100vh-80px)] px-6 pb-6">
+              <UserForm onUserAdded={onUserAdded} />
+            </ScrollArea>
           </SheetContent>
         </Sheet>
       </div>

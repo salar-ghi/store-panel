@@ -60,15 +60,13 @@ export function UserForm({ onUserAdded }: UserFormProps) {
   });
 
   const handleRoleToggle = (roleId: string) => {
-    setSelectedRoles(prev => {
-      const newSelection = prev.includes(roleId)
-        ? prev.filter(id => id !== roleId)
-        : [...prev, roleId];
-      
-      // Directly update form value without triggering useEffect
-      form.setValue('roleIds', newSelection, { shouldValidate: true });
-      return newSelection;
-    });
+    const newSelection = selectedRoles.includes(roleId)
+      ? selectedRoles.filter(id => id !== roleId)
+      : [...selectedRoles, roleId];
+    
+    setSelectedRoles(newSelection);
+    form.setValue('roleIds', newSelection, { shouldValidate: true, shouldDirty: true });
+    form.clearErrors('roleIds');
   };
 
   const onSubmit = async (data: FormValues) => {
