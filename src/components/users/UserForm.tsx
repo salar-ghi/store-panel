@@ -161,7 +161,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               form={form}
               roles={roles}
               selectedRoles={selectedRoles}
-              onRoleToggle={handleRoleToggle}
             />
             <Button type="submit" disabled={isSubmitting} className="w-full">
               {isSubmitting ? "در حال ایجاد..." : "ایجاد کاربر"}
