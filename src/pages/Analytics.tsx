@@ -1,137 +1,131 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bar, BarChart, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
-const salesData = [
-  { name: "فروردین", sales: 2400 },
-  { name: "اردیبهشت", sales: 1398 },
-  { name: "خرداد", sales: 9800 },
-  { name: "تیر", sales: 3908 },
-  { name: "مرداد", sales: 4800 },
-  { name: "شهریور", sales: 3800 },
-  { name: "مهر", sales: 4300 },
-];
-
-const trafficData = [
-  { name: "مستقیم", value: 40 },
-  { name: "ارگانیک", value: 30 },
-  { name: "ارجاع", value: 20 },
-  { name: "شبکه اجتماعی", value: 10 },
-];
-
-const conversionData = [
-  { name: "شنبه", value: 2.4 },
-  { name: "یکشنبه", value: 1.3 },
-  { name: "دوشنبه", value: 3.2 },
-  { name: "سه‌شنبه", value: 3.5 },
-  { name: "چهارشنبه", value: 2.8 },
-  { name: "پنج‌شنبه", value: 1.9 },
-  { name: "جمعه", value: 1.5 },
-];
+import { useState } from "react";
+import {
+  TimeRangeFilter,
+  TimeRange,
+  CategoryFilter,
+  KPICard,
+  SalesOverviewChart,
+  CategoryDistributionChart,
+  TopProductsChart,
+  BrandPerformanceChart,
+  SupplierStatsChart,
+  InventoryStatusChart,
+  OrdersHeatmap,
+  CustomerSegmentsChart,
+  RevenueComparisonChart,
+} from "@/components/analytics";
+import {
+  getSalesData,
+  categoryDistribution,
+  topProducts,
+  brandPerformance,
+  supplierStats,
+  inventoryStatus,
+  ordersHeatmap,
+  customerSegments,
+  getRevenueComparison,
+  getKPIData,
+  filterCategories,
+} from "@/data/analyticsData";
+import { DollarSign, ShoppingCart, Users, Package, TrendingUp, Percent } from "lucide-react";
 
 export default function Analytics() {
+  const [timeRange, setTimeRange] = useState<TimeRange>("monthly");
+  const [category, setCategory] = useState("all");
+
+  const salesData = getSalesData(timeRange);
+  const revenueComparison = getRevenueComparison(timeRange);
+  const kpis = getKPIData(timeRange);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">تحلیل‌ها</h2>
+    <div className="space-y-6 scrollbar-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h2 className="text-3xl font-bold tracking-tight">تحلیل‌ها و گزارشات</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <CategoryFilter
+            value={category}
+            onChange={setCategory}
+            categories={filterCategories}
+            className="w-40"
+          />
+          <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
+        </div>
       </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle>نمای کلی فروش</CardTitle>
-            <CardDescription>عملکرد فروش ماهانه</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={salesData}>
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#888888" 
-                  fontSize={12} 
-                  tickLine={false} 
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `${value} تومان`}
-                />
-                <Tooltip formatter={(value) => [`${value} تومان`, 'فروش']} />
-                <Line
-                  type="monotone"
-                  dataKey="sales"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }}
-                  name="فروش"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>منابع ترافیک</CardTitle>
-            <CardDescription>کانال‌های جذب مشتری</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={trafficData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  fill="hsl(var(--primary))"
-                  dataKey="value"
-                  label={({ name, percent }) => 
-                    `${name}: ${(percent * 100).toFixed(0)}٪`
-                  }
-                />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>نرخ تبدیل</CardTitle>
-            <CardDescription>نرخ تبدیل بازدیدکننده به مشتری روزانه</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={conversionData}>
-                <XAxis
-                  dataKey="name"
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `${value}٪`}
-                />
-                <Tooltip formatter={(value) => [`${value}٪`, 'نرخ تبدیل']} />
-                <Bar
-                  dataKey="value"
-                  fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
-                  name="نرخ تبدیل"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+
+      {/* KPIs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <KPICard
+          title="درآمد کل"
+          value={`${(kpis.revenue / 1000000).toFixed(1)}M`}
+          change={kpis.revenueChange}
+          trend="up"
+          icon={<DollarSign className="h-5 w-5" />}
+          variant="primary"
+        />
+        <KPICard
+          title="سفارشات"
+          value={kpis.orders.toLocaleString("fa-IR")}
+          change={kpis.ordersChange}
+          trend="up"
+          icon={<ShoppingCart className="h-5 w-5" />}
+        />
+        <KPICard
+          title="مشتریان"
+          value={kpis.customers.toLocaleString("fa-IR")}
+          change={kpis.customersChange}
+          trend="up"
+          icon={<Users className="h-5 w-5" />}
+          variant="success"
+        />
+        <KPICard
+          title="میانگین سفارش"
+          value={`${(kpis.avgOrder / 1000).toFixed(0)}K`}
+          change={kpis.avgOrderChange}
+          trend="up"
+          icon={<TrendingUp className="h-5 w-5" />}
+        />
+        <KPICard
+          title="محصولات فعال"
+          value="۴۳۲"
+          change={5.7}
+          trend="up"
+          icon={<Package className="h-5 w-5" />}
+        />
+        <KPICard
+          title="نرخ تبدیل"
+          value="۳.۲٪"
+          change={0.5}
+          trend="up"
+          icon={<Percent className="h-5 w-5" />}
+          variant="warning"
+        />
+      </div>
+
+      {/* Sales & Revenue */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <SalesOverviewChart data={salesData} timeRange={timeRange} />
+        <RevenueComparisonChart data={revenueComparison} />
+      </div>
+
+      {/* Products & Categories */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <TopProductsChart data={topProducts} className="lg:col-span-2" />
+        <CategoryDistributionChart data={categoryDistribution} />
+      </div>
+
+      {/* Brand Performance */}
+      <BrandPerformanceChart data={brandPerformance} />
+
+      {/* Suppliers & Inventory */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <SupplierStatsChart data={supplierStats} />
+        <InventoryStatusChart data={inventoryStatus} />
+      </div>
+
+      {/* Customers & Orders */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <CustomerSegmentsChart data={customerSegments} />
+        <OrdersHeatmap data={ordersHeatmap} />
       </div>
     </div>
   );
