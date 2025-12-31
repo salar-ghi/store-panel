@@ -2,23 +2,22 @@ import { FormField, FormItem, FormLabel, FormDescription } from "@/components/ui
 import { Switch } from "@/components/ui/switch";
 import { ShieldCheck } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
+import { useCallback } from "react";
 
 interface AdminToggleSectionProps {
   form: UseFormReturn<any>;
 }
 
 export function AdminToggleSection({ form }: AdminToggleSectionProps) {
-  const isAdmin = form.watch("isAdmin");
-  
-  const handleToggle = (checked: boolean) => {
+  const handleCheckedChange = useCallback((checked: boolean) => {
     form.setValue("isAdmin", checked, { shouldValidate: true });
-  };
+  }, [form]);
 
   return (
     <FormField
       control={form.control}
       name="isAdmin"
-      render={() => (
+      render={({ field }) => (
         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
           <div className="space-y-0.5">
             <FormLabel className="flex items-center">
@@ -30,8 +29,8 @@ export function AdminToggleSection({ form }: AdminToggleSectionProps) {
             </FormDescription>
           </div>
           <Switch
-            checked={isAdmin}
-            onCheckedChange={handleToggle}
+            checked={field.value ?? false}
+            onCheckedChange={handleCheckedChange}
           />
         </FormItem>
       )}
