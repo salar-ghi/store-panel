@@ -24,6 +24,7 @@ export class UserService {
       userData.password = this.generateRandomPassword();
     }
     
+    console.clear();
     console.log('Creating user with data:', userData);
     
     try {

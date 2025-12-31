@@ -138,7 +138,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4" dir="rtl">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4 px-1" dir="rtl">
         {generatedPassword ? (
           <SuccessSection 
             generatedPassword={generatedPassword} 

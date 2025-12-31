@@ -28,7 +28,8 @@ export const useAuthStore = create<AuthState>()(
           // For development, allow admin user to log in without API call
           if (credentials.username === "admin" && credentials.password === "123456") {
             const adminUser: User = {
-              id: "admin-id",
+              // id: "admin-id",
+              id: "1",
               username: "admin",
               phoneNumber: "1234567890",
               role: "admin"
@@ -61,7 +62,7 @@ export const useAuthStore = create<AuthState>()(
           
           toast.success('Logged in successfully');
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to login';
+          const message = error.response?.data?.message || 'خطا، دوباره تلاش کنید';
           set({ error: message, isLoading: false });
           toast.error(message);
         }
