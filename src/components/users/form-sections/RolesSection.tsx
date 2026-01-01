@@ -7,43 +7,31 @@ import { MultiSelectCheckbox, MultiSelectItem } from "@/components/ui/multi-sele
 interface RolesSectionProps {
   form: UseFormReturn<any>;
   roles: Role[];
-  selectedRoles: string[];
-  onRoleToggle: (roleId: string) => void;
-  onSelectAll?: (roleIds: string[]) => void;
 }
 
-export function RolesSection({ form, roles, selectedRoles, onSelectAll }: RolesSectionProps) {
+export function RolesSection({ form, roles }: RolesSectionProps) {
   const items: MultiSelectItem[] = roles.map((role) => ({
     id: role.id,
     name: role.name,
     tags: role.permissions,
   }));
 
-  const handleSelectionChange = (ids: string[]) => {
-    if (onSelectAll) {
-      onSelectAll(ids);
-    }
-    form.setValue("roleIds", ids);
-  };
-
   return (
     <FormField
       control={form.control}
       name="roleIds"
-      render={() => (
+      render={({ field }) => (
         <FormItem>
           <FormLabel className="flex items-center gap-1">
             <Users className="h-4 w-4 text-muted-foreground" />
             نقش‌ها
           </FormLabel>
-          <FormDescription>
-            یک یا چند نقش به این کاربر اختصاص دهید
-          </FormDescription>
-          
+          <FormDescription>یک یا چند نقش به این کاربر اختصاص دهید</FormDescription>
+
           <MultiSelectCheckbox
             items={items}
-            selectedIds={selectedRoles}
-            onSelectionChange={handleSelectionChange}
+            selectedIds={Array.isArray(field.value) ? field.value : []}
+            onSelectionChange={field.onChange}
             searchPlaceholder="جستجوی نقش..."
             emptyMessage="هیچ نقشی موجود نیست"
             emptySubMessage="ابتدا نقش‌ها را ایجاد کنید"
@@ -51,9 +39,11 @@ export function RolesSection({ form, roles, selectedRoles, onSelectAll }: RolesS
             selectAllLabel="انتخاب همه"
             deselectAllLabel="لغو همه"
           />
+
           <FormMessage />
         </FormItem>
       )}
     />
   );
 }
+
