@@ -22,13 +22,10 @@ export interface CreateUserRequest {
   lastName: string;
   username?: string;
   email: string;
-  password?: string; // Optional for auto-generation
   phoneNumber: string;
   description?: string;
   roleIds: string[]; // Array for multiple roles
-  generatePassword?: boolean; // Flag to generate random password
   isAdmin?: boolean; // Flag for admin privileges
-  notificationMethod?: 'email' | 'sms' | 'both'; // Method to send credentials
 }
 
 export interface CreateRoleRequest {
