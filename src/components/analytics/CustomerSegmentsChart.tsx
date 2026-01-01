@@ -16,8 +16,12 @@ interface CustomerSegmentsChartProps {
 }
 
 const CustomContent = (props: any) => {
-  const { x, y, width, height, name, size } = props;
-  if (width < 50 || height < 30) return null;
+  const { x, y, width, height, name, size, color } = props;
+  
+  // Guard against undefined values - Treemap passes undefined for some nodes
+  if (!width || !height || width < 50 || height < 30 || size === undefined) {
+    return null;
+  }
   
   return (
     <g>
@@ -26,7 +30,7 @@ const CustomContent = (props: any) => {
         y={y}
         width={width}
         height={height}
-        fill={props.color || "hsl(var(--primary))"}
+        fill={color || "hsl(var(--primary))"}
         stroke="hsl(var(--background))"
         strokeWidth={2}
         rx={4}
@@ -39,7 +43,7 @@ const CustomContent = (props: any) => {
         fontSize={12}
         fontWeight="bold"
       >
-        {name}
+        {name || ""}
       </text>
       <text
         x={x + width / 2}
@@ -49,7 +53,7 @@ const CustomContent = (props: any) => {
         fontSize={10}
         opacity={0.8}
       >
-        {size.toLocaleString("fa-IR")}
+        {typeof size === "number" ? size.toLocaleString("fa-IR") : ""}
       </text>
     </g>
   );
