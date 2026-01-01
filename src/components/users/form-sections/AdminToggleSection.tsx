@@ -24,8 +24,8 @@ export function AdminToggleSection({ form }: AdminToggleSectionProps) {
             </FormDescription>
           </div>
           <Switch
-            checked={!!field.value}
-            onCheckedChange={field.onChange}
+            checked={field.value ?? false}
+            onCheckedChange={(checked) => field.onChange(checked)}
           />
         </FormItem>
       )}
