@@ -133,16 +133,14 @@ export function MultiSelectCheckbox({
                   <div
                     key={item.id}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-all duration-200",
+                      "flex items-center gap-3 rounded-lg border p-3 transition-all duration-200",
                       isSelected
                         ? "bg-primary/10 border-primary"
                         : "hover:bg-muted/50"
                     )}
-                    onClick={() => handleToggle(item.id)}
                   >
                     <Checkbox
                       checked={isSelected}
-                      onClick={(e) => e.stopPropagation()}
                       onCheckedChange={() => handleToggle(item.id)}
                     />
                     <div className="flex-1 min-w-0">
