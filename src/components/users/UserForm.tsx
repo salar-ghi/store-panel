@@ -34,7 +34,6 @@ interface UserFormProps {
 
 export function UserForm({ onUserAdded }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
 
   const { data: roles = [] } = useQuery({
@@ -55,26 +54,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
     },
   });
 
-  const handleRoleToggle = (roleId: string) => {
-    const newSelection = selectedRoles.includes(roleId)
-      ? selectedRoles.filter(id => id !== roleId)
-      : [...selectedRoles, roleId];
-    
-    setSelectedRoles(newSelection);
-    form.setValue('roleIds', newSelection, { shouldValidate: true, shouldDirty: true });
-    form.clearErrors('roleIds');
-  };
-
   const onSubmit = async (data: FormValues) => {
-    if (selectedRoles.length === 0) {
-      toast({
-        title: "خطا",
-        description: "لطفاً حداقل یک نقش انتخاب کنید",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsSubmitting(true);
     try {
       await UserService.createUser({
@@ -83,7 +63,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
         email: data.email,
         phoneNumber: data.phoneNumber,
         description: data.description,
-        roleIds: selectedRoles,
+        roleIds: data.roleIds,
         isAdmin: data.isAdmin,
       });
 
@@ -100,7 +80,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       }
       
       form.reset();
-      setSelectedRoles([]);
       setCurrentStep(1);
       onUserAdded();
     } catch (error: any) {
@@ -224,8 +203,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                     <RolesSection 
                       form={form}
                       roles={roles}
-                      selectedRoles={selectedRoles}
-                      onRoleToggle={handleRoleToggle}
                     />
                     
                     <div className="flex justify-between gap-4 pt-4">

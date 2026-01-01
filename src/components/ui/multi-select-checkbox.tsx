@@ -142,6 +142,7 @@ export function MultiSelectCheckbox({
                   >
                     <Checkbox
                       checked={isSelected}
+                      onClick={(e) => e.stopPropagation()}
                       onCheckedChange={() => handleToggle(item.id)}
                     />
                     <div className="flex-1 min-w-0">
