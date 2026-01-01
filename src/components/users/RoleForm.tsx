@@ -116,48 +116,52 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
         <FormField
           control={form.control}
           name="permissions"
-          render={() => (
-            <FormItem>
-              <FormLabel>دسترسی‌ها</FormLabel>
-              <Card className="p-4">
-                <div className="grid grid-cols-2 gap-2">
-                  {AVAILABLE_PERMISSIONS.map((permission) => (
-                    <div 
-                      key={permission}
-                      className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-colors ${
-                        selectedPermissions.includes(permission) 
-                          ? "bg-green-50 border-green-300 dark:bg-green-900/30 dark:border-green-700" 
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      }`}
-                      onClick={() => handlePermissionToggle(permission)}
-                    >
-                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <Checkbox 
-                          id={`perm-${permission}`}
-                          checked={selectedPermissions.includes(permission)}
-                          className="data-[state=checked]:bg-green-600"
-                        />
-                        <label 
-                          htmlFor={`perm-${permission}`} 
-                          className="mr-2 font-medium cursor-pointer"
+          render={({ field }) => {
+            const selected: string[] = Array.isArray(field.value) ? field.value : [];
+            return (
+              <FormItem>
+                <FormLabel>دسترسی‌ها</FormLabel>
+                <Card className="p-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {AVAILABLE_PERMISSIONS.map((permission) => {
+                      const isSelected = selected.includes(permission);
+                      return (
+                        <div
+                          key={permission}
+                          className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-colors ${
+                            isSelected
+                              ? "bg-primary/10 border-primary/40"
+                              : "hover:bg-muted/50"
+                          }`}
+                          onClick={() => field.onChange(togglePermission(selected, permission))}
                         >
-                          {permission === 'read' && 'خواندن'}
-                          {permission === 'write' && 'نوشتن'}
-                          {permission === 'update' && 'به‌روزرسانی'}
-                          {permission === 'delete' && 'حذف'}
-                          {permission === 'all' && 'همه دسترسی‌ها'}
-                        </label>
-                      </div>
-                      {selectedPermissions.includes(permission) && (
-                        <Check className="h-4 w-4 text-green-600" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-              <FormMessage />
-            </FormItem>
-          )}
+                          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                            <Checkbox
+                              id={`perm-${permission}`}
+                              checked={isSelected}
+                              onCheckedChange={() => field.onChange(togglePermission(selected, permission))}
+                            />
+                            <label
+                              htmlFor={`perm-${permission}`}
+                              className="mr-2 font-medium cursor-pointer"
+                            >
+                              {permission === "read" && "خواندن"}
+                              {permission === "write" && "نوشتن"}
+                              {permission === "update" && "به‌روزرسانی"}
+                              {permission === "delete" && "حذف"}
+                              {permission === "all" && "همه دسترسی‌ها"}
+                            </label>
+                          </div>
+                          {isSelected && <Check className="h-4 w-4 text-primary" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         <Button type="submit" disabled={isSubmitting} className="w-full">
