@@ -33,7 +33,6 @@ interface RoleFormProps {
 
 export function RoleForm({ onRoleAdded }: RoleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -43,52 +42,31 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
     },
   });
 
-  const handlePermissionToggle = (permission: string) => {
-    setSelectedPermissions(prev => {
-      let newPermissions: string[];
-      
-      // Special handling for 'all' permission
-      if (permission === 'all') {
-        if (prev.includes('all')) {
-          // If 'all' is already selected, unselect it and all other permissions
-          newPermissions = [];
-        } else {
-          // If 'all' is being selected, select all permissions
-          newPermissions = [...AVAILABLE_PERMISSIONS];
-        }
-      } else {
-        newPermissions = [...prev];
-        
-        if (newPermissions.includes(permission)) {
-          // Remove permission
-          newPermissions = newPermissions.filter(p => p !== permission);
-          
-          // If 'all' was selected, remove it too
-          if (newPermissions.includes('all')) {
-            newPermissions = newPermissions.filter(p => p !== 'all');
-          }
-        } else {
-          // Add permission if not already included
-          if (!newPermissions.includes(permission)) {
-            newPermissions.push(permission);
-          }
-          
-          // Check if all individual permissions are selected
-          const individualPermissions = AVAILABLE_PERMISSIONS.filter(p => p !== 'all');
-          const allSelected = individualPermissions.every(p => 
-            newPermissions.includes(p)
-          );
-          
-          if (allSelected && !newPermissions.includes('all')) {
-            newPermissions.push('all');
-          }
-        }
+  const togglePermission = (current: string[], permission: string) => {
+    let next: string[];
+
+    // Special handling for 'all' permission
+    if (permission === "all") {
+      next = current.includes("all") ? [] : [...AVAILABLE_PERMISSIONS];
+    } else {
+      next = current.includes(permission)
+        ? current.filter((p) => p !== permission)
+        : [...current, permission];
+
+      // If 'all' was selected, remove it too
+      if (next.includes("all") && permission !== "all") {
+        next = next.filter((p) => p !== "all");
       }
-      
-      // Update form value without using useEffect
-      form.setValue('permissions', newPermissions, { shouldValidate: true });
-      return newPermissions;
-    });
+
+      // Auto-add 'all' when every individual permission is selected
+      const individualPermissions = AVAILABLE_PERMISSIONS.filter((p) => p !== "all");
+      const allSelected = individualPermissions.every((p) => next.includes(p));
+      if (allSelected && !next.includes("all")) {
+        next = [...next, "all"];
+      }
+    }
+
+    return next;
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -96,17 +74,16 @@ export function RoleForm({ onRoleAdded }: RoleFormProps) {
     try {
       await UserService.createRole({
         name: data.name,
-        permissions: selectedPermissions.length > 0 ? selectedPermissions : undefined
+        permissions: data.permissions && data.permissions.length > 0 ? data.permissions : undefined,
       });
-      
+
       toast({
         title: "موفقیت",
         description: "نقش با موفقیت ایجاد شد!",
         variant: "default",
       });
-      
+
       form.reset();
-      setSelectedPermissions([]);
       onRoleAdded();
     } catch (error: any) {
       toast({
