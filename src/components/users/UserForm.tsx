@@ -111,7 +111,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       {/* Progress Steps */}
       <div className="flex items-center justify-center gap-4 mb-8">
         {steps.map((step, index) => (
-          <React.Fragment key={step.id}>
+          <div key={step.id} className="flex items-center gap-4">
             <motion.button
               type="button"
               onClick={() => step.id < currentStep && setCurrentStep(step.id)}
@@ -129,11 +129,13 @@ export function UserForm({ onUserAdded }: UserFormProps) {
               <span className="font-medium text-sm">{step.title}</span>
             </motion.button>
             {index < steps.length - 1 && (
-              <div className={`h-0.5 w-12 transition-colors duration-300 ${
-                currentStep > step.id ? "bg-primary" : "bg-muted"
-              }`} />
+              <div
+                className={`h-0.5 w-12 transition-colors duration-300 ${
+                  currentStep > step.id ? "bg-primary" : "bg-muted"
+                }`}
+              />
             )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
 
