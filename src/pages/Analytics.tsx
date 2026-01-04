@@ -13,6 +13,12 @@ import {
   OrdersHeatmap,
   CustomerSegmentsChart,
   RevenueComparisonChart,
+  ProfitMarginChart,
+  OrderStatusChart,
+  GrowthTrendChart,
+  ReturnRateChart,
+  MonthlyTargetChart,
+  PaymentMethodChart,
 } from "@/components/analytics";
 import {
   getSalesData,
@@ -26,8 +32,14 @@ import {
   getRevenueComparison,
   getKPIData,
   filterCategories,
+  getProfitMarginData,
+  orderStatusData,
+  getGrowthTrendData,
+  returnRateData,
+  monthlyTargets,
+  paymentMethodData,
 } from "@/data/analyticsData";
-import { DollarSign, ShoppingCart, Users, Package, TrendingUp, Percent } from "lucide-react";
+import { DollarSign, ShoppingCart, Users, Package, TrendingUp, Percent, RotateCcw, Target } from "lucide-react";
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState<TimeRange>("monthly");
@@ -36,6 +48,8 @@ export default function Analytics() {
   const salesData = getSalesData(timeRange);
   const revenueComparison = getRevenueComparison(timeRange);
   const kpis = getKPIData(timeRange);
+  const profitMarginData = getProfitMarginData(timeRange);
+  const growthTrendData = getGrowthTrendData(timeRange);
 
   return (
     <div className="space-y-6 scrollbar-hidden">
@@ -53,7 +67,7 @@ export default function Analytics() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <KPICard
           title="درآمد کل"
           value={`${(kpis.revenue / 1000000).toFixed(1)}M`}
@@ -99,6 +113,21 @@ export default function Analytics() {
           icon={<Percent className="h-5 w-5" />}
           variant="warning"
         />
+        <KPICard
+          title="نرخ مرجوعی"
+          value="۲.۴٪"
+          change={-0.3}
+          trend="down"
+          icon={<RotateCcw className="h-5 w-5" />}
+        />
+        <KPICard
+          title="تحقق هدف"
+          value="۸۵٪"
+          change={8.2}
+          trend="up"
+          icon={<Target className="h-5 w-5" />}
+          variant="success"
+        />
       </div>
 
       {/* Sales & Revenue */}
@@ -107,10 +136,22 @@ export default function Analytics() {
         <RevenueComparisonChart data={revenueComparison} />
       </div>
 
+      {/* Profit & Growth */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ProfitMarginChart data={profitMarginData} />
+        <GrowthTrendChart data={growthTrendData} />
+      </div>
+
       {/* Products & Categories */}
       <div className="grid gap-4 lg:grid-cols-3">
         <TopProductsChart data={topProducts} className="lg:col-span-2" />
         <CategoryDistributionChart data={categoryDistribution} />
+      </div>
+
+      {/* Order Status & Returns */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <OrderStatusChart data={orderStatusData} />
+        <ReturnRateChart data={returnRateData} />
       </div>
 
       {/* Brand Performance */}
@@ -120,6 +161,12 @@ export default function Analytics() {
       <div className="grid gap-4 lg:grid-cols-2">
         <SupplierStatsChart data={supplierStats} />
         <InventoryStatusChart data={inventoryStatus} />
+      </div>
+
+      {/* Targets & Payment */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <MonthlyTargetChart data={monthlyTargets} />
+        <PaymentMethodChart data={paymentMethodData} />
       </div>
 
       {/* Customers & Orders */}

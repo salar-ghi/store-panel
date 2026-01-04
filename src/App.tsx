@@ -44,9 +44,11 @@ const queryClient = new QueryClient({
 // Protected route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
+  const token = localStorage.getItem('auth-token');
   
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+  // Check both zustand state and localStorage
+  if (!isAuthenticated && !token) {
+    return <Navigate to="/login" replace />;
   }
   
   return <>{children}</>;
