@@ -13,22 +13,39 @@ interface AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
   signup: (userData: SignupRequest) => Promise<void>;
   logout: () => void;
+  checkAuth: () => void;
 }
+
+// Check if token exists in localStorage on init
+const getInitialAuthState = () => {
+  const token = localStorage.getItem('auth-token');
+  return {
+    token: token,
+    isAuthenticated: !!token,
+  };
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      
+      checkAuth: () => {
+        const token = localStorage.getItem('auth-token');
+        if (!token) {
+          set({ user: null, token: null, isAuthenticated: false });
+        }
+      },
+      
       login: async (credentials) => {
         try {
           // For development, allow admin user to log in without API call
           if (credentials.username === "admin" && credentials.password === "123456") {
             const adminUser: User = {
-              // id: "admin-id",
               id: "1",
               username: "admin",
               phoneNumber: "1234567890",
@@ -91,3 +108,11 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Check auth on app initialization
+if (typeof window !== 'undefined') {
+  const token = localStorage.getItem('auth-token');
+  if (!token) {
+    useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
+  }
+}

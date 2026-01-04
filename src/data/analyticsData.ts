@@ -213,3 +213,113 @@ export const filterBrands = [
   { id: "asus", name: "ایسوس" },
   { id: "xiaomi", name: "شیائومی" },
 ];
+
+// Profit margin data by time range
+export const getProfitMarginData = (timeRange: TimeRange) => {
+  const data: Record<TimeRange, { name: string; margin: number; revenue: number; cost: number }[]> = {
+    daily: [
+      { name: "۰۶:۰۰", margin: 18.5, revenue: 2400000, cost: 1956000 },
+      { name: "۰۹:۰۰", margin: 20.2, revenue: 4800000, cost: 3830400 },
+      { name: "۱۲:۰۰", margin: 22.1, revenue: 8200000, cost: 6387800 },
+      { name: "۱۵:۰۰", margin: 19.8, revenue: 6100000, cost: 4892200 },
+      { name: "۱۸:۰۰", margin: 21.5, revenue: 9800000, cost: 7693000 },
+      { name: "۲۱:۰۰", margin: 20.0, revenue: 5400000, cost: 4320000 },
+    ],
+    weekly: [
+      { name: "شنبه", margin: 20.0, revenue: 24000000, cost: 19200000 },
+      { name: "یکشنبه", margin: 19.2, revenue: 18000000, cost: 14544000 },
+      { name: "دوشنبه", margin: 21.5, revenue: 32000000, cost: 25120000 },
+      { name: "سه‌شنبه", margin: 20.8, revenue: 28000000, cost: 22176000 },
+      { name: "چهارشنبه", margin: 22.3, revenue: 35000000, cost: 27195000 },
+      { name: "پنج‌شنبه", margin: 23.1, revenue: 42000000, cost: 32298000 },
+      { name: "جمعه", margin: 18.5, revenue: 15000000, cost: 12225000 },
+    ],
+    monthly: [
+      { name: "هفته ۱", margin: 20.0, revenue: 120000000, cost: 96000000 },
+      { name: "هفته ۲", margin: 21.2, revenue: 145000000, cost: 114260000 },
+      { name: "هفته ۳", margin: 20.5, revenue: 138000000, cost: 109710000 },
+      { name: "هفته ۴", margin: 22.0, revenue: 162000000, cost: 126360000 },
+    ],
+    yearly: [
+      { name: "فروردین", margin: 20.0, revenue: 450000000, cost: 360000000 },
+      { name: "اردیبهشت", margin: 21.5, revenue: 520000000, cost: 408200000 },
+      { name: "خرداد", margin: 19.8, revenue: 480000000, cost: 384960000 },
+      { name: "تیر", margin: 22.3, revenue: 610000000, cost: 473970000 },
+      { name: "مرداد", margin: 21.0, revenue: 580000000, cost: 458200000 },
+      { name: "شهریور", margin: 20.5, revenue: 540000000, cost: 429300000 },
+    ],
+  };
+  return data[timeRange];
+};
+
+// Order status data
+export const orderStatusData = [
+  { name: "تحویل شده", value: 2450, color: "hsl(var(--success))" },
+  { name: "در حال پردازش", value: 380, color: "hsl(var(--primary))" },
+  { name: "در حال ارسال", value: 520, color: "hsl(var(--warning))" },
+  { name: "لغو شده", value: 125, color: "hsl(var(--destructive))" },
+  { name: "مرجوعی", value: 85, color: "hsl(var(--muted-foreground))" },
+];
+
+// Growth trend data by time range
+export const getGrowthTrendData = (timeRange: TimeRange) => {
+  const data: Record<TimeRange, { name: string; revenue: number; orders: number; customers: number }[]> = {
+    daily: [
+      { name: "۰۶:۰۰", revenue: 2400000, orders: 120000, customers: 80000 },
+      { name: "۰۹:۰۰", revenue: 4800000, orders: 240000, customers: 160000 },
+      { name: "۱۲:۰۰", revenue: 8200000, orders: 410000, customers: 280000 },
+      { name: "۱۵:۰۰", revenue: 6100000, orders: 300000, customers: 200000 },
+      { name: "۱۸:۰۰", revenue: 9800000, orders: 490000, customers: 320000 },
+      { name: "۲۱:۰۰", revenue: 5400000, orders: 270000, customers: 180000 },
+    ],
+    weekly: [
+      { name: "شنبه", revenue: 24000000, orders: 1200000, customers: 800000 },
+      { name: "یکشنبه", revenue: 18000000, orders: 900000, customers: 600000 },
+      { name: "دوشنبه", revenue: 32000000, orders: 1600000, customers: 1100000 },
+      { name: "سه‌شنبه", revenue: 28000000, orders: 1400000, customers: 950000 },
+      { name: "چهارشنبه", revenue: 35000000, orders: 1750000, customers: 1200000 },
+      { name: "پنج‌شنبه", revenue: 42000000, orders: 2100000, customers: 1450000 },
+      { name: "جمعه", revenue: 15000000, orders: 750000, customers: 500000 },
+    ],
+    monthly: [
+      { name: "هفته ۱", revenue: 120000000, orders: 6000000, customers: 4000000 },
+      { name: "هفته ۲", revenue: 145000000, orders: 7250000, customers: 4850000 },
+      { name: "هفته ۳", revenue: 138000000, orders: 6900000, customers: 4600000 },
+      { name: "هفته ۴", revenue: 162000000, orders: 8100000, customers: 5400000 },
+    ],
+    yearly: [
+      { name: "فروردین", revenue: 450000000, orders: 22500000, customers: 15000000 },
+      { name: "اردیبهشت", revenue: 520000000, orders: 26000000, customers: 17400000 },
+      { name: "خرداد", revenue: 480000000, orders: 24000000, customers: 16000000 },
+      { name: "تیر", revenue: 610000000, orders: 30500000, customers: 20300000 },
+      { name: "مرداد", revenue: 580000000, orders: 29000000, customers: 19300000 },
+      { name: "شهریور", revenue: 540000000, orders: 27000000, customers: 18000000 },
+    ],
+  };
+  return data[timeRange];
+};
+
+// Return rate by category
+export const returnRateData = [
+  { category: "الکترونیک", rate: 4.2, returns: 180 },
+  { category: "پوشاک", rate: 8.5, returns: 340 },
+  { category: "خانه و آشپزخانه", rate: 2.8, returns: 95 },
+  { category: "زیبایی و سلامت", rate: 3.5, returns: 120 },
+  { category: "ورزش و سفر", rate: 5.2, returns: 85 },
+];
+
+// Monthly targets data
+export const monthlyTargets = [
+  { name: "فروش", current: 485000000, target: 500000000, unit: "تومان" },
+  { name: "سفارشات", current: 2650, target: 3000, unit: "سفارش" },
+  { name: "مشتریان جدید", current: 420, target: 400, unit: "نفر" },
+  { name: "نرخ تبدیل", current: 3.2, target: 4.0, unit: "٪" },
+];
+
+// Payment method data
+export const paymentMethodData = [
+  { name: "کارت به کارت", value: 45, fill: "hsl(var(--primary))" },
+  { name: "درگاه آنلاین", value: 35, fill: "hsl(var(--success))" },
+  { name: "پرداخت در محل", value: 15, fill: "hsl(var(--warning))" },
+  { name: "کیف پول", value: 5, fill: "hsl(var(--accent))" },
+];
