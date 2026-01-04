@@ -11,9 +11,9 @@ interface RolesSectionProps {
 
 export function RolesSection({ form, roles }: RolesSectionProps) {
   const items: MultiSelectItem[] = roles.map((role) => ({
-    id: role.id,
+    id: String(role.id),
     name: role.name,
-    tags: role.permissions,
+    // tags: role.permissions,
   }));
 
   return (

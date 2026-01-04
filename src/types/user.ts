@@ -24,8 +24,8 @@ export interface CreateUserRequest {
   email: string;
   phoneNumber: string;
   description?: string;
-  roleIds: string[]; // Array for multiple roles
-  isAdmin?: boolean; // Flag for admin privileges
+  roleIds: string[];
+  isAdmin?: boolean; 
 }
 
 export interface CreateRoleRequest {

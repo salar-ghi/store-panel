@@ -83,7 +83,6 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       setCurrentStep(1);
       onUserAdded();
     } catch (error: any) {
-      console.error('Error creating user:', error);
       toast({
         title: "خطا",
         description: error.response?.data?.message || "خطا در ایجاد کاربر",
@@ -172,7 +171,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                         className="min-w-[120px] gap-2"
                       >
                         مرحله بعد
-                        <span className="rotate-180">←</span>
+                        <span>←</span>
                       </Button>
                     </div>
                   </CardContent>
@@ -214,7 +213,7 @@ export function UserForm({ onUserAdded }: UserFormProps) {
                         onClick={() => setCurrentStep(1)}
                         className="min-w-[120px] gap-2"
                       >
-                        <span>←</span>
+                        <span className="rotate-180">←</span>
                         مرحله قبل
                       </Button>
                       

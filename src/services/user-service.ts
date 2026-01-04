@@ -15,8 +15,8 @@ export class UserService {
 
   static async createUser(userData: CreateUserRequest): Promise<User> {
     // Generate username from first name and last name if not provided
-    if (!userData.username && userData.firstName && userData.lastName) {
-      userData.username = `${userData.firstName} ${userData.lastName}`;
+    if (!userData.username && userData.phoneNumber) {
+      userData.username = `${userData.phoneNumber}`;
     }
     
     console.log('Creating user with data:', userData);
