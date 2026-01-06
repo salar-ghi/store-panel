@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { Product } from '@/types/product';
+import { getProductPrice, getProductStock } from '@/data/ordersData';
 
 export function useProductFilter(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -11,7 +12,7 @@ export function useProductFilter(products: Product[]) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [stockFilter, setStockFilter] = useState<"all" | "inStock" | "lowStock" | "outOfStock">("all");
 
-  const maxPrice = Math.max(...products.map(p => p.price), 1000);
+  const maxPrice = Math.max(...products.map(p => getProductPrice(p)), 1000);
   
   // Get unique categories and brands
   const categories = [...new Set(products.map(p => p.categoryName))];
@@ -29,22 +30,28 @@ export function useProductFilter(products: Product[]) {
     .filter((product) => 
       brandFilter ? product.brandName === brandFilter : true
     )
-    .filter((product) => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    )
     .filter((product) => {
-      if (stockFilter === "inStock") return product.stockQuantity > 0;
-      if (stockFilter === "lowStock") return product.stockQuantity > 0 && product.stockQuantity <= 5;
-      if (stockFilter === "outOfStock") return product.stockQuantity === 0;
+      const price = getProductPrice(product);
+      return price >= priceRange[0] && price <= priceRange[1];
+    })
+    .filter((product) => {
+      const stock = getProductStock(product);
+      if (stockFilter === "inStock") return stock > 0;
+      if (stockFilter === "lowStock") return stock > 0 && stock <= 5;
+      if (stockFilter === "outOfStock") return stock === 0;
       return true; // "all" option
     });
   
   // Apply sorting
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortField === "price") {
-      return sortOrder === "asc" ? a.price - b.price : b.price - a.price;
+      const priceA = getProductPrice(a);
+      const priceB = getProductPrice(b);
+      return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
     } else if (sortField === "stockQuantity") {
-      return sortOrder === "asc" ? a.stockQuantity - b.stockQuantity : b.stockQuantity - a.stockQuantity;
+      const stockA = getProductStock(a);
+      const stockB = getProductStock(b);
+      return sortOrder === "asc" ? stockA - stockB : stockB - stockA;
     } else {
       // Default to name sorting
       return sortOrder === "asc" 

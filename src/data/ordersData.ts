@@ -23,26 +23,45 @@ export const mockBrands: Brand[] = [
   { id: 8, name: "بوش", description: "لوازم خانگی", createdTime: "2024-01-01", categoryIds: [6] },
 ];
 
+// Helper to get current price from product prices array
+export const getProductPrice = (product: Product): number => {
+  if (product.price !== undefined) return product.price;
+  if (product.prices && product.prices.length > 0) {
+    return product.prices[0].amount;
+  }
+  return 0;
+};
+
+// Helper to get total stock from product
+export const getProductStock = (product: Product): number => {
+  if (product.stockQuantity !== undefined) return product.stockQuantity;
+  if (product.prices && product.prices.length > 0) {
+    return product.prices.reduce((sum, p) => sum + (p.quantity || 0) - (p.soldQuantity || 0), 0);
+  }
+  if (product.stock) return product.stock.quantity;
+  return 0;
+};
+
 export const mockProducts: Product[] = [
   // Drinks
-  { id: 1, name: "نوشابه کوکاکولا ۱.۵ لیتری", description: "", price: 35000, stockQuantity: 100, categoryId: 1, brandId: 1, supplierId: 1, categoryName: "نوشیدنی‌ها", brandName: "کوکاکولا" },
-  { id: 2, name: "نوشابه پپسی ۱.۵ لیتری", description: "", price: 33000, stockQuantity: 80, categoryId: 1, brandId: 2, supplierId: 1, categoryName: "نوشیدنی‌ها", brandName: "پپسی" },
-  { id: 3, name: "آب معدنی ۱ لیتری", description: "", price: 8000, stockQuantity: 200, categoryId: 1, brandId: 1, supplierId: 1, categoryName: "نوشیدنی‌ها", brandName: "کوکاکولا" },
+  { id: 1, name: "نوشابه کوکاکولا ۱.۵ لیتری", description: "", categoryId: 1, brandId: 1, supplierId: 1, categoryName: "نوشیدنی‌ها", brandName: "کوکاکولا", price: 35000, stockQuantity: 100 },
+  { id: 2, name: "نوشابه پپسی ۱.۵ لیتری", description: "", categoryId: 1, brandId: 2, supplierId: 1, categoryName: "نوشیدنی‌ها", brandName: "پپسی", price: 33000, stockQuantity: 80 },
+  { id: 3, name: "آب معدنی ۱ لیتری", description: "", categoryId: 1, brandId: 1, supplierId: 1, categoryName: "نوشیدنی‌ها", brandName: "کوکاکولا", price: 8000, stockQuantity: 200 },
   // Proteins
-  { id: 4, name: "سینه مرغ ۱ کیلو", description: "", price: 180000, stockQuantity: 50, categoryId: 2, brandId: 3, supplierId: 2, categoryName: "پروتئین‌ها", brandName: "کاله" },
-  { id: 5, name: "گوشت چرخ‌کرده ۵۰۰ گرم", description: "", price: 250000, stockQuantity: 30, categoryId: 2, brandId: 3, supplierId: 2, categoryName: "پروتئین‌ها", brandName: "کاله" },
+  { id: 4, name: "سینه مرغ ۱ کیلو", description: "", categoryId: 2, brandId: 3, supplierId: 2, categoryName: "پروتئین‌ها", brandName: "کاله", price: 180000, stockQuantity: 50 },
+  { id: 5, name: "گوشت چرخ‌کرده ۵۰۰ گرم", description: "", categoryId: 2, brandId: 3, supplierId: 2, categoryName: "پروتئین‌ها", brandName: "کاله", price: 250000, stockQuantity: 30 },
   // Dairy
-  { id: 6, name: "شیر کاله ۱ لیتری", description: "", price: 45000, stockQuantity: 60, categoryId: 3, brandId: 3, supplierId: 3, categoryName: "لبنیات", brandName: "کاله" },
-  { id: 7, name: "ماست میهن ۹۰۰ گرم", description: "", price: 55000, stockQuantity: 40, categoryId: 3, brandId: 4, supplierId: 3, categoryName: "لبنیات", brandName: "میهن" },
+  { id: 6, name: "شیر کاله ۱ لیتری", description: "", categoryId: 3, brandId: 3, supplierId: 3, categoryName: "لبنیات", brandName: "کاله", price: 45000, stockQuantity: 60 },
+  { id: 7, name: "ماست میهن ۹۰۰ گرم", description: "", categoryId: 3, brandId: 4, supplierId: 3, categoryName: "لبنیات", brandName: "میهن", price: 55000, stockQuantity: 40 },
   // Electronics
-  { id: 8, name: "هدفون بی‌سیم سامسونگ", description: "", price: 2500000, stockQuantity: 20, categoryId: 4, brandId: 5, supplierId: 4, categoryName: "الکترونیک", brandName: "سامسونگ" },
-  { id: 9, name: "شارژر اپل ۲۰ وات", description: "", price: 1200000, stockQuantity: 35, categoryId: 4, brandId: 6, supplierId: 4, categoryName: "الکترونیک", brandName: "اپل" },
+  { id: 8, name: "هدفون بی‌سیم سامسونگ", description: "", categoryId: 4, brandId: 5, supplierId: 4, categoryName: "الکترونیک", brandName: "سامسونگ", price: 2500000, stockQuantity: 20 },
+  { id: 9, name: "شارژر اپل ۲۰ وات", description: "", categoryId: 4, brandId: 6, supplierId: 4, categoryName: "الکترونیک", brandName: "اپل", price: 1200000, stockQuantity: 35 },
   // Mobile
-  { id: 10, name: "گوشی سامسونگ A54", description: "", price: 15000000, stockQuantity: 15, categoryId: 5, brandId: 5, supplierId: 5, categoryName: "موبایل و تبلت", brandName: "سامسونگ" },
-  { id: 11, name: "آیفون ۱۵", description: "", price: 55000000, stockQuantity: 8, categoryId: 5, brandId: 6, supplierId: 5, categoryName: "موبایل و تبلت", brandName: "اپل" },
+  { id: 10, name: "گوشی سامسونگ A54", description: "", categoryId: 5, brandId: 5, supplierId: 5, categoryName: "موبایل و تبلت", brandName: "سامسونگ", price: 15000000, stockQuantity: 15 },
+  { id: 11, name: "آیفون ۱۵", description: "", categoryId: 5, brandId: 6, supplierId: 5, categoryName: "موبایل و تبلت", brandName: "اپل", price: 55000000, stockQuantity: 8 },
   // Home Appliances
-  { id: 12, name: "جاروبرقی ال‌جی", description: "", price: 8500000, stockQuantity: 12, categoryId: 6, brandId: 7, supplierId: 6, categoryName: "لوازم خانگی", brandName: "ال‌جی" },
-  { id: 13, name: "ماشین ظرفشویی بوش", description: "", price: 35000000, stockQuantity: 5, categoryId: 6, brandId: 8, supplierId: 6, categoryName: "لوازم خانگی", brandName: "بوش" },
+  { id: 12, name: "جاروبرقی ال‌جی", description: "", categoryId: 6, brandId: 7, supplierId: 6, categoryName: "لوازم خانگی", brandName: "ال‌جی", price: 8500000, stockQuantity: 12 },
+  { id: 13, name: "ماشین ظرفشویی بوش", description: "", categoryId: 6, brandId: 8, supplierId: 6, categoryName: "لوازم خانگی", brandName: "بوش", price: 35000000, stockQuantity: 5 },
 ];
 
 export const mockOrders: Order[] = [
