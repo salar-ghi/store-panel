@@ -5,7 +5,11 @@ import { User, Role, CreateUserRequest, CreateRoleRequest } from '@/types/user';
 export class UserService {
   static async getAllUsers(): Promise<User[]> {
     const response = await apiClient.get<User[]>('/api/User/users');
-    return response.data;
+    // return response.data;
+    return response.data.map(user => ({
+      ...user,
+      isAdmin: user.roles.includes('Manager')
+    }));
   }
 
   static async getUserById(id: string): Promise<User> {

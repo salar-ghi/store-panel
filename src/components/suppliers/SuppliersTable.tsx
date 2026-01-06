@@ -84,7 +84,7 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
               <TableCell>{supplier.email || '-'}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Switch
+                  <Switch dir="ltr"
                     checked={supplier.isApproved !== false}
                     onCheckedChange={() => handleToggleStatus(supplier)}
                     disabled={toggleStatusMutation.isPending}
@@ -101,7 +101,7 @@ export function SuppliersTable({ suppliers, onEdit }: SuppliersTableProps) {
                 </div>
               </TableCell>
               <TableCell className="text-left">
-                <div className="flex gap-1">
+                <div className="inline-flex items-center justify-center gap-">
                   <Button
                     variant="ghost"
                     size="icon"
