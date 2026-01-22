@@ -36,9 +36,22 @@ export function ViewProductDialog({ product, open, onOpenChange }: ViewProductDi
             </div>
             <div>
               <h4 className="text-sm font-medium text-muted-foreground">وضعیت</h4>
-              <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
-                {product.status === 'active' ? 'فعال' : product.status === 'discontinued' ? 'متوقف' : 'فصلی'}
-              </Badge>
+              <div className="flex gap-2">
+                <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
+                  {product.status === 'active' ? 'فعال' : 'غیرفعال'}
+                </Badge>
+                <Badge variant={
+                  product.availability === 'available' ? 'default' : 
+                  product.availability === 'unavailable' ? 'secondary' : 
+                  product.availability === 'discontinued' ? 'destructive' :
+                  product.availability === 'out_of_stock' ? 'outline' : 'secondary'
+                }>
+                  {product.availability === 'available' ? 'موجود' : 
+                   product.availability === 'unavailable' ? 'ناموجود' : 
+                   product.availability === 'discontinued' ? 'متوقف شده' :
+                   product.availability === 'out_of_stock' ? 'تمام شده' : 'پیش‌نویس'}
+                </Badge>
+              </div>
             </div>
           </div>
 

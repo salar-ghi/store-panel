@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { SelectFields } from "./SelectFields";
 import { ProductTagSelect } from "./ProductTagSelect";
+import { ProductVariantEditor } from "./ProductVariantEditor";
 import {
   Form,
   FormControl,
@@ -30,7 +31,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CreateProductRequest, ProductAttribute, WeightUnit, QuantityUnit, DimensionUnit } from "@/types/product";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { 
+  CreateProductRequest, 
+  ProductAttribute, 
+  WeightUnit, 
+  QuantityUnit, 
+  DimensionUnit, 
+  ProductStatus, 
+  ProductAvailability,
+  ProductVariant
+} from "@/types/product";
 import { WarehouseService } from "@/services/warehouse-service";
 
 // Weight unit options
@@ -74,6 +86,21 @@ const currencies = [
   { value: 'AED', label: 'درهم امارات (AED)' },
 ];
 
+// Status options
+const statusOptions: { value: ProductStatus; label: string; description: string }[] = [
+  { value: 'active', label: 'فعال', description: 'محصول قابل فروش و نمایش است' },
+  { value: 'inactive', label: 'غیرفعال', description: 'محصول موقتاً غیرفعال است' },
+];
+
+// Availability options
+const availabilityOptions: { value: ProductAvailability; label: string; description: string }[] = [
+  { value: 'available', label: 'موجود', description: 'محصول در دسترس است' },
+  { value: 'unavailable', label: 'ناموجود', description: 'موقتاً ناموجود' },
+  { value: 'out_of_stock', label: 'تمام شده', description: 'موجودی صفر شده' },
+  { value: 'discontinued', label: 'متوقف شده', description: 'تولید متوقف شده' },
+  { value: 'draft', label: 'پیش‌نویس', description: 'در حال آماده‌سازی' },
+];
+
 const dimensionSchema = z.object({
   length: z.coerce.number().nonnegative({ message: "طول باید عدد مثبت باشد." }),
   width: z.coerce.number().nonnegative({ message: "عرض باید عدد مثبت باشد." }),
@@ -114,6 +141,8 @@ const formSchema = z.object({
   tags: z.array(z.string()).optional(),
   reorderLevel: z.coerce.number().int().nonnegative().optional(),
   location: z.string().optional(),
+  status: z.enum(['active', 'inactive']).optional(),
+  availability: z.enum(['available', 'unavailable', 'discontinued', 'draft', 'out_of_stock']).optional(),
   dimensions: dimensionSchema.optional(),
   stock: stockSchema.optional(),
   prices: z.array(priceSchema).optional(),
@@ -130,12 +159,14 @@ type FormData = z.infer<typeof formSchema>;
 interface ProductFormProps {
   onSubmit: (data: CreateProductRequest) => void;
   initialData?: Partial<CreateProductRequest>;
+  isEditMode?: boolean;
 }
 
-export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
+export function ProductForm({ onSubmit, initialData, isEditMode = false }: ProductFormProps) {
   const [productImages, setProductImages] = useState<string[]>(initialData?.images || []);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
   const [attributes, setAttributes] = useState<ProductAttribute[]>(initialData?.attributes || []);
+  const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
   const [activeTab, setActiveTab] = useState("basic");
 
   const { data: warehouses = [] } = useQuery({
@@ -155,6 +186,8 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
       tags: initialData?.tags || [],
       reorderLevel: initialData?.reorderLevel || 0,
       location: initialData?.location || "",
+      status: initialData?.status || 'active',
+      availability: initialData?.availability || 'draft',
       dimensions: initialData?.dimensions || {
         length: 0,
         width: 0,
@@ -203,6 +236,8 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
       attributes: attributes,
       location: data.location,
       reorderLevel: data.reorderLevel,
+      status: data.status,
+      availability: data.availability,
       dimensions: data.dimensions ? {
         length: data.dimensions.length,
         width: data.dimensions.width,
@@ -230,6 +265,7 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
         soldQuantity: price.soldQuantity || 0,
         notes: price.notes,
       })) : undefined,
+      variants: variants.length > 0 ? variants : undefined,
     };
     
     onSubmit(productData);
@@ -275,15 +311,82 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" dir="rtl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
-          <TabsList className="grid grid-cols-4 mb-8">
+          <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="basic">اطلاعات اولیه</TabsTrigger>
             <TabsTrigger value="inventory">موجودی و انبار</TabsTrigger>
-            <TabsTrigger value="dimensions">ابعاد و واحدها</TabsTrigger>
-            <TabsTrigger value="attributes">ویژگی‌ها و تگ‌ها</TabsTrigger>
+            <TabsTrigger value="dimensions">ابعاد و قیمت</TabsTrigger>
+            <TabsTrigger value="variants">متغیرها</TabsTrigger>
+            <TabsTrigger value="attributes">ویژگی‌ها</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Basic Info */}
           <TabsContent value="basic" className="space-y-4">
+            {/* Status & Availability */}
+            <Card>
+              <CardHeader className="py-3">
+                <CardTitle className="text-sm">وضعیت محصول</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>وضعیت فعالیت</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="انتخاب وضعیت" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {statusOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                <div className="flex flex-col">
+                                  <span>{option.label}</span>
+                                  <span className="text-xs text-muted-foreground">{option.description}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="availability"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>وضعیت موجودی</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="انتخاب وضعیت" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {availabilityOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                <div className="flex flex-col">
+                                  <span>{option.label}</span>
+                                  <span className="text-xs text-muted-foreground">{option.description}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-4">
                 <FormField
@@ -794,7 +897,25 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
             </Card>
           </TabsContent>
 
-          {/* Tab 4: Attributes & Tags */}
+          {/* Tab 4: Variants */}
+          <TabsContent value="variants" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>متغیرهای محصول</CardTitle>
+                <CardDescription>
+                  متغیرهایی مانند رنگ، سایز، ظرفیت و... را برای محصول تعریف کنید. هر متغیر می‌تواند چندین گزینه داشته باشد.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProductVariantEditor 
+                  variants={variants}
+                  onChange={setVariants}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 5: Attributes & Tags */}
           <TabsContent value="attributes" className="space-y-6">
             <Card>
               <CardHeader>
@@ -847,17 +968,16 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveAttribute(index)}
-                        className="h-8 w-8 text-destructive"
+                        className="text-destructive"
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
-
                   {attributes.length === 0 && (
-                    <div className="text-center py-6 text-muted-foreground">
-                      هنوز هیچ ویژگی اضافه نشده است
-                    </div>
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      هنوز ویژگی‌ای اضافه نشده است
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -865,9 +985,9 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end">
-          <Button type="submit" className="min-w-[200px]">
-            ایجاد محصول
+        <div className="flex justify-end gap-4 pt-4 border-t">
+          <Button type="submit" className="min-w-[120px]">
+            {isEditMode ? 'بروزرسانی محصول' : 'ایجاد محصول'}
           </Button>
         </div>
       </form>

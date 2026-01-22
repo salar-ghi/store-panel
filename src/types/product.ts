@@ -3,6 +3,12 @@ export type WeightUnit = 'gram' | 'kilogram' | 'mithqal' | 'ounce' | 'pound';
 export type QuantityUnit = 'piece' | 'box' | 'pack' | 'carton' | 'dozen' | 'pair' | 'set' | 'liter' | 'milliliter';
 export type DimensionUnit = 'cm' | 'm' | 'mm' | 'inch' | 'ft';
 
+// Product status - whether product is active or inactive
+export type ProductStatus = 'active' | 'inactive';
+
+// Product availability - detailed availability states
+export type ProductAvailability = 'available' | 'unavailable' | 'discontinued' | 'draft' | 'out_of_stock';
+
 export interface ProductDimension {
   length: number;
   width: number;
@@ -40,6 +46,27 @@ export interface ProductAttribute {
   value: string;
 }
 
+// Product variant option (e.g., color: red, blue, green)
+export interface ProductVariantOption {
+  id?: number;
+  name: string; // e.g., "قرمز" (red)
+  value: string; // e.g., "red" or hex color
+  priceAdjustment?: number; // additional price for this option
+  stockQuantity?: number; // specific stock for this variant option
+  sku?: string; // unique SKU for this variant
+  isAvailable?: boolean;
+}
+
+// Product variant type (e.g., color, size)
+export interface ProductVariant {
+  id?: number;
+  name: string; // e.g., "رنگ" (color), "سایز" (size)
+  type: 'color' | 'size' | 'material' | 'style' | 'capacity' | 'custom';
+  options: ProductVariantOption[];
+  required?: boolean; // is selecting this variant required?
+  displayOrder?: number;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -56,7 +83,11 @@ export interface Product {
   location?: string;
   reorderLevel?: number;
   lastRestocked?: Date;
-  status?: 'active' | 'discontinued' | 'seasonal';
+  // Status and availability
+  status: ProductStatus;
+  availability: ProductAvailability;
+  // Legacy status field for backward compatibility
+  legacyStatus?: 'active' | 'discontinued' | 'seasonal';
   dimensions?: ProductDimension;
   stock?: ProductStock;
   // Computed helper properties for backward compatibility
@@ -64,6 +95,8 @@ export interface Product {
   stockQuantity?: number;
   prices?: ProductPrice[];
   attributes?: ProductAttribute[];
+  // Product variants
+  variants?: ProductVariant[];
 }
 
 export interface CreateProductRequest {
@@ -77,10 +110,13 @@ export interface CreateProductRequest {
   tags?: string[];
   location?: string;
   reorderLevel?: number;
+  status?: ProductStatus;
+  availability?: ProductAvailability;
   dimensions?: ProductDimension;
   stock?: ProductStock;
   prices?: ProductPrice[];
   attributes?: ProductAttribute[];
+  variants?: ProductVariant[];
 }
 
 export interface UpdateProductRequest {
@@ -94,9 +130,11 @@ export interface UpdateProductRequest {
   tags?: string[];
   location?: string;
   reorderLevel?: number;
-  status?: 'active' | 'discontinued' | 'seasonal';
+  status?: ProductStatus;
+  availability?: ProductAvailability;
   dimensions?: ProductDimension;
   stock?: ProductStock;
   prices?: ProductPrice[];
   attributes?: ProductAttribute[];
+  variants?: ProductVariant[];
 }
