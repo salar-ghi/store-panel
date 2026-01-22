@@ -1,8 +1,10 @@
 
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,6 +16,7 @@ import {
 import { ProductService } from "@/services/product-service";
 import { Product } from "@/types/product";
 import { getProductPrice, getProductStock } from "@/data/ordersData";
+import { EditProductDialog } from "./EditProductDialog";
 
 interface ProductTableProps {
   products: Product[];
@@ -22,6 +25,7 @@ interface ProductTableProps {
 
 export function ProductTable({ products, onViewProduct }: ProductTableProps) {
   const queryClient = useQueryClient();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const deleteMutation = useMutation({
     mutationFn: ProductService.delete,
@@ -48,55 +52,73 @@ export function ProductTable({ products, onViewProduct }: ProductTableProps) {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-right">نام محصول</TableHead>
-            <TableHead className="text-right">قیمت</TableHead>
-            <TableHead className="text-right">موجودی</TableHead>
-            <TableHead className="text-right">دسته بندی</TableHead>
-            <TableHead className="text-right">برند</TableHead>
-            <TableHead>عملیات</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {products.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell className="font-medium text-right">{product.name}</TableCell>
-              <TableCell className="text-right">{getProductPrice(product).toLocaleString()} تومان</TableCell>
-              <TableCell className="text-right">{getProductStock(product)}</TableCell>
-              <TableCell className="text-right">{product.categoryName}</TableCell>
-              <TableCell className="text-right">{product.brandName}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onViewProduct(product)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => toast.info("قابلیت ویرایش هنوز پیاده‌سازی نشده است")}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => deleteMutation.mutate(product.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
+    <>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-right">نام محصول</TableHead>
+              <TableHead className="text-right">قیمت</TableHead>
+              <TableHead className="text-right">موجودی</TableHead>
+              <TableHead className="text-right">وضعیت</TableHead>
+              <TableHead className="text-right">دسته بندی</TableHead>
+              <TableHead className="text-right">برند</TableHead>
+              <TableHead>عملیات</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="font-medium text-right">{product.name}</TableCell>
+                <TableCell className="text-right">{getProductPrice(product).toLocaleString()} تومان</TableCell>
+                <TableCell className="text-right">{getProductStock(product)}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex gap-1">
+                    <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                      {product.status === 'active' ? 'فعال' : 'غیرفعال'}
+                    </Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">{product.categoryName}</TableCell>
+                <TableCell className="text-right">{product.brandName}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onViewProduct(product)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setEditingProduct(product)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => deleteMutation.mutate(product.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {editingProduct && (
+        <EditProductDialog
+          open={!!editingProduct}
+          onOpenChange={(open) => !open && setEditingProduct(null)}
+          product={editingProduct}
+        />
+      )}
+    </>
   );
 }
