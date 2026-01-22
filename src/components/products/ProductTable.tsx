@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { ProductService } from "@/services/product-service";
 import { Product } from "@/types/product";
+import { getProductPrice, getProductStock } from "@/data/ordersData";
 
 interface ProductTableProps {
   products: Product[];
@@ -63,8 +64,8 @@ export function ProductTable({ products, onViewProduct }: ProductTableProps) {
           {products.map((product) => (
             <TableRow key={product.id}>
               <TableCell className="font-medium text-right">{product.name}</TableCell>
-              <TableCell className="text-right">{product.price.toLocaleString()} تومان</TableCell>
-              <TableCell className="text-right">{product.stockQuantity}</TableCell>
+              <TableCell className="text-right">{getProductPrice(product).toLocaleString()} تومان</TableCell>
+              <TableCell className="text-right">{getProductStock(product)}</TableCell>
               <TableCell className="text-right">{product.categoryName}</TableCell>
               <TableCell className="text-right">{product.brandName}</TableCell>
               <TableCell>
