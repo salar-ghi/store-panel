@@ -113,7 +113,7 @@ export function ProductSelector({
       </div>
 
       {/* Products Grid */}
-      <ScrollArea className="h-[300px] rounded-md border p-2">
+      <ScrollArea dir="rtl" className="h-[300px] rounded-md border p-2">
         <div className="grid gap-2">
           {filteredProducts.length === 0 ? (
             <div className="flex h-[200px] items-center justify-center text-muted-foreground">

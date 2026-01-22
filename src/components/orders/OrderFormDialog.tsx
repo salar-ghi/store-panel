@@ -147,7 +147,7 @@ export function OrderFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="customer" className="w-full">
+        <Tabs defaultValue="customer" className="w-full" dir="rtl">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="customer">اطلاعات مشتری</TabsTrigger>
             <TabsTrigger value="products">انتخاب محصولات</TabsTrigger>
