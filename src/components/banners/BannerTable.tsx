@@ -1,6 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Banner } from "@/types/banner";
+import { base64ToImageUrl } from "@/lib/image-upload";
 import {
   Table,
   TableBody,
@@ -100,7 +100,7 @@ export function BannerTable({ banners, isLoading, onToggleStatus }: BannerTableP
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-16 rounded overflow-hidden bg-muted">
                     <img 
-                      src={banner.imageUrl} 
+                      src={base64ToImageUrl(banner.imageUrl)} 
                       alt={banner.title} 
                       className="h-full w-full object-cover"
                       onError={(e) => {
