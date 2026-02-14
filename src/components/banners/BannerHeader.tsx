@@ -31,7 +31,7 @@ export function BannerHeader({ onBannerAdded }: BannerHeaderProps) {
         </SheetTrigger>
         <SheetContent className="sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>ایجاد بنر جدید</SheetTitle>
+            <SheetTitle className="mb-4 pb-2 text-center">ایجاد بنر جدید</SheetTitle>
           </SheetHeader>
           <BannerForm onBannerAdded={onBannerAdded} />
         </SheetContent>

@@ -4,7 +4,7 @@ import { Banner, CreateBannerRequest } from '@/types/banner';
 
 export class BannerService {
   static async getAllBanners(): Promise<Banner[]> {
-    const response = await apiClient.get<Banner[]>('/api/Banner/banners');
+    const response = await apiClient.get<Banner[]>('/api/Banner');
     return response.data;
   }
 
@@ -14,7 +14,7 @@ export class BannerService {
   }
 
   static async createBanner(bannerData: CreateBannerRequest): Promise<Banner> {
-    const response = await apiClient.post<Banner>('/api/Banner/banners', bannerData);
+    const response = await apiClient.post<Banner>('/api/Banner', bannerData);
     return response.data;
   }
 

@@ -364,7 +364,7 @@ export function BannerForm({ onBannerAdded, initialData }: BannerFormProps) {
                     </FormDescription>
                   </div>
                   <FormControl>
-                    <Switch
+                    <Switch dir="ltr"
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
