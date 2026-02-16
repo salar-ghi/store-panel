@@ -2,11 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import { BannerForm } from "./BannerForm";
 
@@ -19,21 +15,20 @@ export function BannerHeader({ onBannerAdded }: BannerHeaderProps) {
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-3xl font-bold">مدیریت بنرها</h1>
-        <p className="text-muted-foreground">ایجاد و مدیریت بنرهای تبلیغاتی در فروشگاه</p>
+        <p className="text-muted-foreground">مدیریت جایگاه‌ها و بنرهای تبلیغاتی</p>
       </div>
       <Sheet>
         <SheetTrigger asChild>
-          {/* <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"> */}
           <Button className="flex items-center gap-2">
             <PlusCircle className="ml-2 h-4 w-4" />
-            افزودن بنر
+            بنر جدید
           </Button>
         </SheetTrigger>
         <SheetContent className="sm:max-w-xl">
           <SheetHeader>
             <SheetTitle className="mb-4 pb-2 text-center">ایجاد بنر جدید</SheetTitle>
           </SheetHeader>
-          <BannerForm onBannerAdded={onBannerAdded} />
+          <BannerForm onSuccess={onBannerAdded} />
         </SheetContent>
       </Sheet>
     </div>
