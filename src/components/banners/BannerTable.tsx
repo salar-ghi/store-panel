@@ -1,199 +1,202 @@
+
 import { Button } from "@/components/ui/button";
-import { Banner } from "@/types/banner";
+import { Banner, BannerSizeLabels, BannerTypeLabels } from "@/types/banner";
 import { base64ToImageUrl } from "@/lib/image-upload";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, Eye, EyeOff, ExternalLink, Loader2, PlusCircle, Trash2 } from "lucide-react";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from "@/components/ui/sheet";
+import { Edit, Eye, EyeOff, ExternalLink, Loader2, PlusCircle, Trash2, MoreHorizontal, MousePointerClick, BarChart3 } from "lucide-react";
+import { useState } from "react";
+import { BannerForm } from "./BannerForm";
+import { BannerService } from "@/services/banner-service";
+import { toast } from "sonner";
 
 interface BannerTableProps {
   banners: Banner[];
   isLoading: boolean;
-  onToggleStatus: (id: string, currentStatus: boolean) => void;
+  onRefresh: () => void;
 }
 
-export function BannerTable({ banners, isLoading, onToggleStatus }: BannerTableProps) {
-  const getBannerSizeBadge = (size: string) => {
-    switch (size) {
-      case "small":
-        return <Badge variant="outline">کوچک</Badge>;
-      case "medium":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">متوسط</Badge>;
-      case "large":
-        return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">بزرگ</Badge>;
-      case "full-width":
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">تمام عرض</Badge>;
-      default:
-        return <Badge variant="outline">{size}</Badge>;
+export function BannerTable({ banners, isLoading, onRefresh }: BannerTableProps) {
+  const [editBanner, setEditBanner] = useState<Banner | null>(null);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await BannerService.deleteBanner(id);
+      toast.success("بنر حذف شد");
+      onRefresh();
+    } catch {
+      toast.error("خطا در حذف بنر");
     }
   };
 
-  const getBannerTypeBadge = (type: string) => {
-    switch (type) {
-      case "promotional":
-        return <Badge className="bg-pink-500">تبلیغاتی</Badge>;
-      case "informational":
-        return <Badge className="bg-blue-500">اطلاع‌رسانی</Badge>;
-      case "seasonal":
-        return <Badge className="bg-amber-500">فصلی</Badge>;
-      case "featured-product":
-        return <Badge className="bg-green-500">محصول ویژه</Badge>;
-      case "category-highlight":
-        return <Badge className="bg-purple-500">دسته‌بندی</Badge>;
-      default:
-        return <Badge>{type}</Badge>;
+  const handleToggle = async (id: number, current: boolean) => {
+    try {
+      await BannerService.toggleBannerStatus(id, !current);
+      toast.success(`بنر ${!current ? "فعال" : "غیرفعال"} شد`);
+      onRefresh();
+    } catch {
+      toast.error("خطا در تغییر وضعیت بنر");
     }
+  };
+
+  const typeBadgeColors: Record<number, string> = {
+    0: "bg-pink-500/10 text-pink-600 border-pink-200",
+    1: "bg-blue-500/10 text-blue-600 border-blue-200",
+    2: "bg-amber-500/10 text-amber-600 border-amber-200",
+    3: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
+    4: "bg-violet-500/10 text-violet-600 border-violet-200",
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-8">
+      <div className="flex justify-center items-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  if (!banners || banners.length === 0) {
+  if (!banners?.length) {
     return (
-      <div className="text-center py-8">
-        <div className="flex flex-col items-center py-8">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
-            <PlusCircle className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <p>هیچ بنری یافت نشد</p>
-          <p className="text-sm text-muted-foreground mt-1">اولین بنر خود را برای تبلیغ محصولات یا پیشنهادات ایجاد کنید</p>
+      <div className="flex flex-col items-center py-16 text-center">
+        <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center mb-4">
+          <PlusCircle className="h-7 w-7 text-muted-foreground" />
         </div>
+        <p className="font-medium text-foreground">بنری وجود ندارد</p>
+        <p className="text-sm text-muted-foreground mt-1">اولین بنر را ایجاد کنید</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/50 hover:bg-muted/50">
-            <TableHead className="text-foreground">بنر</TableHead>
-            <TableHead className="text-foreground">موقعیت</TableHead>
-            <TableHead className="text-foreground">نوع</TableHead>
-            <TableHead className="text-foreground">اندازه</TableHead>
-            <TableHead className="text-foreground">مدت زمان</TableHead>
-            <TableHead className="text-center text-foreground">وضعیت</TableHead>
-            <TableHead className="text-right text-foreground">عملیات</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {banners.map((banner) => (
-            <TableRow key={banner.id} className="border-border hover:bg-muted/30">
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-16 rounded overflow-hidden bg-muted">
-                    <img 
-                      src={base64ToImageUrl(banner.imageUrl)} 
-                      alt={banner.title} 
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <div className="font-medium text-foreground">{banner.title}</div>
-                    {banner.description && (
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {banner.description}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" className="capitalize">
-                  {banner.targetLocation === "homepage" ? "صفحه اصلی" :
-                   banner.targetLocation === "product-list" ? "لیست محصولات" :
-                   banner.targetLocation === "category-page" ? "صفحه دسته‌بندی" :
-                   banner.targetLocation === "checkout" ? "تسویه حساب" :
-                   "همه صفحات"}
-                </Badge>
-              </TableCell>
-              <TableCell>{getBannerTypeBadge(banner.type)}</TableCell>
-              <TableCell>{getBannerSizeBadge(banner.size)}</TableCell>
-              <TableCell>
-                <div className="text-xs">
-                  {banner.startDate && (
-                    <div>از: {new Date(banner.startDate).toLocaleDateString('fa-IR')}</div>
-                  )}
-                  {banner.endDate && (
-                    <div>تا: {new Date(banner.endDate).toLocaleDateString('fa-IR')}</div>
-                  )}
-                  {!banner.startDate && !banner.endDate && (
-                    <span className="text-muted-foreground">بدون محدودیت زمانی</span>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="text-center">
-                {banner.active ? (
-                  <Badge variant="default" className="bg-green-500">فعال</Badge>
-                ) : (
-                  <Badge variant="outline" className="text-muted-foreground">غیرفعال</Badge>
-                )}
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">باز کردن منو</span>
-                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                        <path d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM13.625 7.5C13.625 8.12132 13.1213 8.625 12.5 8.625C11.8787 8.625 11.375 8.12132 11.375 7.5C11.375 6.87868 11.8787 6.375 12.5 6.375C13.1213 6.375 13.625 6.87868 13.625 7.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-                      </svg>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onToggleStatus(banner.id, banner.active)}>
-                      {banner.active ? (
-                        <>
-                          <EyeOff className="ml-2 h-4 w-4" />
-                          <span>غیرفعال‌سازی</span>
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="ml-2 h-4 w-4" />
-                          <span>فعال‌سازی</span>
-                        </>
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="ml-2 h-4 w-4" />
-                      <span>ویرایش</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Trash2 className="ml-2 h-4 w-4" />
-                      <span>حذف</span>
-                    </DropdownMenuItem>
-                    {banner.linkUrl && (
-                      <DropdownMenuItem>
-                        <ExternalLink className="ml-2 h-4 w-4" />
-                        <span>مشاهده لینک</span>
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+    <>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="text-foreground">بنر</TableHead>
+              <TableHead className="text-foreground">جایگاه‌ها</TableHead>
+              <TableHead className="text-foreground">نوع</TableHead>
+              <TableHead className="text-foreground">اندازه</TableHead>
+              <TableHead className="text-foreground text-center">آمار</TableHead>
+              <TableHead className="text-foreground text-center">وضعیت</TableHead>
+              <TableHead className="text-left text-foreground">عملیات</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {banners.map((banner) => (
+              <TableRow key={banner.id} className="hover:bg-muted/30">
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-20 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border">
+                      <img
+                        src={base64ToImageUrl(banner.imageUrl)}
+                        alt={banner.altText || banner.name}
+                        className="h-full w-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-foreground truncate">{banner.name}</div>
+                      {banner.description && (
+                        <div className="text-xs text-muted-foreground line-clamp-1">{banner.description}</div>
+                      )}
+                      {banner.callToActionText && (
+                        <Badge variant="outline" className="text-[10px] mt-0.5">{banner.callToActionText}</Badge>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {banner.placements?.length ? (
+                      banner.placements.map((p) => (
+                        <Badge key={p.id} variant="secondary" className="text-[10px]">{p.name}</Badge>
+                      ))
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={typeBadgeColors[banner.type] || ""}>
+                    {BannerTypeLabels[banner.type]}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{BannerSizeLabels[banner.size]}</Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1" title="بازدید">
+                      <BarChart3 className="h-3 w-3" /> {banner.viewCount}
+                    </span>
+                    <span className="flex items-center gap-1" title="کلیک">
+                      <MousePointerClick className="h-3 w-3" /> {banner.clickCount}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  {banner.isActive ? (
+                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200" variant="outline">فعال</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-muted-foreground">غیرفعال</Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-left">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleToggle(banner.id, banner.isActive)}>
+                        {banner.isActive ? <><EyeOff className="ml-2 h-4 w-4" />غیرفعال‌سازی</> : <><Eye className="ml-2 h-4 w-4" />فعال‌سازی</>}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditBanner(banner)}>
+                        <Edit className="ml-2 h-4 w-4" />ویرایش
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(banner.id)}>
+                        <Trash2 className="ml-2 h-4 w-4" />حذف
+                      </DropdownMenuItem>
+                      {banner.link && (
+                        <DropdownMenuItem onClick={() => window.open(banner.link!, "_blank")}>
+                          <ExternalLink className="ml-2 h-4 w-4" />مشاهده لینک
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Sheet open={!!editBanner} onOpenChange={(open) => !open && setEditBanner(null)}>
+        <SheetContent className="sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle className="mb-4 pb-2 text-center">ویرایش بنر</SheetTitle>
+          </SheetHeader>
+          {editBanner && (
+            <BannerForm
+              initialData={editBanner}
+              onSuccess={() => {
+                setEditBanner(null);
+                onRefresh();
+              }}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
