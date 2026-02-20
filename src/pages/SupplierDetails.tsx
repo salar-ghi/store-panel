@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import { formatPersianDate } from "@/lib/persian-date";
 
 export default function SupplierDetails() {
   const { id } = useParams<{ id: string }>();
@@ -132,7 +132,7 @@ export default function SupplierDetails() {
               {supplier.joinDate && (
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>تاریخ عضویت: {format(new Date(supplier.joinDate), 'yyyy/MM/dd')}</span>
+                  <span>تاریخ عضویت: {formatPersianDate(supplier.joinDate)}</span>
                 </div>
               )}
             </div>

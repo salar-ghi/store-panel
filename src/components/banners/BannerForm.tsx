@@ -13,15 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon, Link2, Megaphone, Loader2 } from "lucide-react";
+import { Link2, Megaphone, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { PersianDatePicker } from "@/components/ui/persian-datepicker";
 import { BannerSize, BannerType, BannerSizeLabels, BannerTypeLabels, BannerPageCodeLabels, Banner, CreateBannerRequest } from "@/types/banner";
 import { ImageUpload } from "@/components/ui/image-upload";
 
@@ -310,19 +308,13 @@ export function BannerForm({ onSuccess, initialData }: BannerFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>تاریخ شروع</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant="outline" className={cn("pl-3 text-right font-normal", !field.value && "text-muted-foreground")}>
-                        {field.value ? format(field.value, "PPP") : <span>انتخاب</span>}
-                        <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <PersianDatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="انتخاب تاریخ شروع"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -333,28 +325,17 @@ export function BannerForm({ onSuccess, initialData }: BannerFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>تاریخ پایان</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant="outline" className={cn("pl-3 text-right font-normal", !field.value && "text-muted-foreground")}>
-                        {field.value ? format(field.value, "PPP") : <span>انتخاب</span>}
-                        <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      disabled={(date) => {
-                        const start = form.getValues("startDate");
-                        return start ? date < start : false;
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <PersianDatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="انتخاب تاریخ پایان"
+                    disabledDate={(date) => {
+                      const start = form.getValues("startDate");
+                      return start ? date < start : false;
+                    }}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
