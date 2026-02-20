@@ -2,7 +2,7 @@
 export interface BannerPlacement {
   id: number;
   name: string;
-  code: string;
+  code: BannerPageCode;
   recommendedSize?: string;
   banners?: Banner[];
   createdDate?: string;
@@ -30,32 +30,47 @@ export interface Banner {
   modifiedDate?: string;
 }
 
+export type BannerPageCode =
+  | 1  // HOME_TOP
+  | 2  // HOME_BOTTOM
+  | 3  // PRODUCT_MID
+  | 4  // PRODUCT_TOP
+  | 5; // PRODUCT_BOTTOM
+
 export type BannerSize =
-  | 0  // Small
-  | 1  // Medium
-  | 2  // Large
-  | 3; // FullWidth
+  | 1  // Small
+  | 2  // Medium
+  | 3  // Large
+  | 4  // FullWidth
+  | 5; // Custom
 
 export type BannerType =
-  | 0  // Advertisement
-  | 1  // Informational
-  | 2  // Seasonal
-  | 3  // FeaturedProduct
-  | 4; // CategoryHighlight
+  | 1  // Advertisement
+  | 2  // Notification
+  | 3  // Seasonal
+  | 4; // Promotion
+
+export const BannerPageCodeLabels: Record<BannerPageCode, string> = {
+  1: "بالای صفحه اصلی",
+  2: "پایین صفحه اصلی",
+  3: "وسط صفحه محصول",
+  4: "بالای صفحه محصول",
+  5: "پایین صفحه محصول",
+};
 
 export const BannerSizeLabels: Record<BannerSize, string> = {
-  0: "کوچک",
-  1: "متوسط",
-  2: "بزرگ",
-  3: "تمام عرض",
+  1: "کوچک",
+  2: "متوسط",
+  3: "بزرگ",
+  4: "تمام عرض",
+  5: "سفارشی",
 };
 
 export const BannerTypeLabels: Record<BannerType, string> = {
-  0: "تبلیغاتی",
-  1: "اطلاع‌رسانی",
-  2: "فصلی",
-  3: "محصول ویژه",
-  4: "دسته‌بندی برجسته",
+  1: "تبلیغاتی",
+  2: "اطلاع‌رسانی",
+  3: "فصلی",
+  4: "تخفیف",
 };
 
 export interface CreateBannerRequest {
@@ -72,10 +87,4 @@ export interface CreateBannerRequest {
   priority?: number;
   isActive?: boolean;
   placementIds?: number[];
-}
-
-export interface CreatePlacementRequest {
-  name: string;
-  code: string;
-  recommendedSize?: string;
 }

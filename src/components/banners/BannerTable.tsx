@@ -48,11 +48,10 @@ export function BannerTable({ banners, isLoading, onRefresh }: BannerTableProps)
   };
 
   const typeBadgeColors: Record<number, string> = {
-    0: "bg-pink-500/10 text-pink-600 border-pink-200",
-    1: "bg-blue-500/10 text-blue-600 border-blue-200",
-    2: "bg-amber-500/10 text-amber-600 border-amber-200",
-    3: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-    4: "bg-violet-500/10 text-violet-600 border-violet-200",
+    1: "bg-pink-500/10 text-pink-600 border-pink-200",
+    2: "bg-blue-500/10 text-blue-600 border-blue-200",
+    3: "bg-amber-500/10 text-amber-600 border-amber-200",
+    4: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
   };
 
   if (isLoading) {
