@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { formatPersianDate } from "@/lib/persian-date";
 
 export default function Tags() {
   const { data: tags, isLoading, error, refetch } = useQuery({
@@ -135,7 +135,7 @@ export default function Tags() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {format(new Date(tag.createdAt), "MMM d, yyyy")}
+                          {formatPersianDate(tag.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
