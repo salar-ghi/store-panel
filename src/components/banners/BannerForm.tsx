@@ -22,7 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarIcon, Link2, Megaphone, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { BannerSize, BannerType, BannerSizeLabels, BannerTypeLabels, Banner, CreateBannerRequest } from "@/types/banner";
+import { BannerSize, BannerType, BannerSizeLabels, BannerTypeLabels, BannerPageCodeLabels, Banner, CreateBannerRequest } from "@/types/banner";
 import { ImageUpload } from "@/components/ui/image-upload";
 
 const formSchema = z.object({
@@ -82,7 +82,7 @@ export function BannerForm({ onSuccess, initialData }: BannerFormProps) {
           altText: "",
           link: "",
           callToActionText: "",
-          type: 0 as BannerType,
+          type: 1 as BannerType,
           size: 1 as BannerSize,
           priority: 0,
           isActive: true,
@@ -366,7 +366,7 @@ export function BannerForm({ onSuccess, initialData }: BannerFormProps) {
           <FormLabel>جایگاه‌های نمایش</FormLabel>
           {!placements?.length ? (
             <p className="text-sm text-muted-foreground border border-dashed border-border rounded-lg p-4 text-center">
-              ابتدا جایگاه‌ها را در تب «جایگاه‌ها» تعریف کنید
+              جایگاهی تعریف نشده است
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -387,8 +387,8 @@ export function BannerForm({ onSuccess, initialData }: BannerFormProps) {
                       onCheckedChange={(checked) => togglePlacement(p.id, !!checked)}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{p.name}</div>
-                      <div className="text-xs text-muted-foreground font-mono">{p.code}</div>
+                     <div className="text-sm font-medium truncate">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">{BannerPageCodeLabels[p.code] || p.code}</div>
                     </div>
                     {p.recommendedSize && (
                       <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
