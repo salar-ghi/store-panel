@@ -319,10 +319,11 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" dir="rtl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
-          <TabsList className="grid grid-cols-5 mb-8">
+          <TabsList className="grid grid-cols-6 mb-8">
             <TabsTrigger value="basic">اطلاعات اولیه</TabsTrigger>
             <TabsTrigger value="inventory">موجودی و انبار</TabsTrigger>
-            <TabsTrigger value="dimensions">ابعاد و قیمت</TabsTrigger>
+            <TabsTrigger value="dimensions">ابعاد و وزن</TabsTrigger>
+            <TabsTrigger value="pricing">قیمت و سری ورود</TabsTrigger>
             <TabsTrigger value="variants">متغیرها</TabsTrigger>
             <TabsTrigger value="attributes">ویژگی‌ها</TabsTrigger>
           </TabsList>
