@@ -56,7 +56,7 @@ const sidebarItems = [
     icon: Boxes,
     subItems: [
       { title: "موجودی", path: "/inventory", icon: Box },
-      { title: "مکان‌های انبار", path: "/inventory/locations", icon: PackageIcon },
+      { title: "فضاها و قفسه‌ها", path: "/inventory/storage", icon: PackageIcon },
       { title: "ثبت ورودی", path: "/inventory/inputs", icon: Inbox },
     ]
   },
