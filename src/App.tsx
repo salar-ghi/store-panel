@@ -22,6 +22,7 @@ import Banners from "@/pages/Banners";
 import Tags from "@/pages/Tags";
 import Inventory from "@/pages/Inventory";
 import InventoryLocations from "@/pages/inventory/InventoryLocations";
+import InventoryStorage from "@/pages/inventory/InventoryStorage";
 import InventoryInputs from "@/pages/inventory/InventoryInputs";
 import ReturnedOrders from "@/pages/orders/ReturnedOrders";
 import Notifications from "@/pages/notifications/Notifications";
@@ -182,14 +183,22 @@ const App = () => {
                 </ProtectedRoute>
               } />
               
-              <Route path="/inventory/locations" element={
+              <Route path="/inventory/storage" element={
                 <ProtectedRoute>
                   <Layout>
-                    <InventoryLocations />
+                    <InventoryStorage />
                   </Layout>
                 </ProtectedRoute>
               } />
-              
+
+              <Route path="/inventory/locations" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <InventoryStorage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+
               <Route path="/inventory/inputs" element={
                 <ProtectedRoute>
                   <Layout>
