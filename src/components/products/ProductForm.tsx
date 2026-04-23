@@ -717,13 +717,33 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab 4: Pricing & Import Batches */}
+          <TabsContent value="pricing" className="space-y-6">
+            {/* Explainer card: how batch/lot pricing works */}
+            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  مدیریت قیمت بر اساس سری ورود (Batch / Lot)
+                </CardTitle>
+                <CardDescription className="leading-6">
+                  هر بار که محصول جدید وارد انبار می‌شود (مثلاً ۱۰۰۰۰ عدد کوکاکولا با قیمت خرید ۲ دلار)
+                  یک <strong>«سری ورود»</strong> جدید ثبت کنید. سری بعدی (مثلاً ۵۰۰۰ عدد با قیمت ۲.۵ دلار)
+                  هیچ تداخلی با سری قبلی ندارد. سیستم به‌صورت <strong>FIFO</strong> ابتدا موجودی سری‌های قدیمی‌تر را
+                  می‌فروشد و قیمت فروش هر سری مستقل است. این روش برای سوپرمارکت کوچک، فروشگاه زنجیره‌ای و
+                  فروشگاه آنلاین یکسان کار می‌کند.
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
-                    قیمت‌گذاری و سری‌های وارداتی
+                    سری‌های وارداتی و قیمت‌گذاری
                   </CardTitle>
                   <CardDescription>
                     هر سری ورود کالا با قیمت و تعداد مختلف ثبت می‌شود و از موجودی و قیمت قبلی جدا است
@@ -731,7 +751,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                 </div>
                 <div className="flex items-center gap-4">
                   <Badge variant="secondary" className="text-sm">
-                    موجودی کل: {getTotalStock()} 
+                    موجودی کل: {getTotalStock()}
                   </Badge>
                   <Button type="button" variant="outline" size="sm" onClick={handleAddPriceBatch}>
                     <Plus className="h-4 w-4 ml-1" />
