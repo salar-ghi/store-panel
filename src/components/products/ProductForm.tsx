@@ -596,13 +596,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 3: Dimensions & Pricing */}
+          {/* Tab 3: Dimensions & Weight */}
           <TabsContent value="dimensions" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>ابعاد و وزن محصول</CardTitle>
                 <CardDescription>
-                  واحد اندازه‌گیری ابعاد و وزن را مشخص کنید
+                  واحد اندازه‌گیری ابعاد و وزن را برای حمل، بسته‌بندی و چیدمان قفسه مشخص کنید
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
