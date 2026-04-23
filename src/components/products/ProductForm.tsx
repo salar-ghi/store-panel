@@ -164,6 +164,9 @@ interface ProductFormProps {
 
 export function ProductForm({ onSubmit, initialData, isEditMode = false }: ProductFormProps) {
   const [productImages, setProductImages] = useState<string[]>(initialData?.images || []);
+  const [coverImage, setCoverImage] = useState<string>(
+    initialData?.coverImage || initialData?.images?.[0] || ""
+  );
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
   const [attributes, setAttributes] = useState<ProductAttribute[]>(initialData?.attributes || []);
   const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
@@ -225,6 +228,10 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   });
 
   const handleSubmit = (data: FormData) => {
+    const resolvedCover = coverImage && productImages.includes(coverImage)
+      ? coverImage
+      : productImages[0];
+
     const productData: CreateProductRequest = {
       name: data.name,
       description: data.description,
@@ -232,6 +239,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       brandId: data.brandId,
       supplierId: data.supplierId,
       images: productImages,
+      coverImage: resolvedCover,
       tags: selectedTags,
       attributes: attributes,
       location: data.location,
@@ -320,14 +328,62 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsList>
 
           {/* Tab 1: Basic Info */}
-          <TabsContent value="basic" className="space-y-4">
-            {/* Status & Availability */}
-            <Card>
-              <CardHeader className="py-3">
-                <CardTitle className="text-sm">وضعیت محصول</CardTitle>
+          <TabsContent value="basic" className="space-y-5">
+            {/* Section: Identity */}
+            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
+                  اطلاعات شناسایی
+                </CardTitle>
+                <CardDescription>نام و توضیحات محصول</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>نام محصول</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثال: گوشی سامسونگ گلکسی S24" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>توضیحات</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="توضیحات کامل محصول..."
+                          className="min-h-[110px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Section: Status */}
+            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۲</span>
+                  وضعیت محصول
+                </CardTitle>
+                <CardDescription>وضعیت فعالیت و موجودی محصول را تعیین کنید</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <FormField
                     control={form.control}
                     name="status"
@@ -387,57 +443,41 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>نام محصول</FormLabel>
-                      <FormControl>
-                        <Input placeholder="نام محصول را وارد کنید" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {/* Section: Classification */}
+            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۳</span>
+                  دسته‌بندی و برند
+                </CardTitle>
+                <CardDescription>دسته، برند و تأمین‌کننده محصول</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SelectFields control={form.control} />
+              </CardContent>
+            </Card>
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>توضیحات</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="توضیحات محصول را وارد کنید"
-                          className="min-h-[120px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            {/* Section: Images */}
+            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۴</span>
+                  گالری تصاویر
+                </CardTitle>
+                <CardDescription>
+                  حداکثر ۵ تصویر آپلود کنید. روی هر تصویر کلیک کنید تا به عنوان «تصویر اصلی» انتخاب شود.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProductImageUpload
+                  value={productImages}
+                  onChange={setProductImages}
+                  coverImage={coverImage}
+                  onCoverChange={setCoverImage}
+                  maxImages={5}
                 />
-              </div>
-              
-              <div className="space-y-4">
-                <FormItem className="col-span-2">
-                  <FormLabel>تصاویر محصول</FormLabel>
-                  <FormDescription>
-                    تصاویر به صورت Base64 به سرور ارسال می‌شوند
-                  </FormDescription>
-                  <ProductImageUpload
-                    value={productImages}
-                    onChange={setProductImages}
-                    maxImages={5}
-                  />
-                </FormItem>
-              </div>
-            </div>
-
-            <SelectFields control={form.control} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Tab 2: Inventory */}

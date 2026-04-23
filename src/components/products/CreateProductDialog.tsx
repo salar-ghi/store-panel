@@ -44,7 +44,7 @@ export function CreateProductDialog({ open, onOpenChange }: CreateProductDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[750px]">
+      <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>ایجاد محصول جدید</DialogTitle>
           <DialogDescription>
