@@ -164,6 +164,9 @@ interface ProductFormProps {
 
 export function ProductForm({ onSubmit, initialData, isEditMode = false }: ProductFormProps) {
   const [productImages, setProductImages] = useState<string[]>(initialData?.images || []);
+  const [coverImage, setCoverImage] = useState<string>(
+    initialData?.coverImage || initialData?.images?.[0] || ""
+  );
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
   const [attributes, setAttributes] = useState<ProductAttribute[]>(initialData?.attributes || []);
   const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
@@ -225,6 +228,10 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   });
 
   const handleSubmit = (data: FormData) => {
+    const resolvedCover = coverImage && productImages.includes(coverImage)
+      ? coverImage
+      : productImages[0];
+
     const productData: CreateProductRequest = {
       name: data.name,
       description: data.description,
@@ -232,6 +239,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       brandId: data.brandId,
       supplierId: data.supplierId,
       images: productImages,
+      coverImage: resolvedCover,
       tags: selectedTags,
       attributes: attributes,
       location: data.location,
