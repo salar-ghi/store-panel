@@ -385,7 +385,7 @@ function SpacesTab({
         await StorageService.updateSpace(editing.id, data);
         toast.success('فضا ویرایش شد');
       } else {
-        await StorageService.createSpace(data);
+        await StorageService.createSpace(data as Required<SpaceForm>);
         toast.success('فضا اضافه شد');
       }
       setOpen(false);
@@ -653,7 +653,7 @@ function ZonesTab({
         await StorageService.updateZone(editing.id, data);
         toast.success('بخش ویرایش شد');
       } else {
-        await StorageService.createZone(data);
+        await StorageService.createZone(data as Required<ZoneForm>);
         toast.success('بخش اضافه شد');
       }
       setOpen(false);
@@ -881,7 +881,7 @@ function ShelvesTab({
         await StorageService.updateShelf(editing.id, data);
         toast.success('قفسه ویرایش شد');
       } else {
-        await StorageService.createShelf(data);
+        await StorageService.createShelf(data as Required<ShelfForm>);
         toast.success('قفسه اضافه شد');
       }
       setOpen(false);
