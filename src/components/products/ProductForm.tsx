@@ -117,8 +117,9 @@ const dimensionSchema = z.object({
 const stockSchema = z.object({
   quantity: z.coerce.number().int().nonnegative({ message: "تعداد باید عدد صحیح غیرمنفی باشد." }),
   reorderThreshold: z.coerce.number().int().nonnegative({ message: "حد سفارش مجدد باید عدد صحیح غیرمنفی باشد." }),
-  warehouseId: z.coerce.number({ required_error: "لطفا انبار را انتخاب کنید." }),
-  location: z.string().optional(),
+  spaceId: z.coerce.number({ required_error: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }).int().positive({ message: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }),
+  zoneId: z.coerce.number().int().optional(),
+  shelfId: z.coerce.number({ required_error: "لطفا قفسه را انتخاب کنید." }).int().positive({ message: "لطفا قفسه را انتخاب کنید." }),
   quantityUnit: z.enum(['piece', 'box', 'pack', 'carton', 'dozen', 'pair', 'set', 'liter', 'milliliter']),
 });
 
