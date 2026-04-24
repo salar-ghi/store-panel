@@ -24,7 +24,13 @@ import {
   Bell,
   MessageSquare,
   Inbox,
-  Truck
+  Truck,
+  Wallet,
+  Receipt,
+  Banknote,
+  Building2,
+  FileBarChart,
+  LayoutGrid
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -80,6 +86,19 @@ const sidebarItems = [
       { title: "تنظیمات اعلان‌ها", path: "/notification-settings", icon: Settings },
     ]
   },
+  {
+    title: "مدیریت مالی",
+    path: "/finance",
+    icon: Wallet,
+    subItems: [
+      { title: "داشبورد مالی", path: "/finance", icon: LayoutGrid },
+      { title: "تراکنش‌ها", path: "/finance/transactions", icon: Receipt },
+      { title: "قبوض و پرداخت‌ها", path: "/finance/bills", icon: Receipt },
+      { title: "حقوق و دستمزد", path: "/finance/payroll", icon: Banknote },
+      { title: "شعبه‌ها و حساب‌ها", path: "/finance/branches", icon: Building2 },
+      { title: "گزارش‌های مالی", path: "/finance/reports", icon: FileBarChart },
+    ]
+  },
   { title: "تگ‌ها", path: "/tags", icon: PictureInPicture },
   { title: "تخفیف‌ها", path: "/promotions", icon: Percent },
   { title: "کاربران", path: "/users", icon: Users },
@@ -125,7 +144,7 @@ function SidebarItem({
 export function Sidebar({ className }: SidebarProps) {
   const { collapsed } = useSidebarStore();
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["سفارشات", "انبارداری", "اعلان‌ها و پیام‌ها"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(["سفارشات", "انبارداری", "اعلان‌ها و پیام‌ها", "مدیریت مالی"]);
 
   const toggleExpanded = (title: string) => {
     setExpandedItems(prev => 
