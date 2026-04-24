@@ -31,8 +31,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { 
   CreateProductRequest, 
   ProductAttribute, 
@@ -43,7 +41,9 @@ import {
   ProductAvailability,
   ProductVariant
 } from "@/types/product";
-import { WarehouseService } from "@/services/warehouse-service";
+import { StorageService } from "@/services/storage-service";
+import { Warehouse } from "lucide-react";
+import { StorageLocationPicker } from "./StorageLocationPicker";
 
 // Weight unit options
 const weightUnits: { value: WeightUnit; label: string }[] = [
@@ -113,8 +113,9 @@ const dimensionSchema = z.object({
 const stockSchema = z.object({
   quantity: z.coerce.number().int().nonnegative({ message: "تعداد باید عدد صحیح غیرمنفی باشد." }),
   reorderThreshold: z.coerce.number().int().nonnegative({ message: "حد سفارش مجدد باید عدد صحیح غیرمنفی باشد." }),
-  warehouseId: z.coerce.number({ required_error: "لطفا انبار را انتخاب کنید." }),
-  location: z.string().optional(),
+  spaceId: z.coerce.number({ required_error: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }).int().positive({ message: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }),
+  zoneId: z.coerce.number().int().optional(),
+  shelfId: z.coerce.number({ required_error: "لطفا قفسه را انتخاب کنید." }).int().positive({ message: "لطفا قفسه را انتخاب کنید." }),
   quantityUnit: z.enum(['piece', 'box', 'pack', 'carton', 'dozen', 'pair', 'set', 'liter', 'milliliter']),
 });
 
@@ -172,9 +173,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
   const [activeTab, setActiveTab] = useState("basic");
 
-  const { data: warehouses = [] } = useQuery({
-    queryKey: ['warehouses'],
-    queryFn: WarehouseService.getAll
+  const { data: spaces = [] } = useQuery({
+    queryKey: ['storage', 'spaces'],
+    queryFn: () => StorageService.getSpaces(),
   });
 
   const form = useForm<FormData>({
@@ -199,12 +200,20 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         dimensionUnit: "cm",
         weightUnit: "gram"
       },
-      stock: initialData?.stock || {
+      stock: initialData?.stock ? {
+        quantity: initialData.stock.quantity ?? 0,
+        reorderThreshold: initialData.stock.reorderThreshold ?? 0,
+        spaceId: initialData.stock.spaceId ?? 0,
+        zoneId: initialData.stock.zoneId,
+        shelfId: initialData.stock.shelfId ?? 0,
+        quantityUnit: initialData.stock.quantityUnit ?? "piece",
+      } : {
         quantity: 0,
         reorderThreshold: 0,
-        warehouseId: 0,
-        location: "",
-        quantityUnit: "piece"
+        spaceId: 0,
+        zoneId: undefined,
+        shelfId: 0,
+        quantityUnit: "piece",
       },
       prices: initialData?.prices || [{
         batchNumber: `BATCH-${Date.now()}`,
@@ -257,8 +266,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       stock: data.stock ? {
         quantity: data.stock.quantity,
         reorderThreshold: data.stock.reorderThreshold,
-        warehouseId: data.stock.warehouseId,
-        location: data.stock.location || "",
+        spaceId: data.stock.spaceId,
+        zoneId: data.stock.zoneId,
+        shelfId: data.stock.shelfId,
         quantityUnit: data.stock.quantityUnit,
       } : undefined,
       prices: data.prices ? data.prices.map(price => ({
@@ -481,17 +491,34 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 2: Inventory */}
-          <TabsContent value="inventory" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>اطلاعات انبار و موجودی</CardTitle>
-                <CardDescription>
-                  واحد شمارش و اطلاعات انبارداری محصول را مشخص کنید
+          {/* Tab 2: Inventory — Storage Hierarchy (Space → Zone → Shelf) */}
+          <TabsContent value="inventory" className="space-y-5">
+            {/* Explainer */}
+            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Warehouse className="h-5 w-5 text-primary" />
+                  محل نگهداری محصول در ساختار انبار
+                </CardTitle>
+                <CardDescription className="leading-6">
+                  محل دقیق این محصول را در سلسله‌مراتب <strong>فضای ذخیره‌سازی ← بخش (اختیاری) ← قفسه</strong> مشخص کنید.
+                  این ساختار برای سوپرمارکت کوچک، فروشگاه زنجیره‌ای با زیرزمین و انبار آنلاین (Dark Store) یکسان کار می‌کند
+                  و به مسئول انبار کمک می‌کند سریع کالا را پیدا کند.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
+            </Card>
+
+            {/* Section 1: Counting unit & quantities */}
+            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
+                  واحد و موجودی
+                </CardTitle>
+                <CardDescription>واحد شمارش، موجودی اولیه و آستانه هشدار</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="stock.quantityUnit"
@@ -512,9 +539,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormDescription>
-                          مثال: عدد، جعبه، بسته، لیتر
-                        </FormDescription>
+                        <FormDescription>عدد، جعبه، بسته، لیتر …</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -529,6 +554,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         <FormControl>
                           <Input type="number" placeholder="0" min={0} step={1} {...field} />
                         </FormControl>
+                        <FormDescription>تعداد کنونی روی قفسه انتخاب‌شده</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -539,54 +565,11 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     name="stock.reorderThreshold"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>حد سفارش مجدد</FormLabel>
+                        <FormLabel>حد هشدار سفارش مجدد</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="0" min={0} step={1} {...field} />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="stock.warehouseId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>انبار</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(Number(value))} 
-                          defaultValue={field.value?.toString()}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="انتخاب انبار" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {warehouses.map((warehouse) => (
-                              <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                                {warehouse.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="stock.location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>محل دقیق در انبار</FormLabel>
-                        <FormControl>
-                          <Input placeholder="مثال: قفسه A-15" {...field} />
-                        </FormControl>
+                        <FormDescription>هنگام رسیدن به این عدد اطلاع‌رسانی می‌شود</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -594,6 +577,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                 </div>
               </CardContent>
             </Card>
+
+            {/* Section 2: Storage location (Space → Zone → Shelf) */}
+            <StorageLocationPicker form={form} spaces={spaces} />
           </TabsContent>
 
           {/* Tab 3: Dimensions & Weight */}
