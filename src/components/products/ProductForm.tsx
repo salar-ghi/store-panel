@@ -41,11 +41,9 @@ import {
   ProductAvailability,
   ProductVariant
 } from "@/types/product";
-import { WarehouseService } from "@/services/warehouse-service";
 import { StorageService } from "@/services/storage-service";
-import { StorageSpaceTypeLabels } from "@/types/storage";
-import { Warehouse, MapPin, Layers, Boxes } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { Warehouse } from "lucide-react";
+import { StorageLocationPicker } from "./StorageLocationPicker";
 
 // Weight unit options
 const weightUnits: { value: WeightUnit; label: string }[] = [
