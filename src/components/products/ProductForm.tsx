@@ -495,17 +495,34 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 2: Inventory */}
-          <TabsContent value="inventory" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>اطلاعات انبار و موجودی</CardTitle>
-                <CardDescription>
-                  واحد شمارش و اطلاعات انبارداری محصول را مشخص کنید
+          {/* Tab 2: Inventory — Storage Hierarchy (Space → Zone → Shelf) */}
+          <TabsContent value="inventory" className="space-y-5">
+            {/* Explainer */}
+            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Warehouse className="h-5 w-5 text-primary" />
+                  محل نگهداری محصول در ساختار انبار
+                </CardTitle>
+                <CardDescription className="leading-6">
+                  محل دقیق این محصول را در سلسله‌مراتب <strong>فضای ذخیره‌سازی ← بخش (اختیاری) ← قفسه</strong> مشخص کنید.
+                  این ساختار برای سوپرمارکت کوچک، فروشگاه زنجیره‌ای با زیرزمین و انبار آنلاین (Dark Store) یکسان کار می‌کند
+                  و به مسئول انبار کمک می‌کند سریع کالا را پیدا کند.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
+            </Card>
+
+            {/* Section 1: Counting unit & quantities */}
+            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
+                  واحد و موجودی
+                </CardTitle>
+                <CardDescription>واحد شمارش، موجودی اولیه و آستانه هشدار</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="stock.quantityUnit"
@@ -526,9 +543,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormDescription>
-                          مثال: عدد، جعبه، بسته، لیتر
-                        </FormDescription>
+                        <FormDescription>عدد، جعبه، بسته، لیتر …</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -543,6 +558,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         <FormControl>
                           <Input type="number" placeholder="0" min={0} step={1} {...field} />
                         </FormControl>
+                        <FormDescription>تعداد کنونی روی قفسه انتخاب‌شده</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -553,54 +569,11 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     name="stock.reorderThreshold"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>حد سفارش مجدد</FormLabel>
+                        <FormLabel>حد هشدار سفارش مجدد</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="0" min={0} step={1} {...field} />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="stock.warehouseId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>انبار</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(Number(value))} 
-                          defaultValue={field.value?.toString()}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="انتخاب انبار" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {warehouses.map((warehouse) => (
-                              <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                                {warehouse.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="stock.location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>محل دقیق در انبار</FormLabel>
-                        <FormControl>
-                          <Input placeholder="مثال: قفسه A-15" {...field} />
-                        </FormControl>
+                        <FormDescription>هنگام رسیدن به این عدد اطلاع‌رسانی می‌شود</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -608,6 +581,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                 </div>
               </CardContent>
             </Card>
+
+            {/* Section 2: Storage location (Space → Zone → Shelf) */}
+            <StorageLocationPicker form={form} spaces={spaces} />
           </TabsContent>
 
           {/* Tab 3: Dimensions & Weight */}
