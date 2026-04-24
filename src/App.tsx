@@ -30,6 +30,12 @@ import Messages from "@/pages/notifications/Messages";
 import NotificationSettings from "@/pages/notifications/NotificationSettings";
 import Suppliers from "@/pages/Suppliers";
 import SupplierDetails from "@/pages/SupplierDetails";
+import FinanceOverview from "@/pages/finance/FinanceOverview";
+import FinanceTransactions from "@/pages/finance/FinanceTransactions";
+import FinanceBills from "@/pages/finance/FinanceBills";
+import FinancePayroll from "@/pages/finance/FinancePayroll";
+import FinanceBranches from "@/pages/finance/FinanceBranches";
+import FinanceReports from "@/pages/finance/FinanceReports";
 import { useAuthStore } from "@/store/auth-store";
 
 // Create a client
@@ -249,6 +255,14 @@ const App = () => {
                 </ProtectedRoute>
               } />
               
+              {/* Finance Routes */}
+              <Route path="/finance" element={<ProtectedRoute><Layout><FinanceOverview /></Layout></ProtectedRoute>} />
+              <Route path="/finance/transactions" element={<ProtectedRoute><Layout><FinanceTransactions /></Layout></ProtectedRoute>} />
+              <Route path="/finance/bills" element={<ProtectedRoute><Layout><FinanceBills /></Layout></ProtectedRoute>} />
+              <Route path="/finance/payroll" element={<ProtectedRoute><Layout><FinancePayroll /></Layout></ProtectedRoute>} />
+              <Route path="/finance/branches" element={<ProtectedRoute><Layout><FinanceBranches /></Layout></ProtectedRoute>} />
+              <Route path="/finance/reports" element={<ProtectedRoute><Layout><FinanceReports /></Layout></ProtectedRoute>} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
