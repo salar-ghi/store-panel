@@ -177,9 +177,27 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
   const [activeTab, setActiveTab] = useState("basic");
 
-  const { data: warehouses = [] } = useQuery({
-    queryKey: ['warehouses'],
-    queryFn: WarehouseService.getAll
+  const { data: spaces = [] } = useQuery({
+    queryKey: ['storage', 'spaces'],
+    queryFn: () => StorageService.getSpaces(),
+  });
+
+  const selectedSpaceId = Number(form.watch?.('stock.spaceId') ?? 0);
+  const selectedZoneId = Number(form.watch?.('stock.zoneId') ?? 0);
+
+  const { data: zones = [] } = useQuery({
+    queryKey: ['storage', 'zones', selectedSpaceId],
+    queryFn: () => StorageService.getZones(selectedSpaceId || undefined),
+    enabled: selectedSpaceId > 0,
+  });
+
+  const { data: shelves = [] } = useQuery({
+    queryKey: ['storage', 'shelves', selectedSpaceId, selectedZoneId],
+    queryFn: () => StorageService.getShelves({
+      spaceId: selectedSpaceId || undefined,
+      zoneId: selectedZoneId || undefined,
+    }),
+    enabled: selectedSpaceId > 0,
   });
 
   const form = useForm<FormData>({
