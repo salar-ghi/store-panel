@@ -270,8 +270,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       stock: data.stock ? {
         quantity: data.stock.quantity,
         reorderThreshold: data.stock.reorderThreshold,
-        warehouseId: data.stock.warehouseId,
-        location: data.stock.location || "",
+        spaceId: data.stock.spaceId,
+        zoneId: data.stock.zoneId,
+        shelfId: data.stock.shelfId,
         quantityUnit: data.stock.quantityUnit,
       } : undefined,
       prices: data.prices ? data.prices.map(price => ({
