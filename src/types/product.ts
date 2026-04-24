@@ -21,7 +21,15 @@ export interface ProductDimension {
 export interface ProductStock {
   quantity: number;
   reorderThreshold: number;
-  warehouseId: number;
+  // New unified storage hierarchy (StorageSpace → Zone → Shelf)
+  spaceId?: number;
+  spaceName?: string;
+  zoneId?: number;
+  zoneName?: string;
+  shelfId?: number;
+  shelfCode?: string;
+  // Legacy field (kept for backward compatibility with old warehouse API)
+  warehouseId?: number;
   warehouseName?: string;
   location?: string;
   quantityUnit: QuantityUnit;
