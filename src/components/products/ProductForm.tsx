@@ -204,12 +204,20 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         dimensionUnit: "cm",
         weightUnit: "gram"
       },
-      stock: initialData?.stock || {
+      stock: initialData?.stock ? {
+        quantity: initialData.stock.quantity ?? 0,
+        reorderThreshold: initialData.stock.reorderThreshold ?? 0,
+        spaceId: initialData.stock.spaceId ?? 0,
+        zoneId: initialData.stock.zoneId,
+        shelfId: initialData.stock.shelfId ?? 0,
+        quantityUnit: initialData.stock.quantityUnit ?? "piece",
+      } : {
         quantity: 0,
         reorderThreshold: 0,
-        warehouseId: 0,
-        location: "",
-        quantityUnit: "piece"
+        spaceId: 0,
+        zoneId: undefined,
+        shelfId: 0,
+        quantityUnit: "piece",
       },
       prices: initialData?.prices || [{
         batchNumber: `BATCH-${Date.now()}`,
