@@ -4,23 +4,43 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, Plus, Filter, CheckCheck, X } from "lucide-react";
+import { Search, Download, Plus, CheckCheck, X, Pencil } from "lucide-react";
 import { FinanceService, formatCurrency } from "@/services/finance-service";
 import { Branch, Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
+import { TransactionFormDialog } from "@/components/finance/TransactionFormDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function FinanceTransactions() {
+  const { toast } = useToast();
   const [list, setList] = useState<Transaction[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [search, setSearch] = useState("");
   const [type, setType] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [branchId, setBranchId] = useState<string>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Transaction | null>(null);
+
+  const reload = () => FinanceService.getTransactions().then(setList);
 
   useEffect(() => {
-    FinanceService.getTransactions().then(setList);
+    reload();
     FinanceService.getBranches().then(setBranches);
   }, []);
+
+  const handleApprove = async (id: string) => {
+    await FinanceService.approveTransaction(id, "مدیر مالی");
+    toast({ title: "تراکنش تایید شد", description: "به‌صورت خودکار ثبت نهایی شد" });
+    reload();
+  };
+  const handleReject = async (id: string) => {
+    await FinanceService.rejectTransaction(id, "مدیر مالی");
+    toast({ title: "تراکنش رد شد", variant: "destructive" });
+    reload();
+  };
+  const openCreate = () => { setEditing(null); setDialogOpen(true); };
+  const openEdit = (t: Transaction) => { setEditing(t); setDialogOpen(true); };
 
   const filtered = useMemo(() => {
     return list.filter((t) => {
