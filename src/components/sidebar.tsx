@@ -30,7 +30,8 @@ import {
   Banknote,
   Building2,
   FileBarChart,
-  LayoutGrid
+  LayoutGrid,
+  ShieldCheck
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -93,6 +94,7 @@ const sidebarItems = [
     subItems: [
       { title: "داشبورد مالی", path: "/finance", icon: LayoutGrid },
       { title: "تراکنش‌ها", path: "/finance/transactions", icon: Receipt },
+      { title: "صف تایید مالی", path: "/finance/approvals", icon: ShieldCheck },
       { title: "قبوض و پرداخت‌ها", path: "/finance/bills", icon: Receipt },
       { title: "حقوق و دستمزد", path: "/finance/payroll", icon: Banknote },
       { title: "شعبه‌ها و حساب‌ها", path: "/finance/branches", icon: Building2 },

@@ -4,23 +4,43 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, Plus, Filter, CheckCheck, X } from "lucide-react";
+import { Search, Download, Plus, CheckCheck, X, Pencil } from "lucide-react";
 import { FinanceService, formatCurrency } from "@/services/finance-service";
 import { Branch, Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
+import { TransactionFormDialog } from "@/components/finance/TransactionFormDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function FinanceTransactions() {
+  const { toast } = useToast();
   const [list, setList] = useState<Transaction[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [search, setSearch] = useState("");
   const [type, setType] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [branchId, setBranchId] = useState<string>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Transaction | null>(null);
+
+  const reload = () => FinanceService.getTransactions().then(setList);
 
   useEffect(() => {
-    FinanceService.getTransactions().then(setList);
+    reload();
     FinanceService.getBranches().then(setBranches);
   }, []);
+
+  const handleApprove = async (id: string) => {
+    await FinanceService.approveTransaction(id, "مدیر مالی");
+    toast({ title: "تراکنش تایید شد", description: "به‌صورت خودکار ثبت نهایی شد" });
+    reload();
+  };
+  const handleReject = async (id: string) => {
+    await FinanceService.rejectTransaction(id, "مدیر مالی");
+    toast({ title: "تراکنش رد شد", variant: "destructive" });
+    reload();
+  };
+  const openCreate = () => { setEditing(null); setDialogOpen(true); };
+  const openEdit = (t: Transaction) => { setEditing(t); setDialogOpen(true); };
 
   const filtered = useMemo(() => {
     return list.filter((t) => {
@@ -41,7 +61,7 @@ export default function FinanceTransactions() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm"><Download className="h-4 w-4 ml-2" /> خروجی Excel</Button>
-          <Button size="sm"><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
+          <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
         </div>
       </div>
 
@@ -117,11 +137,12 @@ export default function FinanceTransactions() {
                     <TableCell className="text-left">
                       {t.status === "pending" ? (
                         <div className="flex gap-1 justify-end">
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success"><CheckCheck className="h-4 w-4" /></Button>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive"><X className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success" onClick={() => handleApprove(t.id)} title="تایید"><CheckCheck className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive" onClick={() => handleReject(t.id)} title="رد"><X className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(t)} title="ویرایش"><Pencil className="h-4 w-4" /></Button>
                         </div>
                       ) : (
-                        <Button size="sm" variant="ghost" className="h-8"><Filter className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" className="h-8" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
                       )}
                     </TableCell>
                   </TableRow>
@@ -134,6 +155,8 @@ export default function FinanceTransactions() {
           </Table>
         </div>
       </Card>
+
+      <TransactionFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSaved={reload} />
     </div>
   );
 }
