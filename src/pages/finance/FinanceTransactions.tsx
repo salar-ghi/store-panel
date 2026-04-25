@@ -137,11 +137,12 @@ export default function FinanceTransactions() {
                     <TableCell className="text-left">
                       {t.status === "pending" ? (
                         <div className="flex gap-1 justify-end">
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success"><CheckCheck className="h-4 w-4" /></Button>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive"><X className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success" onClick={() => handleApprove(t.id)} title="تایید"><CheckCheck className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive" onClick={() => handleReject(t.id)} title="رد"><X className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(t)} title="ویرایش"><Pencil className="h-4 w-4" /></Button>
                         </div>
                       ) : (
-                        <Button size="sm" variant="ghost" className="h-8"><Filter className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" className="h-8" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
                       )}
                     </TableCell>
                   </TableRow>
@@ -154,6 +155,8 @@ export default function FinanceTransactions() {
           </Table>
         </div>
       </Card>
+
+      <TransactionFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSaved={reload} />
     </div>
   );
 }
