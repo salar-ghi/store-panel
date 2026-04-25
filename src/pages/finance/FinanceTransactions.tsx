@@ -61,7 +61,7 @@ export default function FinanceTransactions() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm"><Download className="h-4 w-4 ml-2" /> خروجی Excel</Button>
-          <Button size="sm"><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
+          <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
         </div>
       </div>
 
