@@ -77,12 +77,56 @@ const payroll: PayrollEntry[] = [
 // ----- API -----
 const delay = <T>(data: T, ms = 200) => new Promise<T>((res) => setTimeout(() => res(data), ms));
 
+// Approval audit log
+export interface ApprovalLog {
+  transactionId: string;
+  approver: string;
+  action: "approved" | "rejected";
+  note?: string;
+  date: string;
+}
+const approvalLogs: ApprovalLog[] = [];
+
 export const FinanceService = {
   getBranches: () => delay(branches),
   getAccounts: () => delay(accounts),
-  getTransactions: () => delay(transactions),
+  getTransactions: () => delay([...transactions]),
   getBills: () => delay(bills),
   getPayroll: () => delay(payroll),
+  getApprovalLogs: () => delay([...approvalLogs]),
+
+  createTransaction: async (input: Omit<Transaction, "id" | "code">): Promise<Transaction> => {
+    const tx: Transaction = {
+      ...input,
+      id: `tx-${transactions.length + 1}-${Date.now()}`,
+      code: `TX-1404-${String(2000 + transactions.length)}`,
+    };
+    transactions.unshift(tx);
+    return delay(tx, 150);
+  },
+
+  updateTransaction: async (id: string, patch: Partial<Transaction>): Promise<Transaction | null> => {
+    const idx = transactions.findIndex((t) => t.id === id);
+    if (idx === -1) return delay(null);
+    transactions[idx] = { ...transactions[idx], ...patch };
+    return delay(transactions[idx], 120);
+  },
+
+  approveTransaction: async (id: string, approver: string, note?: string): Promise<Transaction | null> => {
+    const idx = transactions.findIndex((t) => t.id === id);
+    if (idx === -1) return delay(null);
+    transactions[idx] = { ...transactions[idx], status: "completed", approvedBy: approver };
+    approvalLogs.unshift({ transactionId: id, approver, action: "approved", note, date: new Date().toISOString() });
+    return delay(transactions[idx], 150);
+  },
+
+  rejectTransaction: async (id: string, approver: string, note?: string): Promise<Transaction | null> => {
+    const idx = transactions.findIndex((t) => t.id === id);
+    if (idx === -1) return delay(null);
+    transactions[idx] = { ...transactions[idx], status: "rejected", approvedBy: approver };
+    approvalLogs.unshift({ transactionId: id, approver, action: "rejected", note, date: new Date().toISOString() });
+    return delay(transactions[idx], 150);
+  },
 
   getSummary: async (branchId?: string): Promise<FinanceSummary> => {
     const list = branchId ? transactions.filter((t) => t.branchId === branchId) : transactions;
