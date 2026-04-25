@@ -36,6 +36,7 @@ import FinanceBills from "@/pages/finance/FinanceBills";
 import FinancePayroll from "@/pages/finance/FinancePayroll";
 import FinanceBranches from "@/pages/finance/FinanceBranches";
 import FinanceReports from "@/pages/finance/FinanceReports";
+import FinanceApprovals from "@/pages/finance/FinanceApprovals";
 import { useAuthStore } from "@/store/auth-store";
 
 // Create a client
@@ -258,6 +259,7 @@ const App = () => {
               {/* Finance Routes */}
               <Route path="/finance" element={<ProtectedRoute><Layout><FinanceOverview /></Layout></ProtectedRoute>} />
               <Route path="/finance/transactions" element={<ProtectedRoute><Layout><FinanceTransactions /></Layout></ProtectedRoute>} />
+              <Route path="/finance/approvals" element={<ProtectedRoute><Layout><FinanceApprovals /></Layout></ProtectedRoute>} />
               <Route path="/finance/bills" element={<ProtectedRoute><Layout><FinanceBills /></Layout></ProtectedRoute>} />
               <Route path="/finance/payroll" element={<ProtectedRoute><Layout><FinancePayroll /></Layout></ProtectedRoute>} />
               <Route path="/finance/branches" element={<ProtectedRoute><Layout><FinanceBranches /></Layout></ProtectedRoute>} />
