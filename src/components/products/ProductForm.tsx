@@ -1158,10 +1158,34 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end gap-4 pt-4 border-t">
-          <Button type="submit" className="min-w-[120px]">
-            {isEditMode ? 'بروزرسانی محصول' : 'ایجاد محصول'}
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrev}
+            disabled={isFirstStep}
+            className="gap-1"
+          >
+            <ChevronRight className="h-4 w-4" />
+            مرحله قبل
           </Button>
+
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+            <AlertCircle className="h-3.5 w-3.5" />
+            برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند
+          </div>
+
+          {!isLastStep ? (
+            <Button type="button" onClick={handleNext} className="gap-1 min-w-[140px]">
+              مرحله بعد: {steps[currentStepIndex + 1].label}
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button type="submit" className="min-w-[160px] gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Check className="h-4 w-4" />
+              {isEditMode ? "بروزرسانی محصول" : "ایجاد نهایی محصول"}
+            </Button>
+          )}
         </div>
       </form>
     </Form>
