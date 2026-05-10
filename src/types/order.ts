@@ -9,6 +9,13 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  // Inventory location this item is picked from
+  spaceId?: number;
+  spaceName?: string;
+  zoneId?: number;
+  zoneName?: string;
+  shelfId?: number;
+  shelfCode?: string;
 }
 
 export interface Order {
