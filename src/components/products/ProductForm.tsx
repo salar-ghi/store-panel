@@ -327,9 +327,93 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     return prices.reduce((sum, p) => sum + (p.quantity || 0) - (p.soldQuantity || 0), 0);
   };
 
+  // ---- Wizard step configuration ----
+  type StepKey = "basic" | "inventory" | "dimensions" | "pricing" | "variants" | "attributes";
+  const steps: {
+    key: StepKey;
+    label: string;
+    fields: (keyof FormData | string)[];
+  }[] = [
+    {
+      key: "basic",
+      label: "اطلاعات اولیه",
+      fields: ["name", "description", "categoryId", "brandId", "supplierId", "status", "availability"],
+    },
+    {
+      key: "inventory",
+      label: "موجودی و انبار",
+      fields: ["stock.quantityUnit", "stock.quantity", "stock.reorderThreshold", "stock.spaceId", "stock.shelfId"],
+    },
+    {
+      key: "dimensions",
+      label: "ابعاد و وزن",
+      fields: [
+        "dimensions.length", "dimensions.width", "dimensions.height", "dimensions.weight",
+        "dimensions.dimensionUnit", "dimensions.weightUnit",
+      ],
+    },
+    {
+      key: "pricing",
+      label: "قیمت و سری ورود",
+      fields: ["prices"],
+    },
+    { key: "variants", label: "متغیرها", fields: [] },
+    { key: "attributes", label: "ویژگی‌ها", fields: [] },
+  ];
+
+  const currentStepIndex = steps.findIndex((s) => s.key === activeTab);
+  const isLastStep = currentStepIndex === steps.length - 1;
+  const isFirstStep = currentStepIndex === 0;
+
+  const goToStep = (key: StepKey) => setActiveTab(key);
+
+  const handleNext = async () => {
+    const step = steps[currentStepIndex];
+    const fields = step.fields as any[];
+    const valid = fields.length === 0 ? true : await form.trigger(fields, { shouldFocus: true });
+    if (!valid) {
+      const errs = form.formState.errors as any;
+      const missing: string[] = [];
+      fields.forEach((f) => {
+        const path = String(f).split(".");
+        let cur: any = errs;
+        for (const p of path) cur = cur?.[p];
+        if (cur?.message) missing.push(cur.message);
+      });
+      toast.error(`لطفاً فیلدهای ضروری «${step.label}» را تکمیل کنید`, {
+        description: missing.slice(0, 3).join(" • ") || "برخی فیلدها نامعتبر هستند.",
+      });
+      return;
+    }
+    setActiveTab(steps[currentStepIndex + 1].key);
+  };
+
+  const handlePrev = () => {
+    if (!isFirstStep) setActiveTab(steps[currentStepIndex - 1].key);
+  };
+
+  // Validate every step before final submit
+  const handleFinalSubmit = form.handleSubmit(handleSubmit, (errors) => {
+    // find first step with an error and jump there
+    const firstBadStep = steps.find((s) =>
+      s.fields.some((f) => {
+        const path = String(f).split(".");
+        let cur: any = errors;
+        for (const p of path) cur = cur?.[p];
+        return !!cur;
+      })
+    );
+    if (firstBadStep) {
+      setActiveTab(firstBadStep.key);
+      toast.error(`فیلدهای ضروری در مرحله «${firstBadStep.label}» تکمیل نشده است`, {
+        description: "لطفاً موارد قرمز رنگ را اصلاح کنید.",
+      });
+    }
+  });
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" dir="rtl">
+      <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
           <TabsList className="grid grid-cols-6 mb-8">
             <TabsTrigger value="basic">اطلاعات اولیه</TabsTrigger>
