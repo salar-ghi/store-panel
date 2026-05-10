@@ -12,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Minus, Search } from "lucide-react";
+import { Plus, Minus, Search, PackageX } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 interface ProductSelectorProps {
   products: Product[];
@@ -21,6 +22,9 @@ interface ProductSelectorProps {
   brands: Brand[];
   selectedProducts: Map<number, number>; // productId -> quantity
   onProductSelect: (productId: number, quantity: number) => void;
+  /** Map of productId -> sellable quantity from the inventory engine, scoped to chosen branch/space. */
+  availableMap: Record<number, number>;
+  scopeLabel?: string;
 }
 
 export function ProductSelector({
@@ -29,6 +33,8 @@ export function ProductSelector({
   brands,
   selectedProducts,
   onProductSelect,
+  availableMap,
+  scopeLabel,
 }: ProductSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -40,6 +46,7 @@ export function ProductSelector({
     return brands.filter((b) => b.categoryIds?.includes(categoryId));
   }, [brands, selectedCategory]);
 
+  // Only sellable products: must be active/available AND have stock in scope
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch = product.name
@@ -50,17 +57,24 @@ export function ProductSelector({
         product.categoryId === parseInt(selectedCategory);
       const matchesBrand =
         selectedBrand === "all" || product.brandId === parseInt(selectedBrand);
-      return matchesSearch && matchesCategory && matchesBrand;
+      const isSellable =
+        product.status === "active" &&
+        (product.availability === "available" || product.availability === undefined);
+      const hasStock = (availableMap[product.id] ?? 0) > 0;
+      return matchesSearch && matchesCategory && matchesBrand && isSellable && hasStock;
     });
-  }, [products, searchTerm, selectedCategory, selectedBrand]);
+  }, [products, searchTerm, selectedCategory, selectedBrand, availableMap]);
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString("fa-IR") + " تومان";
-  };
+  const formatPrice = (price: number) => price.toLocaleString("fa-IR") + " تومان";
 
   const handleQuantityChange = (productId: number, delta: number) => {
     const currentQty = selectedProducts.get(productId) || 0;
-    const newQty = Math.max(0, currentQty + delta);
+    const max = availableMap[productId] ?? 0;
+    let newQty = Math.max(0, currentQty + delta);
+    if (newQty > max) {
+      newQty = max;
+      toast.warning(`موجودی قابل فروش این محصول ${max.toLocaleString("fa-IR")} عدد است`);
+    }
     onProductSelect(productId, newQty);
   };
 
@@ -72,7 +86,7 @@ export function ProductSelector({
           <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="جستجوی محصول..."
+            placeholder="جستجوی محصول دارای موجودی..."
             className="pr-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -112,16 +126,26 @@ export function ProductSelector({
         </Select>
       </div>
 
+      {scopeLabel && (
+        <div className="text-xs text-muted-foreground">
+          فقط محصولات دارای موجودی در «{scopeLabel}» نمایش داده می‌شوند.
+        </div>
+      )}
+
       {/* Products Grid */}
-      <ScrollArea dir="rtl" className="h-[300px] rounded-md border p-2">
+      <ScrollArea dir="rtl" className="h-[320px] rounded-md border p-2">
         <div className="grid gap-2">
           {filteredProducts.length === 0 ? (
-            <div className="flex h-[200px] items-center justify-center text-muted-foreground">
-              محصولی یافت نشد
+            <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-muted-foreground">
+              <PackageX className="h-8 w-8" />
+              <p className="text-sm">محصول قابل فروشی با این فیلترها یافت نشد</p>
+              <p className="text-xs">محصولات بدون موجودی نمایش داده نمی‌شوند</p>
             </div>
           ) : (
             filteredProducts.map((product) => {
               const quantity = selectedProducts.get(product.id) || 0;
+              const available = availableMap[product.id] ?? 0;
+              const lowStock = available > 0 && available <= 5;
               return (
                 <div
                   key={product.id}
@@ -131,16 +155,26 @@ export function ProductSelector({
                 >
                   <div className="flex-1 space-y-1">
                     <p className="font-medium">{product.name}</p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">
                         {product.categoryName}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         {product.brandName}
                       </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${
+                          lowStock
+                            ? "border-warning/40 bg-warning/10 text-warning"
+                            : "border-success/40 bg-success/10 text-success"
+                        }`}
+                      >
+                        موجودی: {available.toLocaleString("fa-IR")}
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.price ?? 0)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -154,15 +188,14 @@ export function ProductSelector({
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
-                    <span className="w-8 text-center font-medium">
-                      {quantity}
-                    </span>
+                    <span className="w-8 text-center font-medium">{quantity}</span>
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => handleQuantityChange(product.id, 1)}
+                      disabled={quantity >= available}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
