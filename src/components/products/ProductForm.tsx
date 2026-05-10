@@ -414,14 +414,44 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   return (
     <Form {...form}>
       <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
+        {/* Wizard progress header */}
+        <div className="mb-6 flex items-center justify-between gap-2 rounded-lg border bg-muted/40 p-3">
+          <div className="text-sm font-medium text-foreground">
+            مرحله {currentStepIndex + 1} از {steps.length}: {steps[currentStepIndex].label}
+          </div>
+          <div className="flex-1 mx-4 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StepKey)} className="w-full" dir="rtl">
           <TabsList className="grid grid-cols-6 mb-8">
-            <TabsTrigger value="basic">اطلاعات اولیه</TabsTrigger>
-            <TabsTrigger value="inventory">موجودی و انبار</TabsTrigger>
-            <TabsTrigger value="dimensions">ابعاد و وزن</TabsTrigger>
-            <TabsTrigger value="pricing">قیمت و سری ورود</TabsTrigger>
-            <TabsTrigger value="variants">متغیرها</TabsTrigger>
-            <TabsTrigger value="attributes">ویژگی‌ها</TabsTrigger>
+            {steps.map((s, idx) => {
+              const done = idx < currentStepIndex;
+              return (
+                <TabsTrigger key={s.key} value={s.key} className="gap-1.5">
+                  <span
+                    className={
+                      "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold " +
+                      (idx === currentStepIndex
+                        ? "bg-primary text-primary-foreground"
+                        : done
+                        ? "bg-emerald-500 text-white"
+                        : "bg-muted text-muted-foreground")
+                    }
+                  >
+                    {done ? <Check className="h-3 w-3" /> : idx + 1}
+                  </span>
+                  <span className="hidden sm:inline">{s.label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           {/* Tab 1: Basic Info */}
