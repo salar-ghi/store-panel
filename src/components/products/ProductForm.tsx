@@ -891,10 +891,15 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                           name={`prices.${index}.effectiveDate`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>تاریخ ورود</FormLabel>
+                              <FormLabel>تاریخ ورود به انبار</FormLabel>
                               <FormControl>
-                                <Input type="date" {...field} />
+                                <PersianDatePicker
+                                  value={field.value ? new Date(field.value) : undefined}
+                                  onChange={(d) => field.onChange(d ? d.toISOString().split("T")[0] : "")}
+                                  placeholder="انتخاب تاریخ ورود"
+                                />
                               </FormControl>
+                              <FormDescription>تاریخ شمسی</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -905,10 +910,15 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                           name={`prices.${index}.expiryDate`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>تاریخ انقضا (اختیاری)</FormLabel>
+                              <FormLabel>تاریخ خروج / انقضا (اختیاری)</FormLabel>
                               <FormControl>
-                                <Input type="date" {...field} />
+                                <PersianDatePicker
+                                  value={field.value ? new Date(field.value) : undefined}
+                                  onChange={(d) => field.onChange(d ? d.toISOString().split("T")[0] : "")}
+                                  placeholder="انتخاب تاریخ خروج"
+                                />
                               </FormControl>
+                              <FormDescription>تاریخ شمسی</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
