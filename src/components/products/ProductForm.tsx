@@ -4,8 +4,10 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Plus, X, Package, Trash2 } from "lucide-react";
+import { Plus, X, Package, Trash2, ChevronRight, ChevronLeft, Check, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { PersianDatePicker } from "@/components/ui/persian-datepicker";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { SelectFields } from "./SelectFields";
 import { ProductTagSelect } from "./ProductTagSelect";
@@ -325,17 +327,131 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     return prices.reduce((sum, p) => sum + (p.quantity || 0) - (p.soldQuantity || 0), 0);
   };
 
+  // ---- Wizard step configuration ----
+  type StepKey = "basic" | "inventory" | "dimensions" | "pricing" | "variants" | "attributes";
+  const steps: {
+    key: StepKey;
+    label: string;
+    fields: (keyof FormData | string)[];
+  }[] = [
+    {
+      key: "basic",
+      label: "اطلاعات اولیه",
+      fields: ["name", "description", "categoryId", "brandId", "supplierId", "status", "availability"],
+    },
+    {
+      key: "inventory",
+      label: "موجودی و انبار",
+      fields: ["stock.quantityUnit", "stock.quantity", "stock.reorderThreshold", "stock.spaceId", "stock.shelfId"],
+    },
+    {
+      key: "dimensions",
+      label: "ابعاد و وزن",
+      fields: [
+        "dimensions.length", "dimensions.width", "dimensions.height", "dimensions.weight",
+        "dimensions.dimensionUnit", "dimensions.weightUnit",
+      ],
+    },
+    {
+      key: "pricing",
+      label: "قیمت و سری ورود",
+      fields: ["prices"],
+    },
+    { key: "variants", label: "متغیرها", fields: [] },
+    { key: "attributes", label: "ویژگی‌ها", fields: [] },
+  ];
+
+  const currentStepIndex = steps.findIndex((s) => s.key === activeTab);
+  const isLastStep = currentStepIndex === steps.length - 1;
+  const isFirstStep = currentStepIndex === 0;
+
+  const goToStep = (key: StepKey) => setActiveTab(key);
+
+  const handleNext = async () => {
+    const step = steps[currentStepIndex];
+    const fields = step.fields as any[];
+    const valid = fields.length === 0 ? true : await form.trigger(fields, { shouldFocus: true });
+    if (!valid) {
+      const errs = form.formState.errors as any;
+      const missing: string[] = [];
+      fields.forEach((f) => {
+        const path = String(f).split(".");
+        let cur: any = errs;
+        for (const p of path) cur = cur?.[p];
+        if (cur?.message) missing.push(cur.message);
+      });
+      toast.error(`لطفاً فیلدهای ضروری «${step.label}» را تکمیل کنید`, {
+        description: missing.slice(0, 3).join(" • ") || "برخی فیلدها نامعتبر هستند.",
+      });
+      return;
+    }
+    setActiveTab(steps[currentStepIndex + 1].key);
+  };
+
+  const handlePrev = () => {
+    if (!isFirstStep) setActiveTab(steps[currentStepIndex - 1].key);
+  };
+
+  // Validate every step before final submit
+  const handleFinalSubmit = form.handleSubmit(handleSubmit, (errors) => {
+    // find first step with an error and jump there
+    const firstBadStep = steps.find((s) =>
+      s.fields.some((f) => {
+        const path = String(f).split(".");
+        let cur: any = errors;
+        for (const p of path) cur = cur?.[p];
+        return !!cur;
+      })
+    );
+    if (firstBadStep) {
+      setActiveTab(firstBadStep.key);
+      toast.error(`فیلدهای ضروری در مرحله «${firstBadStep.label}» تکمیل نشده است`, {
+        description: "لطفاً موارد قرمز رنگ را اصلاح کنید.",
+      });
+    }
+  });
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" dir="rtl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
+      <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
+        {/* Wizard progress header */}
+        <div className="mb-6 flex items-center justify-between gap-2 rounded-lg border bg-muted/40 p-3">
+          <div className="text-sm font-medium text-foreground">
+            مرحله {currentStepIndex + 1} از {steps.length}: {steps[currentStepIndex].label}
+          </div>
+          <div className="flex-1 mx-4 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StepKey)} className="w-full" dir="rtl">
           <TabsList className="grid grid-cols-6 mb-8">
-            <TabsTrigger value="basic">اطلاعات اولیه</TabsTrigger>
-            <TabsTrigger value="inventory">موجودی و انبار</TabsTrigger>
-            <TabsTrigger value="dimensions">ابعاد و وزن</TabsTrigger>
-            <TabsTrigger value="pricing">قیمت و سری ورود</TabsTrigger>
-            <TabsTrigger value="variants">متغیرها</TabsTrigger>
-            <TabsTrigger value="attributes">ویژگی‌ها</TabsTrigger>
+            {steps.map((s, idx) => {
+              const done = idx < currentStepIndex;
+              return (
+                <TabsTrigger key={s.key} value={s.key} className="gap-1.5">
+                  <span
+                    className={
+                      "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold " +
+                      (idx === currentStepIndex
+                        ? "bg-primary text-primary-foreground"
+                        : done
+                        ? "bg-emerald-500 text-white"
+                        : "bg-muted text-muted-foreground")
+                    }
+                  >
+                    {done ? <Check className="h-3 w-3" /> : idx + 1}
+                  </span>
+                  <span className="hidden sm:inline">{s.label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           {/* Tab 1: Basic Info */}
@@ -889,10 +1005,15 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                           name={`prices.${index}.effectiveDate`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>تاریخ ورود</FormLabel>
+                              <FormLabel>تاریخ ورود به انبار</FormLabel>
                               <FormControl>
-                                <Input type="date" {...field} />
+                                <PersianDatePicker
+                                  value={field.value ? new Date(field.value) : undefined}
+                                  onChange={(d) => field.onChange(d ? d.toISOString().split("T")[0] : "")}
+                                  placeholder="انتخاب تاریخ ورود"
+                                />
                               </FormControl>
+                              <FormDescription>تاریخ شمسی</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -903,10 +1024,15 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                           name={`prices.${index}.expiryDate`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>تاریخ انقضا (اختیاری)</FormLabel>
+                              <FormLabel>تاریخ خروج / انقضا (اختیاری)</FormLabel>
                               <FormControl>
-                                <Input type="date" {...field} />
+                                <PersianDatePicker
+                                  value={field.value ? new Date(field.value) : undefined}
+                                  onChange={(d) => field.onChange(d ? d.toISOString().split("T")[0] : "")}
+                                  placeholder="انتخاب تاریخ خروج"
+                                />
                               </FormControl>
+                              <FormDescription>تاریخ شمسی</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1032,10 +1158,34 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end gap-4 pt-4 border-t">
-          <Button type="submit" className="min-w-[120px]">
-            {isEditMode ? 'بروزرسانی محصول' : 'ایجاد محصول'}
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrev}
+            disabled={isFirstStep}
+            className="gap-1"
+          >
+            <ChevronRight className="h-4 w-4" />
+            مرحله قبل
           </Button>
+
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+            <AlertCircle className="h-3.5 w-3.5" />
+            برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند
+          </div>
+
+          {!isLastStep ? (
+            <Button type="button" onClick={handleNext} className="gap-1 min-w-[140px]">
+              مرحله بعد: {steps[currentStepIndex + 1].label}
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button type="submit" className="min-w-[160px] gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Check className="h-4 w-4" />
+              {isEditMode ? "بروزرسانی محصول" : "ایجاد نهایی محصول"}
+            </Button>
+          )}
         </div>
       </form>
     </Form>
