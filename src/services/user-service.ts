@@ -34,6 +34,16 @@ export class UserService {
     }
   }
 
+  static async updateUser(id: string, userData: UpdateUserRequest): Promise<User> {
+    try {
+      const response = await apiClient.put<User>(`/api/User/users/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  }
+
   static async getAllRoles(): Promise<Role[]> {
     const response = await apiClient.get<Role[]>('/api/User/roles');
     return response.data;
