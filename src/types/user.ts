@@ -33,6 +33,16 @@ export interface CreateRoleRequest {
   permissions?: string[]; // Optional field for future permission-based access control
 }
 
+export interface UpdateUserRequest {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phoneNumber: string;
+  description?: string;
+  roleIds: string[];
+  isAdmin?: boolean;
+}
+
 export type Permission = 'read' | 'write' | 'update' | 'delete' | 'all';
 
 export const AVAILABLE_PERMISSIONS: Permission[] = ['read', 'write', 'update', 'delete', 'all'];

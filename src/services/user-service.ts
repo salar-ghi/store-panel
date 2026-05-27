@@ -1,6 +1,6 @@
 
 import apiClient from '@/lib/api-client';
-import { User, Role, CreateUserRequest, CreateRoleRequest } from '@/types/user';
+import { User, Role, CreateUserRequest, CreateRoleRequest, UpdateUserRequest } from '@/types/user';
 
 export class UserService {
   static async getAllUsers(): Promise<User[]> {
@@ -30,6 +30,16 @@ export class UserService {
       return response.data;
     } catch (error) {
       console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  static async updateUser(id: string, userData: UpdateUserRequest): Promise<User> {
+    try {
+      const response = await apiClient.put<User>(`/api/User/users/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
       throw error;
     }
   }
