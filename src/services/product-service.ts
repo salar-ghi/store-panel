@@ -24,7 +24,7 @@ export class ProductService {
   }
 
   static async delete(id: number): Promise<void> {
-    await apiClient.delete(`/products/${id}`);
+    await apiClient.delete(`/api/Product/products/${id}`);
   }
 
   static async getLowStockProducts(): Promise<Product[]> {
