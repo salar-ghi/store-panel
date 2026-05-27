@@ -1,6 +1,6 @@
 
 import apiClient from '@/lib/api-client';
-import { User, Role, CreateUserRequest, CreateRoleRequest } from '@/types/user';
+import { User, Role, CreateUserRequest, CreateRoleRequest, UpdateUserRequest } from '@/types/user';
 
 export class UserService {
   static async getAllUsers(): Promise<User[]> {
