@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { User, LoginRequest, SignupRequest, AuthResponse } from '@/types/auth';
 import apiClient from '@/lib/api-client';
 import { toast } from 'sonner';
+import { setToken, clearToken, isTokenValid, getToken } from '@/lib/token';
 
 interface AuthState {
   user: User | null;
@@ -12,18 +13,9 @@ interface AuthState {
   error: string | null;
   login: (credentials: LoginRequest) => Promise<void>;
   signup: (userData: SignupRequest) => Promise<void>;
-  logout: () => void;
-  checkAuth: () => void;
+  logout: (opts?: { silent?: boolean; expired?: boolean }) => void;
+  checkAuth: () => boolean;
 }
-
-// Check if token exists in localStorage on init
-const getInitialAuthState = () => {
-  const token = localStorage.getItem('auth-token');
-  return {
-    token: token,
-    isAuthenticated: !!token,
-  };
-};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -33,17 +25,24 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
-      
+
       checkAuth: () => {
-        const token = localStorage.getItem('auth-token');
-        if (!token) {
+        const valid = isTokenValid();
+        if (!valid) {
+          const hadToken = !!getToken();
+          clearToken();
           set({ user: null, token: null, isAuthenticated: false });
+          if (hadToken) {
+            toast.error('نشست شما منقضی شده است، لطفاً دوباره وارد شوید');
+          }
+          return false;
         }
+        return true;
       },
-      
+
       login: async (credentials) => {
         try {
-          // For development, allow admin user to log in without API call
+          // Dev shortcut
           if (credentials.username === "admin" && credentials.password === "123456") {
             const adminUser: User = {
               id: "1",
@@ -51,32 +50,29 @@ export const useAuthStore = create<AuthState>()(
               phoneNumber: "1234567890",
               role: "admin"
             };
-            
+            setToken("dev-token");
             set({
               user: adminUser,
               token: "dev-token",
               isAuthenticated: true,
               isLoading: false,
             });
-            
-            localStorage.setItem('auth-token', "dev-token");
             toast.success('Logged in as admin');
             return;
           }
-          
+
           set({ isLoading: true, error: null });
           const response = await apiClient.post<AuthResponse>('/api/Auth/login', credentials);
           const { token, user } = response.data;
-          
-          localStorage.setItem('auth-token', token);
-          
+
+          setToken(token);
           set({
             user,
             token,
             isAuthenticated: true,
             isLoading: false,
           });
-          
+
           toast.success('Logged in successfully');
         } catch (error: any) {
           const message = error.response?.data?.message || 'خطا، دوباره تلاش کنید';
@@ -88,7 +84,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
           await apiClient.post('/api/Auth/signup', userData);
-          
           set({ isLoading: false });
           toast.success('Account created successfully');
         } catch (error: any) {
@@ -97,10 +92,12 @@ export const useAuthStore = create<AuthState>()(
           toast.error(message);
         }
       },
-      logout: () => {
-        localStorage.removeItem('auth-token');
+      logout: (opts) => {
+        clearToken();
         set({ user: null, token: null, isAuthenticated: false });
-        toast.success('Logged out successfully');
+        if (!opts?.silent) {
+          toast.success(opts?.expired ? 'نشست منقضی شد' : 'Logged out successfully');
+        }
       },
     }),
     {
@@ -109,10 +106,10 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// Check auth on app initialization
+// Sync persisted state with token validity on app boot
 if (typeof window !== 'undefined') {
-  const token = localStorage.getItem('auth-token');
-  if (!token) {
+  if (!isTokenValid()) {
+    clearToken();
     useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
   }
 }
