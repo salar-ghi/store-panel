@@ -1,5 +1,5 @@
-
 import axios from 'axios';
+import { isTokenValid, getToken, clearToken } from './token';
 
 const API_URL = 'https://localhost:5000';
 
@@ -10,10 +10,25 @@ const apiClient = axios.create({
   },
 });
 
-// Add a request interceptor to include auth token when available
+function forceLogout() {
+  clearToken();
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+    window.location.href = '/login?expired=1';
+  }
+}
+
+// Request interceptor — block expired tokens before they hit the network
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth-token');
+    const isAuthEndpoint = config.url?.includes('/api/Auth/');
+    if (!isAuthEndpoint) {
+      const token = getToken();
+      if (token && !isTokenValid()) {
+        forceLogout();
+        return Promise.reject(new Error('Token expired'));
+      }
+    }
+    const token = getToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -22,15 +37,13 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor for error handling
+// Response interceptor — handle backend 401s
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const { response } = error;
     if (response && response.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('auth-token');
-      window.location.href = '/login';
+      forceLogout();
     }
     return Promise.reject(error);
   }
