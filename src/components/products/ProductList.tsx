@@ -74,7 +74,7 @@ export function ProductList({
           maxPrice={maxPrice}
           categoryFilter={categoryFilter}
           brandFilter={brandFilter}
-          priceRange={priceRange}
+          priceRange={priceRange ?? [0, maxPrice]}
           sortField={sortField}
           sortOrder={sortOrder}
           setCategoryFilter={setCategoryFilter}
