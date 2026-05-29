@@ -41,16 +41,16 @@ export default function Suppliers() {
         setEditingSupplier={setEditingSupplier}
       />
 
-      <Card className="border shadow-sm bg-black text-white">
+      <Card className="border shadow-sm bg-card text-card-foreground">
         <CardHeader className="pb-3">
           <CardTitle>مدیریت تامین‌کنندگان</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardDescription className="text-muted-foreground">
             مشاهده و مدیریت تمامی تامین‌کنندگان محصولات
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center py-8 text-gray-300">در حال بارگذاری تامین‌کنندگان...</div>
+            <div className="flex justify-center py-8 text-muted-foreground">در حال بارگذاری تامین‌کنندگان...</div>
           ) : suppliers.length === 0 ? (
             <EmptySupplierState onAddSupplier={openDialog} />
           ) : (
