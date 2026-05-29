@@ -31,6 +31,7 @@ export function useProductFilter(products: Product[]) {
       brandFilter ? product.brandName === brandFilter : true
     )
     .filter((product) => {
+      if (!priceRange) return true;
       const price = getProductPrice(product);
       return price >= priceRange[0] && price <= priceRange[1];
     })
