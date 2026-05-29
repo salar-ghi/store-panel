@@ -38,6 +38,9 @@ import FinanceBranches from "@/pages/finance/FinanceBranches";
 import FinanceReports from "@/pages/finance/FinanceReports";
 import FinanceApprovals from "@/pages/finance/FinanceApprovals";
 import { useAuthStore } from "@/store/auth-store";
+import { isTokenValid, msUntilExpiry } from "@/lib/token";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -49,18 +52,49 @@ const queryClient = new QueryClient({
   },
 });
 
-// Protected route component
+// Protected route — validates token on every navigation and on a timer
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  const token = localStorage.getItem('auth-token');
-  
-  // Check both zustand state and localStorage
-  if (!isAuthenticated && !token) {
-    return <Navigate to="/login" replace />;
+  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  const location = useLocation();
+
+  // Re-check on every route change
+  const valid = isTokenValid();
+
+  useEffect(() => {
+    checkAuth();
+  }, [location.pathname, checkAuth]);
+
+  // Schedule auto-logout exactly when token expires
+  useEffect(() => {
+    if (!valid) return;
+    const ms = msUntilExpiry();
+    if (ms <= 0) return;
+    const timer = window.setTimeout(() => {
+      logout({ expired: true });
+      window.location.href = '/login?expired=1';
+    }, ms);
+    const interval = window.setInterval(() => {
+      if (!isTokenValid()) {
+        logout({ expired: true });
+        window.location.href = '/login?expired=1';
+      }
+    }, 60_000);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearInterval(interval);
+    };
+  }, [valid, logout]);
+
+  if (!valid && !isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
-  
+  if (!valid) {
+    return <Navigate to="/login?expired=1" replace />;
+  }
+
   return <>{children}</>;
 }
+
 
 const App = () => {
   return (

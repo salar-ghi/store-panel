@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,7 +29,15 @@ const formSchema = z.object({
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login, isLoading, error, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (searchParams.get('expired') === '1') {
+      toast.error('نشست شما منقضی شده است، لطفاً دوباره وارد شوید');
+    }
+  }, [searchParams]);
+
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
