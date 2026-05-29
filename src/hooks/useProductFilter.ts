@@ -7,7 +7,7 @@ export function useProductFilter(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [brandFilter, setBrandFilter] = useState<string>("");
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
   const [sortField, setSortField] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [stockFilter, setStockFilter] = useState<"all" | "inStock" | "lowStock" | "outOfStock">("all");
@@ -31,6 +31,7 @@ export function useProductFilter(products: Product[]) {
       brandFilter ? product.brandName === brandFilter : true
     )
     .filter((product) => {
+      if (!priceRange) return true;
       const price = getProductPrice(product);
       return price >= priceRange[0] && price <= priceRange[1];
     })
@@ -64,13 +65,13 @@ export function useProductFilter(products: Product[]) {
     setSearchQuery("");
     setCategoryFilter("");
     setBrandFilter("");
-    setPriceRange([0, maxPrice]);
+    setPriceRange(null);
     setSortField("name");
     setSortOrder("asc");
     setStockFilter("all");
   };
 
-  const hasFilters = categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc" || priceRange[0] > 0 || priceRange[1] < maxPrice || stockFilter !== "all";
+  const hasFilters = !!(categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc" || (priceRange && (priceRange[0] > 0 || priceRange[1] < maxPrice)) || stockFilter !== "all");
 
   return {
     searchQuery,
