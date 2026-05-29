@@ -65,13 +65,13 @@ export function useProductFilter(products: Product[]) {
     setSearchQuery("");
     setCategoryFilter("");
     setBrandFilter("");
-    setPriceRange([0, maxPrice]);
+    setPriceRange(null);
     setSortField("name");
     setSortOrder("asc");
     setStockFilter("all");
   };
 
-  const hasFilters = categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc" || priceRange[0] > 0 || priceRange[1] < maxPrice || stockFilter !== "all";
+  const hasFilters = !!(categoryFilter || brandFilter || sortField !== "name" || sortOrder !== "asc" || (priceRange && (priceRange[0] > 0 || priceRange[1] < maxPrice)) || stockFilter !== "all");
 
   return {
     searchQuery,
