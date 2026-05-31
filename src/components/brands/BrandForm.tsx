@@ -219,46 +219,19 @@ export function BrandForm({ editingBrand, onSuccess }: BrandFormProps) {
         />
 
         <FormItem>
-          <FormLabel>دسته‌بندی‌ها</FormLabel>
-          <div className="border rounded-lg p-3 bg-background">
-            {selectedCategories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {selectedCategories.map(id => (
-                  <Badge 
-                    key={id} 
-                    variant="secondary"
-                    className="flex items-center gap-1 cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-                    onClick={() => toggleCategory(id)}
-                  >
-                    {getCategoryName(id)}
-                    <X className="h-3 w-3" />
-                  </Badge>
-                ))}
-              </div>
-            )}
-            <ScrollArea className="h-32" dir="rtl">
-              <div className="space-y-2">
-                {categories.map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2 space-x-reverse">
-                    <Checkbox
-                      id={`category-${category.id}`}
-                      checked={selectedCategories.includes(category.id)}
-                      onCheckedChange={() => toggleCategory(category.id)}
-                    />
-                    <label
-                      htmlFor={`category-${category.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      {category.name}
-                    </label>
-                  </div>
-                ))}
-                {categories.length === 0 && (
-                  <p className="text-sm text-muted-foreground">دسته‌بندی‌ای موجود نیست</p>
-                )}
-              </div>
-            </ScrollArea>
+          <div className="flex items-center justify-between mb-1.5">
+            <FormLabel className="text-sm font-semibold">
+              دسته‌بندی‌ها
+            </FormLabel>
+            <span className="text-[11px] text-muted-foreground">
+              برند را به یک یا چند دسته متصل کنید
+            </span>
           </div>
+          <CategoryMultiSelectTree
+            categories={categories}
+            selectedIds={selectedCategories}
+            onChange={setSelectedCategories}
+          />
         </FormItem>
         
         <DialogFooter>          
