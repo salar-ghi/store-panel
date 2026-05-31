@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { CreateCategoryForm } from "@/components/categories/CreateCategoryForm";
 import { EmptyCategories } from "@/components/categories/EmptyCategories";
-import { CategoriesGrid } from "@/components/categories/CategoriesGrid";
+import { CategoryTreeView } from "@/components/categories/CategoryTreeView";
 
 export default function Categories() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -132,7 +132,7 @@ export default function Categories() {
           </Button>
         </div>
       ) : categories && categories.length > 0 ? (
-        <CategoriesGrid
+        <CategoryTreeView
           categories={categories}
           onEditCategory={openEditDialog}
           onDeleteCategory={handleDeleteCategory}

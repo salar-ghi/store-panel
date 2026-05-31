@@ -19,6 +19,7 @@ import {
 import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { SupplierService } from "@/services/supplier-service";
+import { CategoryTreeSelect } from "@/components/categories/CategoryTreeSelect";
 
 interface SelectFieldsProps {
   control: Control<any>;
@@ -70,28 +71,14 @@ export function SelectFields({ control }: SelectFieldsProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>دسته‌بندی</FormLabel>
-            <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="انتخاب دسته‌بندی" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem
-                    key={category.id}
-                    value={category.id.toString()}
-                  >
-                    {category.name}
-                  </SelectItem>
-                ))}
-                {categories.length === 0 && (
-                  <SelectItem value="no-category" disabled>
-                    دسته‌بندی‌ای موجود نیست
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <FormControl>
+              <CategoryTreeSelect
+                categories={categories}
+                value={field.value?.toString()}
+                onChange={(value) => field.onChange(Number(value))}
+                placeholder="انتخاب دسته‌بندی"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

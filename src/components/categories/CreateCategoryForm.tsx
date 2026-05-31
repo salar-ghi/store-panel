@@ -18,13 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CategoryTreeSelect } from "@/components/categories/CategoryTreeSelect";
 import { ImageUpload } from "@/components/ui/image-upload";
 
 const formSchema = z.object({
@@ -160,24 +154,18 @@ export function CreateCategoryForm({ onSuccess, editingCategory }: CreateCategor
           render={({ field }) => (
             <FormItem>
               <FormLabel>دسته‌بندی والد (اختیاری)</FormLabel>
-              <Select
-                onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))}
-                value={field.value?.toString() || "none"}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="دسته‌بندی والد را انتخاب کنید" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">هیچ والدی انتخاب نشده</SelectItem>
-                  {parentOptions.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <CategoryTreeSelect
+                  categories={parentOptions}
+                  value={field.value?.toString() || "none"}
+                  onChange={(value) =>
+                    field.onChange(value === "none" ? undefined : parseInt(value))
+                  }
+                  noneValue="none"
+                  noneLabel="بدون والد (دسته‌بندی اصلی)"
+                  placeholder="دسته‌بندی والد را انتخاب کنید"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
