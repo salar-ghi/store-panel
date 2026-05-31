@@ -18,6 +18,7 @@ import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { CategoryMultiSelectTree } from "@/components/categories/CategoryMultiSelectTree";
 
 const brandFormSchema = z.object({
   name: z.string().min(2, { message: "نام برند باید حداقل ۲ کاراکتر باشد" }),
