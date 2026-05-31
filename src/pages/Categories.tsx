@@ -132,7 +132,7 @@ export default function Categories() {
           </Button>
         </div>
       ) : categories && categories.length > 0 ? (
-        <CategoriesGrid
+        <CategoryTreeView
           categories={categories}
           onEditCategory={openEditDialog}
           onDeleteCategory={handleDeleteCategory}
