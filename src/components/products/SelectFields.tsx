@@ -19,6 +19,7 @@ import {
 import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { SupplierService } from "@/services/supplier-service";
+import { CategoryTreeSelect } from "@/components/categories/CategoryTreeSelect";
 
 interface SelectFieldsProps {
   control: Control<any>;
