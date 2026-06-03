@@ -1166,7 +1166,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
         </Tabs>
 
-        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+        <div className="sticky bottom-0 -mx-6 px-6 py-3 mt-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t z-10 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Button
             type="button"
             variant="outline"
@@ -1178,7 +1178,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             مرحله قبل
           </Button>
 
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
             <AlertCircle className="h-3.5 w-3.5" />
             برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند
           </div>
