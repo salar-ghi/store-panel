@@ -846,19 +846,19 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+            <Card className="shadow-none">
+              <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="h-5 w-5" />
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
                     سری‌های وارداتی و قیمت‌گذاری
                   </CardTitle>
                   <CardDescription>
                     هر سری ورود کالا با قیمت و تعداد مختلف ثبت می‌شود و از موجودی و قیمت قبلی جدا است
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="text-sm">
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant="secondary" className="text-xs">
                     موجودی کل: {getTotalStock()}
                   </Badge>
                   <Button type="button" variant="outline" size="sm" onClick={handleAddPriceBatch}>
@@ -867,7 +867,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 {priceFields.map((field, index) => (
                   <Card key={field.id} className="border-dashed">
                     <CardHeader className="py-3 flex flex-row items-center justify-between">
