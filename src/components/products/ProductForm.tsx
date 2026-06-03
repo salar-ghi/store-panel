@@ -1076,13 +1076,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 4: Variants */}
-          <TabsContent value="variants" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>متغیرهای محصول</CardTitle>
+          {/* Tab 5: Variants */}
+          <TabsContent value="variants" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">متغیرهای محصول</CardTitle>
                 <CardDescription>
-                  متغیرهایی مانند رنگ، سایز، ظرفیت و... را برای محصول تعریف کنید. هر متغیر می‌تواند چندین گزینه داشته باشد.
+                  متغیرهایی مانند رنگ، سایز، ظرفیت و... را تعریف کنید. هر متغیر می‌تواند چندین گزینه داشته باشد.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1094,33 +1094,34 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 5: Attributes & Tags */}
-          <TabsContent value="attributes" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>تگ‌های محصول</CardTitle>
+          {/* Tab 6: Attributes & Tags */}
+          <TabsContent value="attributes" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">تگ‌های محصول</CardTitle>
+                <CardDescription>برچسب‌هایی برای جستجو و فیلتر سریع‌تر محصول</CardDescription>
               </CardHeader>
               <CardContent>
-                <FormItem>
-                  <FormLabel>تگ‌های محصول</FormLabel>
-                  <ProductTagSelect
-                    value={selectedTags}
-                    onChange={setSelectedTags}
-                    maxTags={10}
-                  />
-                </FormItem>
+                <ProductTagSelect
+                  value={selectedTags}
+                  onChange={setSelectedTags}
+                  maxTags={10}
+                />
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>ویژگی‌های محصول</CardTitle>
+            <Card className="shadow-none">
+              <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base">ویژگی‌های محصول</CardTitle>
+                  <CardDescription>ویژگی‌های فنی به‌صورت کلید/مقدار</CardDescription>
+                </div>
                 <Button 
                   type="button"
                   variant="outline" 
                   size="sm"
                   onClick={handleAddAttribute}
-                  className="h-8"
+                  className="h-8 shrink-0"
                 >
                   <Plus className="h-4 w-4 ml-1" />
                   افزودن ویژگی
@@ -1154,9 +1155,10 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     </div>
                   ))}
                   {attributes.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      هنوز ویژگی‌ای اضافه نشده است
-                    </p>
+                    <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                      <p className="text-sm">هنوز ویژگی‌ای اضافه نشده است</p>
+                      <p className="text-xs mt-1">می‌توانید ویژگی‌هایی مثل «جنس: چرم» یا «گارانتی: ۱۸ ماهه» اضافه کنید.</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
