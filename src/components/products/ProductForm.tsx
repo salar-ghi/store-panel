@@ -414,41 +414,52 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   return (
     <Form {...form}>
       <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
-        {/* Wizard progress header */}
-        <div className="mb-6 flex items-center justify-between gap-2 rounded-lg border bg-muted/40 p-3">
-          <div className="text-sm font-medium text-foreground">
-            مرحله {currentStepIndex + 1} از {steps.length}: {steps[currentStepIndex].label}
+        {/* Enterprise stepper */}
+        <div className="rounded-lg border bg-card">
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">مرحله</span>
+              <span className="font-semibold text-foreground">{currentStepIndex + 1}</span>
+              <span className="text-muted-foreground">از {steps.length}</span>
+              <span className="mx-2 text-border">|</span>
+              <span className="font-medium text-foreground">{steps[currentStepIndex].label}</span>
+            </div>
+            <div className="text-xs text-muted-foreground tabular-nums">
+              {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
+            </div>
           </div>
-          <div className="flex-1 mx-4 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className="h-0.5 bg-muted">
             <div
               className="h-full bg-primary transition-all duration-300"
               style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
             />
           </div>
-          <div className="text-xs text-muted-foreground">
-            {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
-          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StepKey)} className="w-full" dir="rtl">
-          <TabsList className="grid grid-cols-6 mb-8">
+          <TabsList className="grid grid-cols-6 mb-6 h-auto bg-muted/40 p-1">
             {steps.map((s, idx) => {
               const done = idx < currentStepIndex;
+              const active = idx === currentStepIndex;
               return (
-                <TabsTrigger key={s.key} value={s.key} className="gap-1.5">
+                <TabsTrigger
+                  key={s.key}
+                  value={s.key}
+                  className="gap-1.5 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   <span
                     className={
-                      "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold " +
-                      (idx === currentStepIndex
+                      "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold transition-colors " +
+                      (active
                         ? "bg-primary text-primary-foreground"
                         : done
-                        ? "bg-emerald-500 text-white"
+                        ? "bg-primary/15 text-primary"
                         : "bg-muted text-muted-foreground")
                     }
                   >
                     {done ? <Check className="h-3 w-3" /> : idx + 1}
                   </span>
-                  <span className="hidden sm:inline">{s.label}</span>
+                  <span className="hidden sm:inline text-xs">{s.label}</span>
                 </TabsTrigger>
               );
             })}
@@ -457,10 +468,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 1: Basic Info */}
           <TabsContent value="basic" className="space-y-5">
             {/* Section: Identity */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
                   اطلاعات شناسایی
                 </CardTitle>
                 <CardDescription>نام و توضیحات محصول</CardDescription>
@@ -501,10 +511,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section: Status */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۲</span>
                   وضعیت محصول
                 </CardTitle>
                 <CardDescription>وضعیت فعالیت و موجودی محصول را تعیین کنید</CardDescription>
@@ -571,10 +580,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section: Classification */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۳</span>
                   دسته‌بندی و برند
                 </CardTitle>
                 <CardDescription>دسته، برند و تأمین‌کننده محصول</CardDescription>
@@ -585,10 +593,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section: Images */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۴</span>
                   گالری تصاویر
                 </CardTitle>
                 <CardDescription>
@@ -610,7 +617,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 2: Inventory — Storage Hierarchy (Space → Zone → Shelf) */}
           <TabsContent value="inventory" className="space-y-5">
             {/* Explainer */}
-            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+            <Card className="bg-muted/30 border-dashed shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Warehouse className="h-5 w-5 text-primary" />
@@ -625,10 +632,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section 1: Counting unit & quantities */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
                   واحد و موجودی
                 </CardTitle>
                 <CardDescription>واحد شمارش، موجودی اولیه و آستانه هشدار</CardDescription>
@@ -824,7 +830,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 4: Pricing & Import Batches */}
           <TabsContent value="pricing" className="space-y-6">
             {/* Explainer card: how batch/lot pricing works */}
-            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+            <Card className="bg-muted/30 border-dashed shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Package className="h-5 w-5 text-primary" />
@@ -1181,7 +1187,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               <ChevronLeft className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" className="min-w-[160px] gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button type="submit" className="min-w-[160px] gap-1 ">
               <Check className="h-4 w-4" />
               {isEditMode ? "بروزرسانی محصول" : "ایجاد نهایی محصول"}
             </Button>
