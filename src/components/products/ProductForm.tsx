@@ -415,6 +415,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     <Form {...form}>
       <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
         {/* Enterprise stepper */}
+        <div className="sticky top-0 z-10 -mx-6 px-6 pt-1 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="rounded-lg border bg-card">
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <div className="flex items-center gap-2 text-sm">
@@ -435,6 +436,8 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             />
           </div>
         </div>
+        </div>
+
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StepKey)} className="w-full" dir="rtl">
           <TabsList className="grid grid-cols-6 mb-6 h-auto bg-muted/40 p-1">
@@ -705,16 +708,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
 
           {/* Tab 3: Dimensions & Weight */}
-          <TabsContent value="dimensions" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>ابعاد و وزن محصول</CardTitle>
+          <TabsContent value="dimensions" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">ابعاد و وزن محصول</CardTitle>
                 <CardDescription>
                   واحد اندازه‌گیری ابعاد و وزن را برای حمل، بسته‌بندی و چیدمان قفسه مشخص کنید
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 mb-4">
+              <CardContent className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="dimensions.dimensionUnit"
@@ -766,7 +769,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                   />
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="dimensions.length"
@@ -828,7 +831,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
 
           {/* Tab 4: Pricing & Import Batches */}
-          <TabsContent value="pricing" className="space-y-6">
+          <TabsContent value="pricing" className="space-y-5">
             {/* Explainer card: how batch/lot pricing works */}
             <Card className="bg-muted/30 border-dashed shadow-none">
               <CardHeader className="py-4">
@@ -846,19 +849,19 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+            <Card className="shadow-none">
+              <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="h-5 w-5" />
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
                     سری‌های وارداتی و قیمت‌گذاری
                   </CardTitle>
                   <CardDescription>
                     هر سری ورود کالا با قیمت و تعداد مختلف ثبت می‌شود و از موجودی و قیمت قبلی جدا است
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="text-sm">
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant="secondary" className="text-xs">
                     موجودی کل: {getTotalStock()}
                   </Badge>
                   <Button type="button" variant="outline" size="sm" onClick={handleAddPriceBatch}>
@@ -867,7 +870,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 {priceFields.map((field, index) => (
                   <Card key={field.id} className="border-dashed">
                     <CardHeader className="py-3 flex flex-row items-center justify-between">
@@ -898,7 +901,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                       )}
                     </CardHeader>
                     <CardContent className="pt-0 space-y-4">
-                      <div className="grid grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <FormField
                           control={form.control}
                           name={`prices.${index}.quantity`}
@@ -956,7 +959,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         />
                       </div>
 
-                      <div className="grid grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <FormField
                           control={form.control}
                           name={`prices.${index}.currency`}
@@ -1076,13 +1079,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 4: Variants */}
-          <TabsContent value="variants" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>متغیرهای محصول</CardTitle>
+          {/* Tab 5: Variants */}
+          <TabsContent value="variants" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">متغیرهای محصول</CardTitle>
                 <CardDescription>
-                  متغیرهایی مانند رنگ، سایز، ظرفیت و... را برای محصول تعریف کنید. هر متغیر می‌تواند چندین گزینه داشته باشد.
+                  متغیرهایی مانند رنگ، سایز، ظرفیت و... را تعریف کنید. هر متغیر می‌تواند چندین گزینه داشته باشد.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1094,33 +1097,34 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
-          {/* Tab 5: Attributes & Tags */}
-          <TabsContent value="attributes" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>تگ‌های محصول</CardTitle>
+          {/* Tab 6: Attributes & Tags */}
+          <TabsContent value="attributes" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">تگ‌های محصول</CardTitle>
+                <CardDescription>برچسب‌هایی برای جستجو و فیلتر سریع‌تر محصول</CardDescription>
               </CardHeader>
               <CardContent>
-                <FormItem>
-                  <FormLabel>تگ‌های محصول</FormLabel>
-                  <ProductTagSelect
-                    value={selectedTags}
-                    onChange={setSelectedTags}
-                    maxTags={10}
-                  />
-                </FormItem>
+                <ProductTagSelect
+                  value={selectedTags}
+                  onChange={setSelectedTags}
+                  maxTags={10}
+                />
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>ویژگی‌های محصول</CardTitle>
+            <Card className="shadow-none">
+              <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base">ویژگی‌های محصول</CardTitle>
+                  <CardDescription>ویژگی‌های فنی به‌صورت کلید/مقدار</CardDescription>
+                </div>
                 <Button 
                   type="button"
                   variant="outline" 
                   size="sm"
                   onClick={handleAddAttribute}
-                  className="h-8"
+                  className="h-8 shrink-0"
                 >
                   <Plus className="h-4 w-4 ml-1" />
                   افزودن ویژگی
@@ -1154,9 +1158,10 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     </div>
                   ))}
                   {attributes.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      هنوز ویژگی‌ای اضافه نشده است
-                    </p>
+                    <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                      <p className="text-sm">هنوز ویژگی‌ای اضافه نشده است</p>
+                      <p className="text-xs mt-1">می‌توانید ویژگی‌هایی مثل «جنس: چرم» یا «گارانتی: ۱۸ ماهه» اضافه کنید.</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -1164,7 +1169,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
         </Tabs>
 
-        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+        <div className="sticky bottom-0 -mx-6 px-6 py-3 mt-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t z-10 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Button
             type="button"
             variant="outline"
@@ -1176,7 +1181,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             مرحله قبل
           </Button>
 
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
             <AlertCircle className="h-3.5 w-3.5" />
             برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند
           </div>
