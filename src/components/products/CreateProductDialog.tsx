@@ -44,14 +44,26 @@ export function CreateProductDialog({ open, onOpenChange }: CreateProductDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>ایجاد محصول جدید</DialogTitle>
-          <DialogDescription>
-            برای ایجاد محصول جدید، اطلاعات زیر را وارد کنید.
-          </DialogDescription>
+      <DialogContent
+        dir="rtl"
+        className="sm:max-w-[900px] max-h-[92vh] overflow-hidden p-0 gap-0 bg-background"
+      >
+        <DialogHeader className="px-6 py-4 border-b bg-card">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+              <Plus className="h-4 w-4" />
+            </div>
+            <div className="text-right">
+              <DialogTitle className="text-base font-semibold">ایجاد محصول جدید</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                مراحل را به ترتیب تکمیل کنید تا محصول در فروشگاه ثبت شود.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <ProductForm onSubmit={handleSubmit} />
+        <div className="overflow-y-auto max-h-[calc(92vh-72px)] px-6 py-5">
+          <ProductForm onSubmit={handleSubmit} />
+        </div>
       </DialogContent>
     </Dialog>
   );
