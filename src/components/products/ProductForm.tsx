@@ -468,10 +468,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 1: Basic Info */}
           <TabsContent value="basic" className="space-y-5">
             {/* Section: Identity */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
                   اطلاعات شناسایی
                 </CardTitle>
                 <CardDescription>نام و توضیحات محصول</CardDescription>
@@ -512,10 +511,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section: Status */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۲</span>
                   وضعیت محصول
                 </CardTitle>
                 <CardDescription>وضعیت فعالیت و موجودی محصول را تعیین کنید</CardDescription>
@@ -582,10 +580,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section: Classification */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۳</span>
                   دسته‌بندی و برند
                 </CardTitle>
                 <CardDescription>دسته، برند و تأمین‌کننده محصول</CardDescription>
@@ -596,10 +593,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section: Images */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۴</span>
                   گالری تصاویر
                 </CardTitle>
                 <CardDescription>
@@ -621,7 +617,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 2: Inventory — Storage Hierarchy (Space → Zone → Shelf) */}
           <TabsContent value="inventory" className="space-y-5">
             {/* Explainer */}
-            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+            <Card className="bg-muted/30 border-dashed shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Warehouse className="h-5 w-5 text-primary" />
@@ -636,10 +632,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
 
             {/* Section 1: Counting unit & quantities */}
-            <Card className="border-r-4 border-r-primary/70 shadow-sm">
+            <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">۱</span>
                   واحد و موجودی
                 </CardTitle>
                 <CardDescription>واحد شمارش، موجودی اولیه و آستانه هشدار</CardDescription>
@@ -835,7 +830,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 4: Pricing & Import Batches */}
           <TabsContent value="pricing" className="space-y-6">
             {/* Explainer card: how batch/lot pricing works */}
-            <Card className="border-r-4 border-r-primary/70 bg-primary/5">
+            <Card className="bg-muted/30 border-dashed shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Package className="h-5 w-5 text-primary" />
@@ -1192,7 +1187,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               <ChevronLeft className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" className="min-w-[160px] gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button type="submit" className="min-w-[160px] gap-1 ">
               <Check className="h-4 w-4" />
               {isEditMode ? "بروزرسانی محصول" : "ایجاد نهایی محصول"}
             </Button>
