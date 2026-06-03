@@ -828,7 +828,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
 
           {/* Tab 4: Pricing & Import Batches */}
-          <TabsContent value="pricing" className="space-y-6">
+          <TabsContent value="pricing" className="space-y-5">
             {/* Explainer card: how batch/lot pricing works */}
             <Card className="bg-muted/30 border-dashed shadow-none">
               <CardHeader className="py-4">
