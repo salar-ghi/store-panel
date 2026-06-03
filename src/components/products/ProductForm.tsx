@@ -436,6 +436,8 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             />
           </div>
         </div>
+        </div>
+
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StepKey)} className="w-full" dir="rtl">
           <TabsList className="grid grid-cols-6 mb-6 h-auto bg-muted/40 p-1">
