@@ -415,6 +415,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     <Form {...form}>
       <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
         {/* Enterprise stepper */}
+        <div className="sticky top-0 z-10 -mx-6 px-6 pt-1 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="rounded-lg border bg-card">
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <div className="flex items-center gap-2 text-sm">
