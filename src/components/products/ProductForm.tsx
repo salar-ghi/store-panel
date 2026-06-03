@@ -705,16 +705,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           </TabsContent>
 
           {/* Tab 3: Dimensions & Weight */}
-          <TabsContent value="dimensions" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>ابعاد و وزن محصول</CardTitle>
+          <TabsContent value="dimensions" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">ابعاد و وزن محصول</CardTitle>
                 <CardDescription>
                   واحد اندازه‌گیری ابعاد و وزن را برای حمل، بسته‌بندی و چیدمان قفسه مشخص کنید
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 mb-4">
+              <CardContent className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="dimensions.dimensionUnit"
@@ -766,7 +766,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                   />
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="dimensions.length"
