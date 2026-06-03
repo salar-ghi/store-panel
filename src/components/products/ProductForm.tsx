@@ -956,7 +956,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         />
                       </div>
 
-                      <div className="grid grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <FormField
                           control={form.control}
                           name={`prices.${index}.currency`}
