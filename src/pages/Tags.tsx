@@ -93,12 +93,12 @@ export default function Tags() {
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Color</TableHead>
-                    <TableHead>Products</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableRow>
+                    <TableHead>نام</TableHead>
+                    <TableHead>رنگ</TableHead>
+                    <TableHead>محصولات</TableHead>
+                    <TableHead>تاریخ ایجاد</TableHead>
+                    <TableHead className="text-right">عملیات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
