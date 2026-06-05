@@ -232,9 +232,9 @@ export function AddSupplierDialog({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>شماره تلفن</FormLabel>
+                    <FormLabel>شماره موبایل</FormLabel>
                     <FormControl>
-                      <Input placeholder="شماره تلفن را وارد کنید" {...field} />
+                      <Input placeholder="شماره موبایل را وارد کنید" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
