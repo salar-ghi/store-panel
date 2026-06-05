@@ -1,5 +1,6 @@
 
-import { Pencil, Trash } from "lucide-react";
+import { useState } from "react";
+import { Pencil, Trash, AlertTriangle } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -17,6 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BrandListProps {
   brands: Brand[];
@@ -25,23 +36,20 @@ interface BrandListProps {
 
 export function BrandList({ brands, onEdit }: BrandListProps) {
   const queryClient = useQueryClient();
+  const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
 
   const deleteMutation = useMutation({
     mutationFn: BrandService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
       toast.success("برند با موفقیت حذف شد");
+      setBrandToDelete(null);
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "خطا در حذف برند");
+      setBrandToDelete(null);
     },
   });
-
-  const handleDelete = (id: number) => {
-    if (confirm("آیا از حذف این برند اطمینان دارید؟")) {
-      deleteMutation.mutate(id);
-    }
-  };
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
@@ -103,7 +111,7 @@ export function BrandList({ brands, onEdit }: BrandListProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDelete(brand.id)}
+                  onClick={() => setBrandToDelete(brand)}
                   className="hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                 >
                   <Trash className="h-4 w-4" />
@@ -113,6 +121,47 @@ export function BrandList({ brands, onEdit }: BrandListProps) {
           ))}
         </TableBody>
       </Table>
+
+      <AlertDialog
+        open={!!brandToDelete}
+        onOpenChange={(open) => !open && setBrandToDelete(null)}
+      >
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="text-right">
+                <AlertDialogTitle>حذف برند</AlertDialogTitle>
+                <AlertDialogDescription>
+                  این عملیات قابل بازگشت نیست.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-foreground">
+            آیا از حذف برند{" "}
+            <span className="font-semibold">«{brandToDelete?.name}»</span>{" "}
+            اطمینان دارید؟
+          </div>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              انصراف
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (brandToDelete) deleteMutation.mutate(brandToDelete.id);
+              }}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "در حال حذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
