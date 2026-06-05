@@ -87,7 +87,7 @@ export default function Tags() {
             </div>
           ) : error ? (
             <div className="text-destructive text-center py-8">
-              Failed to load tags
+              خطا در بارگذاری برچسب‌ها
             </div>
           ) : (
             <div className="rounded-md border">
