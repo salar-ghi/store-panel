@@ -125,7 +125,7 @@ export default function Tags() {
                               <span className="capitalize">{tag.color}</span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">Default</span>
+                            <span className="text-muted-foreground">پیش‌فرض</span>
                           )}
                         </TableCell>
                         <TableCell>
