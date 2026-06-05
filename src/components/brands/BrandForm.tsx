@@ -89,6 +89,7 @@ export function BrandForm({ editingBrand, onSuccess }: BrandFormProps) {
         toast.success("برند با موفقیت ایجاد شد");
       }
       
+      await queryClient.invalidateQueries({ queryKey: ["brands"] });
       onSuccess();
       form.reset();
       setLogoPreview(null);
