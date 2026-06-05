@@ -32,7 +32,7 @@ const COLORS = [
 ];
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
   description: z.string().optional(),
   color: z.string().optional(),
 });
