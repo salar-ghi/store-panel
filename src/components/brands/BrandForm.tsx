@@ -38,6 +38,7 @@ export function BrandForm({ editingBrand, onSuccess }: BrandFormProps) {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const queryClient = useQueryClient();
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
