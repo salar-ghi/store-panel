@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -17,6 +17,7 @@ import {
   Warehouse as WarehouseIcon,
   PackageSearch,
   ArrowDown,
+  AlertTriangle,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { StorageService } from '@/services/storage-service';
 import {
   StorageSpace,
@@ -354,6 +365,7 @@ function SpacesTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StorageSpace | null>(null);
   const [search, setSearch] = useState('');
+  const [spaceToDelete, setSpaceToDelete] = useState<StorageSpace | null>(null);
 
   const form = useForm<SpaceForm>({
     resolver: zodResolver(spaceSchema),
@@ -395,11 +407,21 @@ function SpacesTab({
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm('با حذف این فضا، تمام بخش‌ها و قفسه‌های آن نیز حذف می‌شوند. ادامه می‌دهید؟')) return;
-    await StorageService.deleteSpace(id);
-    toast.success('فضا حذف شد');
-    onChanged();
+  const deleteSpaceMutation = useMutation({
+    mutationFn: StorageService.deleteSpace,
+    onSuccess: () => {
+      toast.success('فضا حذف شد');
+      setSpaceToDelete(null);
+      onChanged();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'خطا در حذف فضا');
+      setSpaceToDelete(null);
+    },
+  });
+
+  const onDelete = (s: StorageSpace) => {
+    setSpaceToDelete(s);
   };
 
   const list = spaces.filter(
@@ -457,7 +479,7 @@ function SpacesTab({
                       <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s.id)}>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -611,6 +633,47 @@ function SpacesTab({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!spaceToDelete}
+        onOpenChange={(open) => !open && setSpaceToDelete(null)}
+      >
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="text-right">
+                <AlertDialogTitle>حذف فضا</AlertDialogTitle>
+                <AlertDialogDescription>
+                  این عملیات قابل بازگشت نیست.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-foreground">
+            با حذف فضای{" "}
+            <span className="font-semibold">«{spaceToDelete?.name}»</span>،{" "}
+            تمام بخش‌ها و قفسه‌های آن نیز حذف می‌شوند. آیا اطمینان دارید؟
+          </div>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={deleteSpaceMutation.isPending}>
+              انصراف
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (spaceToDelete) deleteSpaceMutation.mutate(spaceToDelete.id);
+              }}
+              disabled={deleteSpaceMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteSpaceMutation.isPending ? "در حال حذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
@@ -630,6 +693,7 @@ function ZonesTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StorageZone | null>(null);
   const [filterSpace, setFilterSpace] = useState<string>('all');
+  const [zoneToDelete, setZoneToDelete] = useState<StorageZone | null>(null);
 
   const form = useForm<ZoneForm>({
     resolver: zodResolver(zoneSchema),
@@ -663,11 +727,21 @@ function ZonesTab({
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm('این بخش حذف شود؟ قفسه‌های مرتبط بدون بخش باقی می‌مانند.')) return;
-    await StorageService.deleteZone(id);
-    toast.success('حذف شد');
-    onChanged();
+  const deleteZoneMutation = useMutation({
+    mutationFn: StorageService.deleteZone,
+    onSuccess: () => {
+      toast.success('بخش حذف شد');
+      setZoneToDelete(null);
+      onChanged();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'خطا در حذف بخش');
+      setZoneToDelete(null);
+    },
+  });
+
+  const onDelete = (z: StorageZone) => {
+    setZoneToDelete(z);
   };
 
   const list = filterSpace === 'all' ? zones : zones.filter((z) => z.spaceId === Number(filterSpace));
@@ -733,7 +807,7 @@ function ZonesTab({
                         <Button variant="ghost" size="icon" onClick={() => openEdit(z)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(z.id)}>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(z)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -825,6 +899,47 @@ function ZonesTab({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!zoneToDelete}
+        onOpenChange={(open) => !open && setZoneToDelete(null)}
+      >
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="text-right">
+                <AlertDialogTitle>حذف بخش</AlertDialogTitle>
+                <AlertDialogDescription>
+                  این عملیات قابل بازگشت نیست.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-foreground">
+            آیا از حذف بخش{" "}
+            <span className="font-semibold">«{zoneToDelete?.name}»</span>{" "}
+            اطمینان دارید؟ قفسه‌های مرتبط بدون بخش باقی می‌مانند.
+          </div>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={deleteZoneMutation.isPending}>
+              انصراف
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (zoneToDelete) deleteZoneMutation.mutate(zoneToDelete.id);
+              }}
+              disabled={deleteZoneMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteZoneMutation.isPending ? "در حال حذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
@@ -846,6 +961,7 @@ function ShelvesTab({
   const [filterSpace, setFilterSpace] = useState<string>('all');
   const [filterZone, setFilterZone] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [shelfToDelete, setShelfToDelete] = useState<Shelf | null>(null);
 
   const form = useForm<ShelfForm>({
     resolver: zodResolver(shelfSchema),
@@ -891,11 +1007,21 @@ function ShelvesTab({
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm('این قفسه حذف شود؟')) return;
-    await StorageService.deleteShelf(id);
-    toast.success('حذف شد');
-    onChanged();
+  const deleteShelfMutation = useMutation({
+    mutationFn: StorageService.deleteShelf,
+    onSuccess: () => {
+      toast.success('قفسه حذف شد');
+      setShelfToDelete(null);
+      onChanged();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'خطا در حذف قفسه');
+      setShelfToDelete(null);
+    },
+  });
+
+  const onDelete = (sh: Shelf) => {
+    setShelfToDelete(sh);
   };
 
   const list = shelves
@@ -1004,7 +1130,7 @@ function ShelvesTab({
                         <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s.id)}>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -1168,6 +1294,47 @@ function ShelvesTab({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!shelfToDelete}
+        onOpenChange={(open) => !open && setShelfToDelete(null)}
+      >
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="text-right">
+                <AlertDialogTitle>حذف قفسه</AlertDialogTitle>
+                <AlertDialogDescription>
+                  این عملیات قابل بازگشت نیست.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-foreground">
+            آیا از حذف قفسه{" "}
+            <span className="font-semibold">«{shelfToDelete?.code}{shelfToDelete?.name ? ` — ${shelfToDelete.name}` : ''}»</span>{" "}
+            اطمینان دارید؟
+          </div>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={deleteShelfMutation.isPending}>
+              انصراف
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (shelfToDelete) deleteShelfMutation.mutate(shelfToDelete.id);
+              }}
+              disabled={deleteShelfMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteShelfMutation.isPending ? "در حال حذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
