@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -479,7 +479,7 @@ function SpacesTab({
                       <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s.id)}>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
