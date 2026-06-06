@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,84 +17,39 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Search, Percent, Plus } from "lucide-react";
+import { Search, Percent, Plus, Loader2 } from "lucide-react";
 import { DiscountForm } from "@/components/promotions/DiscountForm";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { PromotionService } from "@/services/promotion-service";
+import { Discount } from "@/types/promotion";
+import { formatPersianDateShort, toPersianDigits } from "@/lib/persian-date";
 
-interface Discount {
-  id: string;
-  code: string;
-  type: "percentage" | "fixed";
-  amount: string;
-  startDate: string;
-  endDate: string;
-  usedCount: number;
-  status: "active" | "expired" | "used";
+function getStatus(d: Discount): "active" | "expired" | "inactive" {
+  if (!d.isActive) return "inactive";
+  const now = new Date();
+  if (new Date(d.endDate) < now) return "expired";
+  return "active";
 }
-
-const discountsMockData: Discount[] = [
-  {
-    id: "DISC-001",
-    code: "SUMMER50",
-    type: "percentage",
-    amount: "۵۰٪",
-    startDate: "۱۴۰۴/۰۲/۰۱",
-    endDate: "۱۴۰۴/۰۴/۳۱",
-    usedCount: 24,
-    status: "active",
-  },
-  {
-    id: "DISC-002",
-    code: "WELCOME20",
-    type: "percentage",
-    amount: "۲۰٪",
-    startDate: "۱۴۰۴/۰۱/۰۱",
-    endDate: "۱۴۰۴/۱۲/۲۹",
-    usedCount: 156,
-    status: "active",
-  },
-  {
-    id: "DISC-003",
-    code: "NEWYEAR",
-    type: "fixed",
-    amount: "۵۰,۰۰۰ تومان",
-    startDate: "۱۴۰۳/۱۲/۲۰",
-    endDate: "۱۴۰۴/۰۱/۲۰",
-    usedCount: 98,
-    status: "expired",
-  },
-  {
-    id: "DISC-004",
-    code: "FLASH25",
-    type: "percentage",
-    amount: "۲۵٪",
-    startDate: "۱۴۰۴/۰۲/۱۰",
-    endDate: "۱۴۰۴/۰۲/۱۲",
-    usedCount: 50,
-    status: "used",
-  },
-  {
-    id: "DISC-005",
-    code: "LOYAL10",
-    type: "percentage",
-    amount: "۱۰٪",
-    startDate: "۱۴۰۴/۰۱/۰۱",
-    endDate: "۱۴۰۴/۱۲/۲۹",
-    usedCount: 42,
-    status: "active",
-  },
-];
 
 export default function Promotions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDiscountFormOpen, setIsDiscountFormOpen] = useState(false);
-  const [discounts, setDiscounts] = useState<Discount[]>(discountsMockData);
+
+  const { data: discounts = [], isLoading } = useQuery({
+    queryKey: ["discounts"],
+    queryFn: () => PromotionService.getAllDiscounts(),
+  });
 
   const filteredDiscounts = discounts.filter(
     (discount) =>
       discount.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       discount.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const activeCount = discounts.filter((d) => getStatus(d) === "active").length;
+  const expiredCount = discounts.filter((d) => getStatus(d) === "expired").length;
+  const inactiveCount = discounts.filter((d) => getStatus(d) === "inactive").length;
 
   return (
     <div className="space-y-6  py-6 animate-fade-in">
@@ -126,13 +80,12 @@ export default function Promotions() {
               تخفیف‌های فعال
             </CardTitle>
             <CardDescription className="text-2xl font-bold">
-              {discounts.filter((d) => d.status === "active").length}
+              {toPersianDigits(activeCount)}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-xs text-muted-foreground">
-              {discounts.filter((d) => d.status === "active").length} تخفیف از{" "}
-              {discounts.length} تخفیف
+              {toPersianDigits(activeCount)} تخفیف از {toPersianDigits(discounts.length)} تخفیف
             </div>
           </CardContent>
         </Card>
@@ -143,13 +96,12 @@ export default function Promotions() {
               تخفیف‌های منقضی شده
             </CardTitle>
             <CardDescription className="text-2xl font-bold">
-              {discounts.filter((d) => d.status === "expired").length}
+              {toPersianDigits(expiredCount)}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-xs text-muted-foreground">
-              {discounts.filter((d) => d.status === "expired").length} تخفیف از{" "}
-              {discounts.length} تخفیف
+              {toPersianDigits(expiredCount)} تخفیف از {toPersianDigits(discounts.length)} تخفیف
             </div>
           </CardContent>
         </Card>
@@ -157,16 +109,15 @@ export default function Promotions() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              تخفیف‌های استفاده شده
+              تخفیف‌های غیرفعال
             </CardTitle>
             <CardDescription className="text-2xl font-bold">
-              {discounts.filter((d) => d.status === "used").length}
+              {toPersianDigits(inactiveCount)}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-xs text-muted-foreground">
-              {discounts.filter((d) => d.status === "used").length} تخفیف از{" "}
-              {discounts.length} تخفیف
+              {toPersianDigits(inactiveCount)} تخفیف از {toPersianDigits(discounts.length)} تخفیف
             </div>
           </CardContent>
         </Card>
@@ -192,54 +143,65 @@ export default function Promotions() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDiscounts.length > 0 ? (
-                filteredDiscounts.map((discount) => (
-                  <TableRow key={discount.id}>
-                    <TableCell className="font-medium">{discount.id}</TableCell>
-                    <TableCell>{discount.code}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Percent className="mr-1 h-4 w-4 text-muted-foreground" />
-                        {discount.amount}
-                      </div>
-                    </TableCell>
-                    <TableCell>{discount.startDate}</TableCell>
-                    <TableCell>{discount.endDate}</TableCell>
-                    <TableCell>{discount.usedCount}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          discount.status === "active"
-                            ? "bg-success/10 text-success border-success/20"
-                            : discount.status === "expired"
-                            ? "bg-destructive/10 text-destructive border-destructive/20"
-                            : "bg-warning/10 text-warning border-warning/20"
-                        }
-                      >
-                        {discount.status === "active"
-                          ? "فعال"
-                          : discount.status === "expired"
-                          ? "منقضی شده"
-                          : "استفاده شده"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 justify-end">
-                        <Button size="sm" variant="outline">
-                          ویرایش
-                        </Button>
-                        <Button
-                          size="sm"
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              ) : filteredDiscounts.length > 0 ? (
+                filteredDiscounts.map((discount) => {
+                  const status = getStatus(discount);
+                  return (
+                    <TableRow key={discount.id}>
+                      <TableCell className="font-medium">{discount.id}</TableCell>
+                      <TableCell>{discount.code}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Percent className="mr-1 h-4 w-4 text-muted-foreground" />
+                          {discount.discountType === "percentage"
+                            ? `${toPersianDigits(discount.amount)}٪`
+                            : `${toPersianDigits(discount.amount.toLocaleString())} تومان`}
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatPersianDateShort(discount.startDate)}</TableCell>
+                      <TableCell>{formatPersianDateShort(discount.endDate)}</TableCell>
+                      <TableCell>{toPersianDigits(discount.usedCount ?? 0)}</TableCell>
+                      <TableCell>
+                        <Badge
                           variant="outline"
-                          className="bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30"
+                          className={
+                            status === "active"
+                              ? "bg-success/10 text-success border-success/20"
+                              : status === "expired"
+                              ? "bg-destructive/10 text-destructive border-destructive/20"
+                              : "bg-warning/10 text-warning border-warning/20"
+                          }
                         >
-                          غیرفعال
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                          {status === "active"
+                            ? "فعال"
+                            : status === "expired"
+                            ? "منقضی شده"
+                            : "غیرفعال"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 justify-end">
+                          <Button size="sm" variant="outline">
+                            ویرایش
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30"
+                          >
+                            غیرفعال
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center">
@@ -250,18 +212,12 @@ export default function Promotions() {
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-end">
           <Button variant="outline">صادرات به اکسل</Button>
-          <Button onClick={() => setIsDiscountFormOpen(true)}>
-            <Plus className="ml-2 h-4 w-4" /> تخفیف جدید
-          </Button>
         </CardFooter>
       </Card>
 
-      <DiscountForm
-        open={isDiscountFormOpen}
-        onOpenChange={setIsDiscountFormOpen}
-      />
+      <DiscountForm open={isDiscountFormOpen} onOpenChange={setIsDiscountFormOpen} />
     </div>
   );
 }
