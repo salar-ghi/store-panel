@@ -407,11 +407,21 @@ function SpacesTab({
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm('با حذف این فضا، تمام بخش‌ها و قفسه‌های آن نیز حذف می‌شوند. ادامه می‌دهید؟')) return;
-    await StorageService.deleteSpace(id);
-    toast.success('فضا حذف شد');
-    onChanged();
+  const deleteSpaceMutation = useMutation({
+    mutationFn: StorageService.deleteSpace,
+    onSuccess: () => {
+      toast.success('فضا حذف شد');
+      setSpaceToDelete(null);
+      onChanged();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'خطا در حذف فضا');
+      setSpaceToDelete(null);
+    },
+  });
+
+  const onDelete = (s: StorageSpace) => {
+    setSpaceToDelete(s);
   };
 
   const list = spaces.filter(
