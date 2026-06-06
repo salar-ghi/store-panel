@@ -693,6 +693,7 @@ function ZonesTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StorageZone | null>(null);
   const [filterSpace, setFilterSpace] = useState<string>('all');
+  const [zoneToDelete, setZoneToDelete] = useState<StorageZone | null>(null);
 
   const form = useForm<ZoneForm>({
     resolver: zodResolver(zoneSchema),
@@ -726,11 +727,21 @@ function ZonesTab({
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm('این بخش حذف شود؟ قفسه‌های مرتبط بدون بخش باقی می‌مانند.')) return;
-    await StorageService.deleteZone(id);
-    toast.success('حذف شد');
-    onChanged();
+  const deleteZoneMutation = useMutation({
+    mutationFn: StorageService.deleteZone,
+    onSuccess: () => {
+      toast.success('بخش حذف شد');
+      setZoneToDelete(null);
+      onChanged();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'خطا در حذف بخش');
+      setZoneToDelete(null);
+    },
+  });
+
+  const onDelete = (z: StorageZone) => {
+    setZoneToDelete(z);
   };
 
   const list = filterSpace === 'all' ? zones : zones.filter((z) => z.spaceId === Number(filterSpace));
@@ -796,7 +807,7 @@ function ZonesTab({
                         <Button variant="ghost" size="icon" onClick={() => openEdit(z)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(z.id)}>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(z)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
