@@ -1007,11 +1007,21 @@ function ShelvesTab({
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm('این قفسه حذف شود؟')) return;
-    await StorageService.deleteShelf(id);
-    toast.success('حذف شد');
-    onChanged();
+  const deleteShelfMutation = useMutation({
+    mutationFn: StorageService.deleteShelf,
+    onSuccess: () => {
+      toast.success('قفسه حذف شد');
+      setShelfToDelete(null);
+      onChanged();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'خطا در حذف قفسه');
+      setShelfToDelete(null);
+    },
+  });
+
+  const onDelete = (sh: Shelf) => {
+    setShelfToDelete(sh);
   };
 
   const list = shelves
@@ -1120,7 +1130,7 @@ function ShelvesTab({
                         <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s.id)}>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(s)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
