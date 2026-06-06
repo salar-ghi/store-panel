@@ -633,6 +633,47 @@ function SpacesTab({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!spaceToDelete}
+        onOpenChange={(open) => !open && setSpaceToDelete(null)}
+      >
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="text-right">
+                <AlertDialogTitle>حذف فضا</AlertDialogTitle>
+                <AlertDialogDescription>
+                  این عملیات قابل بازگشت نیست.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-foreground">
+            با حذف فضای{" "}
+            <span className="font-semibold">«{spaceToDelete?.name}»</span>،{" "}
+            تمام بخش‌ها و قفسه‌های آن نیز حذف می‌شوند. آیا اطمینان دارید؟
+          </div>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={deleteSpaceMutation.isPending}>
+              انصراف
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (spaceToDelete) deleteSpaceMutation.mutate(spaceToDelete.id);
+              }}
+              disabled={deleteSpaceMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteSpaceMutation.isPending ? "در حال حذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
