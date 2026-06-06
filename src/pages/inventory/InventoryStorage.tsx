@@ -365,6 +365,7 @@ function SpacesTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StorageSpace | null>(null);
   const [search, setSearch] = useState('');
+  const [spaceToDelete, setSpaceToDelete] = useState<StorageSpace | null>(null);
 
   const form = useForm<SpaceForm>({
     resolver: zodResolver(spaceSchema),
