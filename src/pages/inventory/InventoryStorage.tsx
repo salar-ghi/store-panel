@@ -1294,6 +1294,47 @@ function ShelvesTab({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!shelfToDelete}
+        onOpenChange={(open) => !open && setShelfToDelete(null)}
+      >
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="text-right">
+                <AlertDialogTitle>حذف قفسه</AlertDialogTitle>
+                <AlertDialogDescription>
+                  این عملیات قابل بازگشت نیست.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-foreground">
+            آیا از حذف قفسه{" "}
+            <span className="font-semibold">«{shelfToDelete?.code}{shelfToDelete?.name ? ` — ${shelfToDelete.name}` : ''}»</span>{" "}
+            اطمینان دارید؟
+          </div>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={deleteShelfMutation.isPending}>
+              انصراف
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (shelfToDelete) deleteShelfMutation.mutate(shelfToDelete.id);
+              }}
+              disabled={deleteShelfMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteShelfMutation.isPending ? "در حال حذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
