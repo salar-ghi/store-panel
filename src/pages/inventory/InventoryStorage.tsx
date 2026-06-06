@@ -961,6 +961,7 @@ function ShelvesTab({
   const [filterSpace, setFilterSpace] = useState<string>('all');
   const [filterZone, setFilterZone] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [shelfToDelete, setShelfToDelete] = useState<Shelf | null>(null);
 
   const form = useForm<ShelfForm>({
     resolver: zodResolver(shelfSchema),
