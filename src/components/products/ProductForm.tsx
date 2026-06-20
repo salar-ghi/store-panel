@@ -155,6 +155,7 @@ const formSchema = z.object({
       value: z.string().min(1, { message: "مقدار ویژگی نمی‌تواند خالی باشد." })
     })
   ).optional(),
+  pricingStrategy: z.enum(['fifo', 'latest', 'average']).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
