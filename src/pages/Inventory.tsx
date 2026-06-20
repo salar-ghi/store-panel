@@ -1,156 +1,161 @@
-
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Box, PackageCheck, Truck, AlertTriangle, RefreshCw, TrendingUp } from "lucide-react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Box,
+  PackageCheck,
+  Truck,
+  AlertTriangle,
+  PackagePlus,
+  Layers,
+  Boxes,
+  ArrowLeft,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProductService } from '@/services/product-service';
+import { StorageService } from '@/services/storage-service';
+import { InventoryInputService } from '@/services/inventory-input-service';
+import { AddStockInputDialog } from '@/components/inventory/AddStockInputDialog';
+import { LowStockAlerts } from '@/components/inventory/LowStockAlerts';
+import { RecentInputsList } from '@/components/inventory/RecentInputsList';
+import { ExpiringBatchesList } from '@/components/inventory/ExpiringBatchesList';
+import { toPersianDigits } from '@/lib/persian-date';
 
 export default function Inventory() {
   const navigate = useNavigate();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [preselectedProduct, setPreselectedProduct] = useState<number | undefined>();
 
-  const inventoryStats = [
-    { 
-      title: "کل موجودی", 
-      value: "1,256", 
-      icon: Box, 
-      change: "+12%", 
-      trend: "up", 
-      path: "/inventory"
+  const { data: products = [] } = useQuery({ queryKey: ['products'], queryFn: () => ProductService.getAll() });
+  const { data: spaces = [] } = useQuery({ queryKey: ['storage', 'spaces'], queryFn: () => StorageService.getSpaces() });
+  const { data: recentInputs = [] } = useQuery({
+    queryKey: ['stock-inputs', 'recent'],
+    queryFn: () => InventoryInputService.getRecent(50),
+  });
+
+  const totalStock = products.reduce((s, p) => s + (p.stockQuantity ?? p.stock?.quantity ?? 0), 0);
+  const lowStockCount = products.filter((p) => {
+    const qty = p.stockQuantity ?? p.stock?.quantity ?? 0;
+    const threshold = p.reorderLevel ?? p.stock?.reorderThreshold ?? 5;
+    return qty <= threshold;
+  }).length;
+
+  const openDialog = (productId?: number) => {
+    setPreselectedProduct(productId);
+    setDialogOpen(true);
+  };
+
+  const kpis = [
+    {
+      title: 'کل موجودی',
+      value: toPersianDigits(totalStock),
+      icon: Box,
+      onClick: () => navigate('/products'),
+      accent: 'bg-primary/10 text-primary',
     },
-    { 
-      title: "مکان‌های انبار", 
-      value: "8", 
-      icon: PackageCheck, 
-      change: "", 
-      trend: "neutral", 
-      path: "/inventory/locations"
+    {
+      title: 'فضاهای انبار',
+      value: toPersianDigits(spaces.length),
+      icon: PackageCheck,
+      onClick: () => navigate('/inventory/storage'),
+      accent: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     },
-    { 
-      title: "ثبت ورودی", 
-      value: "24", 
-      icon: Truck, 
-      change: "+5", 
-      trend: "up", 
-      path: "/inventory/inputs" 
+    {
+      title: 'ورودی‌های اخیر',
+      value: toPersianDigits(recentInputs.length),
+      icon: Truck,
+      onClick: () => navigate('/inventory/inputs'),
+      accent: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     },
-    { 
-      title: "کمبود موجودی", 
-      value: "17", 
-      icon: AlertTriangle, 
-      change: "-3", 
-      trend: "down", 
-      path: "/inventory/low-stock" 
-    }
+    {
+      title: 'کمبود موجودی',
+      value: toPersianDigits(lowStockCount),
+      icon: AlertTriangle,
+      onClick: () => navigate('/inventory/locations'),
+      accent: 'bg-destructive/10 text-destructive',
+    },
+  ];
+
+  const quickLinks = [
+    { label: 'فضاهای ذخیره‌سازی', icon: PackageCheck, path: '/inventory/storage' },
+    { label: 'بخش‌ها و قفسه‌ها', icon: Layers, path: '/inventory/storage' },
+    { label: 'لیست ورودی‌ها', icon: Truck, path: '/inventory/inputs' },
+    { label: 'مکان‌های انبار', icon: Boxes, path: '/inventory/locations' },
   ];
 
   return (
-    <div className="space-y-6 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">مدیریت انبار</h1>
-          <p className="text-muted-foreground">کنترل و مدیریت موجودی محصولات</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            بروزرسانی موجودی
+    <div className="space-y-6 py-6" dir="rtl">
+      {/* Hero header */}
+      <div className="rounded-2xl border bg-gradient-to-bl from-primary/10 via-background to-accent/5 p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">مدیریت انبار</h1>
+            <p className="text-muted-foreground mt-1 max-w-2xl">
+              برای شارژ مجدد یک محصول موجود (مثل ورود محموله جدید کوکاکولا یا آیفون)، روی «ثبت ورود کالا» بزنید.
+              تاریخچه و قیمت سری‌های قبلی حفظ می‌شود و سری جدید با قیمت خودش ثبت می‌گردد.
+            </p>
+          </div>
+          <Button size="lg" onClick={() => openDialog()} className="gap-2 shadow-md">
+            <PackagePlus className="h-5 w-5" />
+            ثبت ورود کالا
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {inventoryStats.map((stat, index) => (
-          <Card 
-            key={index} 
-            className={`cursor-pointer hover:shadow-lg transition-all duration-300 border ${
-              stat.title === "کمبود موجودی" ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50" : 
-              "bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800"
-            }`}
-            onClick={() => navigate(stat.path)}
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpis.map((k) => (
+          <Card
+            key={k.title}
+            onClick={k.onClick}
+            className="cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
-            <CardHeader className="pb-2 flex flex-row justify-between items-center">
-              <CardTitle className="text-lg">{stat.title}</CardTitle>
-              <stat.icon className={`h-6 w-6 ${
-                stat.title === "کمبود موجودی" ? "text-red-500" : "text-blue-500"
-              }`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stat.value}</div>
-              {stat.change && (
-                <div className={`flex items-center mt-2 text-sm ${
-                  stat.trend === "up" ? "text-green-600 dark:text-green-400" : 
-                  stat.trend === "down" ? "text-red-600 dark:text-red-400" : ""
-                }`}>
-                  {stat.trend === "up" && <TrendingUp className="h-4 w-4 mr-1" />}
-                  {stat.trend === "down" && <TrendingUp className="h-4 w-4 mr-1 transform rotate-180" />}
-                  {stat.change}
-                </div>
-              )}
+            <CardContent className="pt-5 pb-4">
+              <div className="flex items-center justify-between">
+                <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${k.accent}`}>
+                  <k.icon className="h-5 w-5" />
+                </span>
+                <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="mt-3 text-2xl font-bold">{k.value}</div>
+              <div className="text-sm text-muted-foreground">{k.title}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800">
-          <CardHeader>
-            <CardTitle>محصولات با بیشترین موجودی</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-md flex items-center justify-center">
-                      <Box className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <div className="font-medium">محصول {i + 1}</div>
-                      <div className="text-sm text-muted-foreground">انبار مرکزی</div>
-                    </div>
-                  </div>
-                  <div className="font-bold">{120 - i * 15}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Action grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LowStockAlerts onRecharge={openDialog} />
+        <RecentInputsList />
+        <ExpiringBatchesList />
 
-        <Card className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800">
-          <CardHeader>
-            <CardTitle>آخرین فعالیت‌های انبار</CardTitle>
+        <Card className="h-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">دسترسی سریع</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                      i % 2 === 0 ? "bg-green-100 dark:bg-green-900/30" : "bg-amber-100 dark:bg-amber-900/30"
-                    }`}>
-                      {i % 2 === 0 ? (
-                        <Truck className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <Box className="h-5 w-5 text-amber-500" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium">
-                        {i % 2 === 0 ? "ورود محموله" : "خروج کالا"}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {`${3 - i} ساعت پیش`}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-sm font-medium">
-                    {i % 2 === 0 ? "+20 واحد" : "-5 واحد"}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="grid grid-cols-2 gap-3">
+            {quickLinks.map((q) => (
+              <Button
+                key={q.label}
+                variant="outline"
+                className="h-auto py-4 flex-col gap-2"
+                onClick={() => navigate(q.path)}
+              >
+                <q.icon className="h-5 w-5 text-primary" />
+                <span className="text-sm">{q.label}</span>
+              </Button>
+            ))}
           </CardContent>
         </Card>
       </div>
+
+      <AddStockInputDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        defaultProductId={preselectedProduct}
+      />
     </div>
   );
 }
