@@ -155,6 +155,7 @@ const formSchema = z.object({
       value: z.string().min(1, { message: "مقدار ویژگی نمی‌تواند خالی باشد." })
     })
   ).optional(),
+  pricingStrategy: z.enum(['fifo', 'latest', 'average']).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -230,6 +231,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         notes: ""
       }],
       attributes: initialData?.attributes || [],
+      pricingStrategy: initialData?.pricingStrategy || 'fifo',
     },
   });
 
@@ -849,7 +851,41 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
             </Card>
 
+            {/* Per-product pricing strategy across multiple batches */}
+            <FormField
+              control={form.control}
+              name="pricingStrategy"
+              render={({ field }) => (
+                <FormItem>
+                  <Card className="shadow-none">
+                    <CardHeader className="py-4">
+                      <CardTitle className="text-base">روش نمایش قیمت بین سری‌ها</CardTitle>
+                      <CardDescription>
+                        وقتی چند سری با قیمت‌های متفاوت برای این محصول دارید، قیمت فروش بر اساس کدام سری نمایش داده شود؟
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select onValueChange={field.onChange} value={field.value || 'fifo'}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="fifo">اولین ورودی، اولین خروج (FIFO) — توصیه‌شده</SelectItem>
+                          <SelectItem value="latest">آخرین قیمت ثبت‌شده</SelectItem>
+                          <SelectItem value="average">میانگین وزنی موجودی</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </CardContent>
+                  </Card>
+                </FormItem>
+              )}
+            />
+
             <Card className="shadow-none">
+
               <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
