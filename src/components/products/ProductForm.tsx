@@ -231,6 +231,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         notes: ""
       }],
       attributes: initialData?.attributes || [],
+      pricingStrategy: initialData?.pricingStrategy || 'fifo',
     },
   });
 
