@@ -105,6 +105,9 @@ export interface Product {
   attributes?: ProductAttribute[];
   // Product variants
   variants?: ProductVariant[];
+  // Multi-batch pricing strategy: how to display sale price when the product
+  // has multiple active stock batches with different prices.
+  pricingStrategy?: 'fifo' | 'latest' | 'average';
 }
 
 export interface CreateProductRequest {
@@ -125,6 +128,7 @@ export interface CreateProductRequest {
   prices?: ProductPrice[];
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];
+  pricingStrategy?: 'fifo' | 'latest' | 'average';
 }
 
 export interface UpdateProductRequest {
@@ -145,4 +149,5 @@ export interface UpdateProductRequest {
   prices?: ProductPrice[];
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];
+  pricingStrategy?: 'fifo' | 'latest' | 'average';
 }
