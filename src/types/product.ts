@@ -128,6 +128,8 @@ export interface Product {
   // Multi-batch pricing strategy: how to display sale price when the product
   // has multiple active stock batches with different prices.
   pricingStrategy?: 'fifo' | 'latest' | 'average';
+  /** How this product is sold (piece / by weight / both). Default 'piece'. */
+  salesUnit?: SalesUnitConfig;
 }
 
 export interface CreateProductRequest {
