@@ -166,21 +166,38 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
               <FormField
                 control={form.control}
                 name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>مقدار تخفیف</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder={
-                          form.watch("discountType") === "percentage" ? "مثال: ۲۰" : "مثال: ۵۰۰۰۰"
-                        }
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const isPercent = form.watch("discountType") === "percentage";
+                  return (
+                    <FormItem>
+                      <FormLabel>مقدار تخفیف</FormLabel>
+                      <FormControl>
+                        {isPercent ? (
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            placeholder="مثال: 20"
+                            value={field.value}
+                            onChange={(e) => field.onChange(e.target.value)}
+                          />
+                        ) : (
+                          <PriceInput
+                            value={field.value ? Number(field.value) : undefined}
+                            onChange={(n) => field.onChange(String(n))}
+                            placeholder="مثال: 50,000"
+                          />
+                        )}
+                      </FormControl>
+                      {!isPercent && field.value ? (
+                        <FormDescription className="text-[11px]">
+                          {formatPrice(Number(field.value) || 0)}
+                        </FormDescription>
+                      ) : null}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
