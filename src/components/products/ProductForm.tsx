@@ -116,7 +116,7 @@ const dimensionSchema = z.object({
 });
 
 const stockSchema = z.object({
-  quantity: z.coerce.number().int().nonnegative({ message: "تعداد باید عدد صحیح غیرمنفی باشد." }),
+  quantity: z.coerce.number().nonnegative({ message: "تعداد باید عدد غیرمنفی باشد." }),
   reorderThreshold: z.coerce.number().int().nonnegative({ message: "حد سفارش مجدد باید عدد صحیح غیرمنفی باشد." }),
   spaceId: z.coerce.number({ required_error: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }).int().positive({ message: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }),
   zoneId: z.coerce.number().int().optional(),
