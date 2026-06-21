@@ -173,4 +173,5 @@ export interface UpdateProductRequest {
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];
   pricingStrategy?: 'fifo' | 'latest' | 'average';
+  salesUnit?: SalesUnitConfig;
 }
