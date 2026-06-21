@@ -244,6 +244,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       }],
       attributes: initialData?.attributes || [],
       pricingStrategy: initialData?.pricingStrategy || 'fifo',
+      salesUnit: initialData?.salesUnit || { mode: 'piece', weightUnit: 'kilogram' },
     },
   });
 
