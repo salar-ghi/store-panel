@@ -1147,8 +1147,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             <FormItem>
                               <FormLabel>قیمت خرید (تمام شده)</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="0" min={0} step={0.01} {...field} />
+                                <PriceInput
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  allowDecimal
+                                  placeholder="0"
+                                />
                               </FormControl>
+                              {field.value ? (
+                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                              ) : null}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1161,8 +1169,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             <FormItem>
                               <FormLabel>قیمت فروش</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="0" min={0} step={0.01} {...field} />
+                                <PriceInput
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  allowDecimal
+                                  placeholder="0"
+                                />
                               </FormControl>
+                              {field.value ? (
+                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                              ) : null}
                               <FormMessage />
                             </FormItem>
                           )}
