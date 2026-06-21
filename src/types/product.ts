@@ -151,6 +151,7 @@ export interface CreateProductRequest {
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];
   pricingStrategy?: 'fifo' | 'latest' | 'average';
+  salesUnit?: SalesUnitConfig;
 }
 
 export interface UpdateProductRequest {
