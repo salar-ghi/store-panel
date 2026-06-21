@@ -192,7 +192,10 @@ export function OrderFormDialog({
       if (!product) return;
       const locs = locationsByProduct[productId] ?? [];
       const loc = locs.find((l) => l.shelfId === sel.shelfId);
-      const price = product.price ?? 0;
+      const isWeight =
+        product.salesUnit?.mode === 'weight' || product.salesUnit?.mode === 'both';
+      const weightPrice = product.salesUnit?.pricePerWeightUnit;
+      const price = isWeight && weightPrice ? weightPrice : product.price ?? 0;
       items.push({
         id: productId.toString(),
         productId: product.id,
@@ -202,8 +205,10 @@ export function OrderFormDialog({
         brandId: product.brandId,
         brandName: product.brandName || "",
         quantity: sel.quantity,
+        saleUnit: isWeight ? 'weight' : 'piece',
+        weightUnit: isWeight ? (product.salesUnit?.weightUnit as 'gram' | 'kilogram') : undefined,
         unitPrice: price,
-        totalPrice: price * sel.quantity,
+        totalPrice: Math.round(price * sel.quantity),
         spaceId: loc?.spaceId,
         spaceName: loc?.spaceName,
         zoneId: loc?.zoneId,
