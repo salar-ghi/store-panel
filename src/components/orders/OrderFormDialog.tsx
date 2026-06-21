@@ -394,7 +394,7 @@ export function OrderFormDialog({
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
           <div className="flex-1 text-lg font-bold">
-            جمع کل: {totalAmount.toLocaleString("fa-IR")} تومان
+            جمع کل: {formatPrice(totalAmount)}
           </div>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             انصراف
