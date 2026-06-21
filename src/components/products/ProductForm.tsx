@@ -694,15 +694,31 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     name="stock.quantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>موجودی اولیه</FormLabel>
+                        <FormLabel className="flex items-center justify-between">
+                          <span>موجودی اولیه</span>
+                          <Badge variant="secondary" className="text-[10px] font-normal">
+                            از سری‌ها محاسبه می‌شود
+                          </Badge>
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" min={0} step={1} {...field} />
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            min={0}
+                            step="any"
+                            value={getTotalStock()}
+                            readOnly
+                            className="bg-muted/40 cursor-not-allowed"
+                          />
                         </FormControl>
-                        <FormDescription>تعداد کنونی روی قفسه انتخاب‌شده</FormDescription>
+                        <FormDescription>
+                          مجموع «تعداد وارده − فروخته‌شده» همه سری‌های مرحله ۴ (قیمت و سری ورود).
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
 
                   <FormField
                     control={form.control}
