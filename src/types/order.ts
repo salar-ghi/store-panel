@@ -6,7 +6,12 @@ export interface OrderItem {
   categoryName: string;
   brandId: number;
   brandName: string;
+  /** Quantity. Integer when saleUnit='piece', decimal when 'weight'. */
   quantity: number;
+  /** How this line is priced: per piece or per weight unit. Defaults to 'piece'. */
+  saleUnit?: 'piece' | 'weight';
+  /** When saleUnit='weight', the weight unit being sold (e.g. 'kilogram'). */
+  weightUnit?: 'gram' | 'kilogram';
   unitPrice: number;
   totalPrice: number;
   // Inventory location this item is picked from
