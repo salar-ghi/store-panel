@@ -154,8 +154,13 @@ export function TransactionFormDialog({ open, onOpenChange, initial, onSaved }: 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="amount">مبلغ (ریال) *</Label>
-              <Input id="amount" type="number" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="مثلاً 12500000" className="mt-1" />
-              {amount && <p className="text-xs text-muted-foreground mt-1">{new Intl.NumberFormat("fa-IR").format(Number(amount) || 0)} ریال</p>}
+              <PriceInput
+                value={amount ? Number(amount) : undefined}
+                onChange={(n) => setAmount(n ? String(n) : "")}
+                placeholder="مثلاً 12,500,000"
+                className="mt-1"
+              />
+              {amount && <p className="text-xs text-muted-foreground mt-1">{formatPrice(Number(amount) || 0, 'ریال')}</p>}
             </div>
             <div>
               <Label>روش پرداخت</Label>
