@@ -301,6 +301,8 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         notes: price.notes,
       })) : undefined,
       variants: variants.length > 0 ? variants : undefined,
+      pricingStrategy: data.pricingStrategy,
+      salesUnit: data.salesUnit,
     };
     
     onSubmit(productData);
