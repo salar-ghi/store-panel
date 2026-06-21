@@ -132,7 +132,7 @@ const priceSchema = z.object({
   pricingTier: z.enum(['retail', 'wholesale', 'discount', 'premium']),
   effectiveDate: z.string().min(1, { message: "تاریخ شروع اعتبار الزامی است." }),
   expiryDate: z.string().optional(),
-  quantity: z.coerce.number().int().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
+  quantity: z.coerce.number().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
   soldQuantity: z.coerce.number().int().nonnegative().optional(),
   notes: z.string().optional(),
 });
