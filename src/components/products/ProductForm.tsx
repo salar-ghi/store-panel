@@ -137,6 +137,14 @@ const priceSchema = z.object({
   notes: z.string().optional(),
 });
 
+const salesUnitSchema = z.object({
+  mode: z.enum(['piece', 'weight', 'both']).default('piece'),
+  weightUnit: z.enum(['gram', 'kilogram', 'mithqal', 'ounce', 'pound']).optional(),
+  pricePerWeightUnit: z.coerce.number().nonnegative().optional(),
+  packWeight: z.coerce.number().nonnegative().optional(),
+  packLabel: z.string().optional(),
+}).optional();
+
 const formSchema = z.object({
   name: z.string().min(2, { message: "نام محصول باید حداقل ۲ کاراکتر باشد." }),
   description: z.string().min(5, { message: "توضیحات باید حداقل ۵ کاراکتر باشد." }),
@@ -159,6 +167,7 @@ const formSchema = z.object({
     })
   ).optional(),
   pricingStrategy: z.enum(['fifo', 'latest', 'average']).optional(),
+  salesUnit: salesUnitSchema,
 });
 
 type FormData = z.infer<typeof formSchema>;
