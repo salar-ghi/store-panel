@@ -133,7 +133,7 @@ const priceSchema = z.object({
   effectiveDate: z.string().min(1, { message: "تاریخ شروع اعتبار الزامی است." }),
   expiryDate: z.string().optional(),
   quantity: z.coerce.number().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
-  soldQuantity: z.coerce.number().int().nonnegative().optional(),
+  soldQuantity: z.coerce.number().nonnegative().optional(),
   notes: z.string().optional(),
 });
 
