@@ -341,10 +341,23 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     });
   };
 
+  const watchedPrices = form.watch("prices");
   const getTotalStock = () => {
-    const prices = form.watch("prices") || [];
-    return prices.reduce((sum, p) => sum + (p.quantity || 0) - (p.soldQuantity || 0), 0);
+    return (watchedPrices || []).reduce(
+      (sum, p) => sum + (Number(p?.quantity) || 0) - (Number(p?.soldQuantity) || 0),
+      0,
+    );
   };
+
+  // Keep stock.quantity in lockstep with the sum of batch quantities (single source of truth)
+  useEffect(() => {
+    const total = getTotalStock();
+    if (form.getValues("stock.quantity") !== total) {
+      form.setValue("stock.quantity", total, { shouldValidate: false, shouldDirty: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(watchedPrices)]);
+
 
   // ---- Wizard step configuration ----
   type StepKey = "basic" | "inventory" | "dimensions" | "pricing" | "variants" | "attributes";
