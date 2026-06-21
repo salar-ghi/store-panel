@@ -66,7 +66,7 @@ export function ProductSelector({
     });
   }, [products, searchTerm, selectedCategory, selectedBrand, availableMap]);
 
-  const formatPrice = (price: number) => price.toLocaleString("fa-IR") + " تومان";
+  
 
   const handleQuantityChange = (productId: number, delta: number, isWeight: boolean) => {
     const currentQty = selectedProducts.get(productId) || 0;
