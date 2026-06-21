@@ -302,7 +302,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       })) : undefined,
       variants: variants.length > 0 ? variants : undefined,
       pricingStrategy: data.pricingStrategy,
-      salesUnit: data.salesUnit,
+      salesUnit: data.salesUnit
+        ? { ...data.salesUnit, mode: data.salesUnit.mode ?? 'piece' }
+        : undefined,
     };
     
     onSubmit(productData);
