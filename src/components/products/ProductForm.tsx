@@ -374,7 +374,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     {
       key: "inventory",
       label: "موجودی و انبار",
-      fields: ["stock.quantityUnit", "stock.quantity", "stock.reorderThreshold", "stock.spaceId", "stock.shelfId"],
+      fields: ["stock.quantityUnit", "stock.reorderThreshold", "stock.spaceId", "stock.shelfId"],
     },
     {
       key: "dimensions",
