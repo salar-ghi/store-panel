@@ -1,7 +1,7 @@
 import { OrderItem } from "@/types/order";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, MapPin, Boxes } from "lucide-react";
+import { Trash2, MapPin, Boxes, Scale } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StockLocation } from "@/services/inventory-engine";
+import { formatPrice, formatPersianNumber } from "@/lib/format";
 
 interface OrderItemsTableProps {
   items: OrderItem[];
@@ -35,9 +36,6 @@ export function OrderItemsTable({
   onChangeShelf,
   readonly = false,
 }: OrderItemsTableProps) {
-  const formatPrice = (price: number) =>
-    price.toLocaleString("fa-IR") + " تومان";
-
   const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
   if (items.length === 0) {
