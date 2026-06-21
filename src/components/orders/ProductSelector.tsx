@@ -12,9 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Minus, Search, PackageX } from "lucide-react";
+import { Plus, Minus, Search, PackageX, Scale } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { formatPrice, formatPersianNumber } from "@/lib/format";
 
 interface ProductSelectorProps {
   products: Product[];
