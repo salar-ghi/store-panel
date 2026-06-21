@@ -168,7 +168,7 @@ export default function Orders() {
   };
 
   const formatPrice = (price: number) => {
-    return price.toLocaleString("fa-IR") + " تومان";
+    return new Intl.NumberFormat("fa-IR").format(price) + " تومان";
   };
 
   return (

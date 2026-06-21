@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
@@ -41,11 +41,14 @@ import {
   DimensionUnit, 
   ProductStatus, 
   ProductAvailability,
-  ProductVariant
+  ProductVariant,
+  SalesMode,
 } from "@/types/product";
 import { StorageService } from "@/services/storage-service";
-import { Warehouse } from "lucide-react";
+import { Warehouse, Scale } from "lucide-react";
 import { StorageLocationPicker } from "./StorageLocationPicker";
+import { PriceInput } from "@/components/ui/price-input";
+import { formatPrice, formatPersianNumber } from "@/lib/format";
 
 // Weight unit options
 const weightUnits: { value: WeightUnit; label: string }[] = [
@@ -113,7 +116,7 @@ const dimensionSchema = z.object({
 });
 
 const stockSchema = z.object({
-  quantity: z.coerce.number().int().nonnegative({ message: "تعداد باید عدد صحیح غیرمنفی باشد." }),
+  quantity: z.coerce.number().nonnegative({ message: "تعداد باید عدد غیرمنفی باشد." }),
   reorderThreshold: z.coerce.number().int().nonnegative({ message: "حد سفارش مجدد باید عدد صحیح غیرمنفی باشد." }),
   spaceId: z.coerce.number({ required_error: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }).int().positive({ message: "لطفا فضای ذخیره‌سازی را انتخاب کنید." }),
   zoneId: z.coerce.number().int().optional(),
@@ -129,10 +132,18 @@ const priceSchema = z.object({
   pricingTier: z.enum(['retail', 'wholesale', 'discount', 'premium']),
   effectiveDate: z.string().min(1, { message: "تاریخ شروع اعتبار الزامی است." }),
   expiryDate: z.string().optional(),
-  quantity: z.coerce.number().int().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
-  soldQuantity: z.coerce.number().int().nonnegative().optional(),
+  quantity: z.coerce.number().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
+  soldQuantity: z.coerce.number().nonnegative().optional(),
   notes: z.string().optional(),
 });
+
+const salesUnitSchema = z.object({
+  mode: z.enum(['piece', 'weight', 'both']).default('piece'),
+  weightUnit: z.enum(['gram', 'kilogram', 'mithqal', 'ounce', 'pound']).optional(),
+  pricePerWeightUnit: z.coerce.number().nonnegative().optional(),
+  packWeight: z.coerce.number().nonnegative().optional(),
+  packLabel: z.string().optional(),
+}).optional();
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "نام محصول باید حداقل ۲ کاراکتر باشد." }),
@@ -156,6 +167,7 @@ const formSchema = z.object({
     })
   ).optional(),
   pricingStrategy: z.enum(['fifo', 'latest', 'average']).optional(),
+  salesUnit: salesUnitSchema,
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -232,6 +244,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       }],
       attributes: initialData?.attributes || [],
       pricingStrategy: initialData?.pricingStrategy || 'fifo',
+      salesUnit: initialData?.salesUnit || { mode: 'piece', weightUnit: 'kilogram' },
     },
   });
 
@@ -288,6 +301,10 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         notes: price.notes,
       })) : undefined,
       variants: variants.length > 0 ? variants : undefined,
+      pricingStrategy: data.pricingStrategy,
+      salesUnit: data.salesUnit
+        ? { ...data.salesUnit, mode: data.salesUnit.mode ?? 'piece' }
+        : undefined,
     };
     
     onSubmit(productData);
@@ -324,10 +341,23 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     });
   };
 
+  const watchedPrices = form.watch("prices");
   const getTotalStock = () => {
-    const prices = form.watch("prices") || [];
-    return prices.reduce((sum, p) => sum + (p.quantity || 0) - (p.soldQuantity || 0), 0);
+    return (watchedPrices || []).reduce(
+      (sum, p) => sum + (Number(p?.quantity) || 0) - (Number(p?.soldQuantity) || 0),
+      0,
+    );
   };
+
+  // Keep stock.quantity in lockstep with the sum of batch quantities (single source of truth)
+  useEffect(() => {
+    const total = getTotalStock();
+    if (form.getValues("stock.quantity") !== total) {
+      form.setValue("stock.quantity", total, { shouldValidate: false, shouldDirty: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(watchedPrices)]);
+
 
   // ---- Wizard step configuration ----
   type StepKey = "basic" | "inventory" | "dimensions" | "pricing" | "variants" | "attributes";
@@ -344,7 +374,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     {
       key: "inventory",
       label: "موجودی و انبار",
-      fields: ["stock.quantityUnit", "stock.quantity", "stock.reorderThreshold", "stock.spaceId", "stock.shelfId"],
+      fields: ["stock.quantityUnit", "stock.reorderThreshold", "stock.spaceId", "stock.shelfId"],
     },
     {
       key: "dimensions",
@@ -677,15 +707,31 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     name="stock.quantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>موجودی اولیه</FormLabel>
+                        <FormLabel className="flex items-center justify-between">
+                          <span>موجودی اولیه</span>
+                          <Badge variant="secondary" className="text-[10px] font-normal">
+                            از سری‌ها محاسبه می‌شود
+                          </Badge>
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" min={0} step={1} {...field} />
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            min={0}
+                            step="any"
+                            value={getTotalStock()}
+                            readOnly
+                            className="bg-muted/40 cursor-not-allowed"
+                          />
                         </FormControl>
-                        <FormDescription>تعداد کنونی روی قفسه انتخاب‌شده</FormDescription>
+                        <FormDescription>
+                          مجموع «تعداد وارده − فروخته‌شده» همه سری‌های مرحله ۴ (قیمت و سری ورود).
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
 
                   <FormField
                     control={form.control}
@@ -702,6 +748,134 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     )}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Section 1b: Sales Mode (piece vs by-weight) */}
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-primary" />
+                  نحوه فروش این محصول
+                </CardTitle>
+                <CardDescription>
+                  مشخص کنید این محصول به صورت <strong>عددی</strong> (مثل موبایل)، <strong>وزنی</strong>
+                  (مثل گوشت، لوبیا، مرغ) یا <strong>هر دو</strong> فروخته می‌شود.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="salesUnit.mode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>روش فروش</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || 'piece'}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="piece">عددی (شمارشی)</SelectItem>
+                            <SelectItem value="weight">وزنی (کیلوگرم / گرم)</SelectItem>
+                            <SelectItem value="both">هر دو (بسته یا فله)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch('salesUnit.mode') !== 'piece' && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="salesUnit.weightUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>واحد وزن فروش</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || 'kilogram'}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="kilogram">کیلوگرم</SelectItem>
+                                <SelectItem value="gram">گرم</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="salesUnit.pricePerWeightUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>قیمت هر واحد وزن</FormLabel>
+                            <FormControl>
+                              <PriceInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="مثلاً ۱۵۰٬۰۰۰"
+                                suffix={form.watch('salesUnit.weightUnit') === 'gram' ? 'تومان/گرم' : 'تومان/کیلو'}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {field.value
+                                ? formatPrice(field.value) + ' برای هر ' + (form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم')
+                                : 'قیمت پایه برای فروش وزنی'}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+
+                {form.watch('salesUnit.mode') === 'both' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                    <FormField
+                      control={form.control}
+                      name="salesUnit.packWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>وزن هر بسته</FormLabel>
+                          <FormControl>
+                            <PriceInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              allowDecimal
+                              placeholder="مثلاً ۳۵"
+                              suffix={form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم'}
+                            />
+                          </FormControl>
+                          <FormDescription>وزن یک بسته آماده‌ی فروش (مثلاً کیسه ۳۵ کیلویی لوبیا)</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="salesUnit.packLabel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>عنوان بسته (اختیاری)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثلاً کیسه ۳۵ کیلویی" {...field} value={field.value || ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -898,7 +1072,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge variant="secondary" className="text-xs">
-                    موجودی کل: {getTotalStock()}
+                    موجودی کل: {formatPersianNumber(getTotalStock())}
                   </Badge>
                   <Button type="button" variant="outline" size="sm" onClick={handleAddPriceBatch}>
                     <Plus className="h-4 w-4 ml-1" />
@@ -973,8 +1147,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             <FormItem>
                               <FormLabel>قیمت خرید (تمام شده)</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="0" min={0} step={0.01} {...field} />
+                                <PriceInput
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  allowDecimal
+                                  placeholder="0"
+                                />
                               </FormControl>
+                              {field.value ? (
+                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                              ) : null}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -987,8 +1169,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             <FormItem>
                               <FormLabel>قیمت فروش</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="0" min={0} step={0.01} {...field} />
+                                <PriceInput
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  allowDecimal
+                                  placeholder="0"
+                                />
                               </FormControl>
+                              {field.value ? (
+                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                              ) : null}
                               <FormMessage />
                             </FormItem>
                           )}

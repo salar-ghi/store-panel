@@ -3,6 +3,26 @@ export type WeightUnit = 'gram' | 'kilogram' | 'mithqal' | 'ounce' | 'pound';
 export type QuantityUnit = 'piece' | 'box' | 'pack' | 'carton' | 'dozen' | 'pair' | 'set' | 'liter' | 'milliliter';
 export type DimensionUnit = 'cm' | 'm' | 'mm' | 'inch' | 'ft';
 
+/**
+ * How a product is sold to customers.
+ *  - piece  : countable, integer quantity (e.g. mobile phones)
+ *  - weight : sold by weight, decimal quantity (e.g. meat, beans by kg)
+ *  - both   : prepacked AND loose-by-weight (e.g. 35kg pack of beans OR 2.5kg loose)
+ */
+export type SalesMode = 'piece' | 'weight' | 'both';
+
+export interface SalesUnitConfig {
+  mode: SalesMode;
+  /** Unit used when selling by weight (kg, gram, ...) */
+  weightUnit?: WeightUnit;
+  /** Price per single weight unit (e.g. 15,000 toman per kg). */
+  pricePerWeightUnit?: number;
+  /** For pack mode: weight of one pack (e.g. 35 kg per sack of beans). */
+  packWeight?: number;
+  /** Optional human label for the pack form ("کیسه ۳۵ کیلویی"). */
+  packLabel?: string;
+}
+
 // Product status - whether product is active or inactive
 export type ProductStatus = 'active' | 'inactive';
 
@@ -108,6 +128,8 @@ export interface Product {
   // Multi-batch pricing strategy: how to display sale price when the product
   // has multiple active stock batches with different prices.
   pricingStrategy?: 'fifo' | 'latest' | 'average';
+  /** How this product is sold (piece / by weight / both). Default 'piece'. */
+  salesUnit?: SalesUnitConfig;
 }
 
 export interface CreateProductRequest {
@@ -129,6 +151,7 @@ export interface CreateProductRequest {
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];
   pricingStrategy?: 'fifo' | 'latest' | 'average';
+  salesUnit?: SalesUnitConfig;
 }
 
 export interface UpdateProductRequest {
@@ -150,4 +173,5 @@ export interface UpdateProductRequest {
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];
   pricingStrategy?: 'fifo' | 'latest' | 'average';
+  salesUnit?: SalesUnitConfig;
 }

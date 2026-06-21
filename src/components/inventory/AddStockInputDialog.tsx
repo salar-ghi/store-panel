@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PersianDatePicker } from '@/components/ui/persian-datepicker';
+import { PriceInput } from '@/components/ui/price-input';
 
 import { ProductService } from '@/services/product-service';
 import { SupplierService } from '@/services/supplier-service';
@@ -26,6 +27,7 @@ import { StorageService } from '@/services/storage-service';
 import { InventoryInputService } from '@/services/inventory-input-service';
 import { CreateStockInputRequest } from '@/types/inventory-input';
 import { toPersianDigits } from '@/lib/persian-date';
+import { formatPrice } from '@/lib/format';
 
 const schema = z.object({
   productId: z.coerce.number().int().positive({ message: 'محصول را انتخاب کنید' }),
@@ -278,9 +280,22 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                     name="quantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>تعداد ورودی</FormLabel>
+                        <FormLabel>
+                          تعداد ورودی
+                          {selectedProduct?.salesUnit?.mode && selectedProduct.salesUnit.mode !== 'piece' && (
+                            <span className="text-xs text-muted-foreground ms-2">
+                              (
+                              {selectedProduct.salesUnit.weightUnit === 'gram' ? 'گرم' : 'کیلوگرم'})
+                            </span>
+                          )}
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" min={1} {...field} />
+                          <Input
+                            type="number"
+                            min={0}
+                            step={selectedProduct?.salesUnit?.mode === 'weight' ? 0.01 : 1}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -296,8 +311,11 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                       <FormItem>
                         <FormLabel>قیمت خرید (هر واحد)</FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} step={0.01} {...field} />
+                          <PriceInput value={field.value} onChange={field.onChange} allowDecimal />
                         </FormControl>
+                        {field.value ? (
+                          <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                        ) : null}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -309,8 +327,11 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                       <FormItem>
                         <FormLabel>قیمت فروش (هر واحد)</FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} step={0.01} {...field} />
+                          <PriceInput value={field.value} onChange={field.onChange} allowDecimal />
                         </FormControl>
+                        {field.value ? (
+                          <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                        ) : null}
                         <FormMessage />
                       </FormItem>
                     )}

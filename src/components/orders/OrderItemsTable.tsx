@@ -1,7 +1,7 @@
 import { OrderItem } from "@/types/order";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, MapPin, Boxes } from "lucide-react";
+import { Trash2, MapPin, Boxes, Scale } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StockLocation } from "@/services/inventory-engine";
+import { formatPrice, formatPersianNumber } from "@/lib/format";
 
 interface OrderItemsTableProps {
   items: OrderItem[];
@@ -35,9 +36,6 @@ export function OrderItemsTable({
   onChangeShelf,
   readonly = false,
 }: OrderItemsTableProps) {
-  const formatPrice = (price: number) =>
-    price.toLocaleString("fa-IR") + " تومان";
-
   const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
   if (items.length === 0) {
@@ -149,7 +147,17 @@ export function OrderItemsTable({
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-center">{item.quantity}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="font-medium tabular-nums">{formatPersianNumber(item.quantity)}</span>
+                    {item.saleUnit === 'weight' && (
+                      <Badge variant="outline" className="gap-1 text-[10px] border-primary/30 text-primary">
+                        <Scale className="h-3 w-3" />
+                        {item.weightUnit === 'gram' ? 'گرم' : 'کیلو'}
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>{formatPrice(item.unitPrice)}</TableCell>
                 <TableCell className="font-medium">
                   {formatPrice(item.totalPrice)}
