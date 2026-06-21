@@ -1072,7 +1072,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge variant="secondary" className="text-xs">
-                    موجودی کل: {getTotalStock()}
+                    موجودی کل: {formatPersianNumber(getTotalStock())}
                   </Badge>
                   <Button type="button" variant="outline" size="sm" onClick={handleAddPriceBatch}>
                     <Plus className="h-4 w-4 ml-1" />
