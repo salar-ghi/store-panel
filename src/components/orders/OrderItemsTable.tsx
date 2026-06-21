@@ -147,7 +147,17 @@ export function OrderItemsTable({
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-center">{item.quantity}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="font-medium tabular-nums">{formatPersianNumber(item.quantity)}</span>
+                    {item.saleUnit === 'weight' && (
+                      <Badge variant="outline" className="gap-1 text-[10px] border-primary/30 text-primary">
+                        <Scale className="h-3 w-3" />
+                        {item.weightUnit === 'gram' ? 'گرم' : 'کیلو'}
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>{formatPrice(item.unitPrice)}</TableCell>
                 <TableCell className="font-medium">
                   {formatPrice(item.totalPrice)}
