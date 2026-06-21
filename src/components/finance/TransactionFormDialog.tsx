@@ -11,6 +11,8 @@ import { Branch, FinancialAccount, Transaction, TransactionType, PaymentMethod, 
 import { useToast } from "@/hooks/use-toast";
 import { ArrowDownCircle, ArrowUpCircle, Banknote, Receipt, RotateCcw, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PriceInput } from "@/components/ui/price-input";
+import { formatPrice } from "@/lib/format";
 
 interface Props {
   open: boolean;
