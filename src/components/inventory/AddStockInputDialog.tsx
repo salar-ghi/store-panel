@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PersianDatePicker } from '@/components/ui/persian-datepicker';
+import { PriceInput } from '@/components/ui/price-input';
 
 import { ProductService } from '@/services/product-service';
 import { SupplierService } from '@/services/supplier-service';
@@ -26,6 +27,7 @@ import { StorageService } from '@/services/storage-service';
 import { InventoryInputService } from '@/services/inventory-input-service';
 import { CreateStockInputRequest } from '@/types/inventory-input';
 import { toPersianDigits } from '@/lib/persian-date';
+import { formatPrice } from '@/lib/format';
 
 const schema = z.object({
   productId: z.coerce.number().int().positive({ message: 'محصول را انتخاب کنید' }),
