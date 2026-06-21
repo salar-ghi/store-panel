@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { StorageService } from "@/services/storage-service";
 import { InventoryEngine, StockLocation } from "@/services/inventory-engine";
 import { StorageSpaceTypeLabels } from "@/types/storage";
+import { formatPrice } from "@/lib/format";
 
 interface OrderFormDialogProps {
   open: boolean;
