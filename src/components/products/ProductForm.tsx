@@ -41,11 +41,14 @@ import {
   DimensionUnit, 
   ProductStatus, 
   ProductAvailability,
-  ProductVariant
+  ProductVariant,
+  SalesMode,
 } from "@/types/product";
 import { StorageService } from "@/services/storage-service";
-import { Warehouse } from "lucide-react";
+import { Warehouse, Scale } from "lucide-react";
 import { StorageLocationPicker } from "./StorageLocationPicker";
+import { PriceInput } from "@/components/ui/price-input";
+import { formatPrice, formatPersianNumber } from "@/lib/format";
 
 // Weight unit options
 const weightUnits: { value: WeightUnit; label: string }[] = [
