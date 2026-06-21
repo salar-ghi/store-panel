@@ -68,15 +68,28 @@ export function ProductSelector({
 
   const formatPrice = (price: number) => price.toLocaleString("fa-IR") + " تومان";
 
-  const handleQuantityChange = (productId: number, delta: number) => {
+  const handleQuantityChange = (productId: number, delta: number, isWeight: boolean) => {
     const currentQty = selectedProducts.get(productId) || 0;
     const max = availableMap[productId] ?? 0;
-    let newQty = Math.max(0, currentQty + delta);
+    const step = isWeight ? 0.5 : 1;
+    let newQty = Math.max(0, +(currentQty + delta * step).toFixed(3));
     if (newQty > max) {
       newQty = max;
-      toast.warning(`موجودی قابل فروش این محصول ${max.toLocaleString("fa-IR")} عدد است`);
+      toast.warning(`موجودی قابل فروش این محصول ${formatPersianNumber(max)} ${isWeight ? 'واحد وزن' : 'عدد'} است`);
     }
     onProductSelect(productId, newQty);
+  };
+
+  const handleQuantityInput = (productId: number, value: string, isWeight: boolean) => {
+    const max = availableMap[productId] ?? 0;
+    let n = Number(value);
+    if (!isFinite(n) || n < 0) n = 0;
+    if (!isWeight) n = Math.floor(n);
+    if (n > max) {
+      n = max;
+      toast.warning(`موجودی قابل فروش این محصول ${formatPersianNumber(max)} ${isWeight ? 'واحد وزن' : 'عدد'} است`);
+    }
+    onProductSelect(productId, n);
   };
 
   return (
