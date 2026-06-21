@@ -160,6 +160,11 @@ export function ProductSelector({
               const quantity = selectedProducts.get(product.id) || 0;
               const available = availableMap[product.id] ?? 0;
               const lowStock = available > 0 && available <= 5;
+              const isWeight =
+                product.salesUnit?.mode === 'weight' || product.salesUnit?.mode === 'both';
+              const wUnit =
+                product.salesUnit?.weightUnit === 'gram' ? 'گرم' : 'کیلوگرم';
+              const unitLabel = isWeight ? wUnit : 'عدد';
               return (
                 <div
                   key={product.id}
@@ -168,7 +173,15 @@ export function ProductSelector({
                   }`}
                 >
                   <div className="flex-1 space-y-1">
-                    <p className="font-medium">{product.name}</p>
+                    <p className="font-medium flex items-center gap-1.5">
+                      {product.name}
+                      {isWeight && (
+                        <Badge variant="outline" className="gap-1 text-[10px] border-primary/40 text-primary">
+                          <Scale className="h-3 w-3" />
+                          فروش وزنی
+                        </Badge>
+                      )}
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">
                         {product.categoryName}
@@ -184,11 +197,16 @@ export function ProductSelector({
                             : "border-success/40 bg-success/10 text-success"
                         }`}
                       >
-                        موجودی: {available.toLocaleString("fa-IR")}
+                        موجودی: {formatPersianNumber(available)} {unitLabel}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {formatPrice(product.price ?? 0)}
+                      {formatPrice(
+                        isWeight && product.salesUnit?.pricePerWeightUnit
+                          ? product.salesUnit.pricePerWeightUnit
+                          : (product.price ?? 0),
+                      )}
+                      {isWeight && <span className="text-xs"> / {unitLabel}</span>}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -197,18 +215,32 @@ export function ProductSelector({
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => handleQuantityChange(product.id, -1)}
+                      onClick={() => handleQuantityChange(product.id, -1, isWeight)}
                       disabled={quantity === 0}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
-                    <span className="w-8 text-center font-medium">{quantity}</span>
+                    {isWeight ? (
+                      <Input
+                        type="number"
+                        min={0}
+                        max={available}
+                        step={0.1}
+                        value={quantity || ''}
+                        onChange={(e) => handleQuantityInput(product.id, e.target.value, true)}
+                        className="h-8 w-20 text-center font-medium"
+                      />
+                    ) : (
+                      <span className="w-10 text-center font-medium tabular-nums">
+                        {formatPersianNumber(quantity)}
+                      </span>
+                    )}
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => handleQuantityChange(product.id, 1)}
+                      onClick={() => handleQuantityChange(product.id, 1, isWeight)}
                       disabled={quantity >= available}
                     >
                       <Plus className="h-4 w-4" />
