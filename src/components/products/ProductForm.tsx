@@ -751,6 +751,134 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardContent>
             </Card>
 
+            {/* Section 1b: Sales Mode (piece vs by-weight) */}
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-primary" />
+                  نحوه فروش این محصول
+                </CardTitle>
+                <CardDescription>
+                  مشخص کنید این محصول به صورت <strong>عددی</strong> (مثل موبایل)، <strong>وزنی</strong>
+                  (مثل گوشت، لوبیا، مرغ) یا <strong>هر دو</strong> فروخته می‌شود.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="salesUnit.mode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>روش فروش</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || 'piece'}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="piece">عددی (شمارشی)</SelectItem>
+                            <SelectItem value="weight">وزنی (کیلوگرم / گرم)</SelectItem>
+                            <SelectItem value="both">هر دو (بسته یا فله)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch('salesUnit.mode') !== 'piece' && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="salesUnit.weightUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>واحد وزن فروش</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || 'kilogram'}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="kilogram">کیلوگرم</SelectItem>
+                                <SelectItem value="gram">گرم</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="salesUnit.pricePerWeightUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>قیمت هر واحد وزن</FormLabel>
+                            <FormControl>
+                              <PriceInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="مثلاً ۱۵۰٬۰۰۰"
+                                suffix={form.watch('salesUnit.weightUnit') === 'gram' ? 'تومان/گرم' : 'تومان/کیلو'}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {field.value
+                                ? formatPrice(field.value) + ' برای هر ' + (form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم')
+                                : 'قیمت پایه برای فروش وزنی'}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+
+                {form.watch('salesUnit.mode') === 'both' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                    <FormField
+                      control={form.control}
+                      name="salesUnit.packWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>وزن هر بسته</FormLabel>
+                          <FormControl>
+                            <PriceInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              allowDecimal
+                              placeholder="مثلاً ۳۵"
+                              suffix={form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم'}
+                            />
+                          </FormControl>
+                          <FormDescription>وزن یک بسته آماده‌ی فروش (مثلاً کیسه ۳۵ کیلویی لوبیا)</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="salesUnit.packLabel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>عنوان بسته (اختیاری)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثلاً کیسه ۳۵ کیلویی" {...field} value={field.value || ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Section 2: Storage location (Space → Zone → Shelf) */}
             <StorageLocationPicker form={form} spaces={spaces} />
           </TabsContent>
