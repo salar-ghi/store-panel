@@ -16,7 +16,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Plus,
 } from "lucide-react";
 import { 
   Select,
@@ -26,6 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ReturnOrderDialog } from "@/components/orders/ReturnOrderDialog";
+import { mockOrders } from "@/data/ordersData";
 
 // Mock data for rejected orders
 const mockReturnedOrders = [
