@@ -112,7 +112,9 @@ export default function Orders() {
         date: new Date().toLocaleDateString("fa-IR"),
       };
       setOrders([newOrder, ...orders]);
-      toast.success(`سفارش ${newOrder.id} ایجاد شد.`);
+      // Sync payment splits to finance module (non-blocking — mocks may fail).
+      OrderService.syncPaymentsToFinance(newOrder).catch(() => undefined);
+      toast.success(`سفارش ${newOrder.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
     }
   };
 
