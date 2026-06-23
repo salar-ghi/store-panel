@@ -16,7 +16,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Plus,
 } from "lucide-react";
 import { 
   Select,
@@ -26,6 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ReturnOrderDialog } from "@/components/orders/ReturnOrderDialog";
+import { mockOrders } from "@/data/ordersData";
 
 // Mock data for rejected orders
 const mockReturnedOrders = [
@@ -98,6 +101,8 @@ const statusBadgeMap: Record<string, string> = {
 export default function ReturnedOrders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showReturnDialog, setShowReturnDialog] = useState(false);
+
 
   const filteredOrders = mockReturnedOrders.filter((order) => {
     const matchesSearch = 
@@ -121,10 +126,16 @@ export default function ReturnedOrders() {
           <h2 className="text-3xl font-bold tracking-tight">سفارشات مرجوعی</h2>
           <p className="text-muted-foreground">مدیریت و بررسی سفارشات مرجوع شده</p>
         </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          بازگشت به سفارشات
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setShowReturnDialog(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            ثبت مرجوعی جدید
+          </Button>
+          <Button variant="outline" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            بازگشت به سفارشات
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -311,6 +322,12 @@ export default function ReturnedOrders() {
           </CardContent>
         </Card>
       </div>
+
+      <ReturnOrderDialog
+        open={showReturnDialog}
+        onOpenChange={setShowReturnDialog}
+        orders={mockOrders}
+      />
     </div>
   );
 }

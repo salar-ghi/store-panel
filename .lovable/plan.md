@@ -1,92 +1,68 @@
-# Inventory Restock & Batch Pricing
+# Enterprise Order Module Rebuild
 
-## Concept
+Transforms `OrderFormDialog` into a 4-step enterprise wizard, plus adds a returns flow, wired to products, inventory, finance and users.
 
-Products are created **once**. Every restock = a new **Stock Input (batch)** attached to the existing product, with its own cost price, sale price, quantity, supplier, shelf, received date, optional expiry. Current stock = Σ (batch.quantity − batch.soldQuantity) of active batches.
+## Step 1 — Customer (lookup or quick-create)
+`CustomerPicker` component:
+- Debounced search over `UserService.getAllUsers()` filtered by phone/firstName/lastName/username. Dropdown shows matches with name + phone + role badge; click selects and locks `customerId`.
+- "ثبت سریع مشتری جدید" inline panel: firstName, lastName, phone (required), email/address (optional). Submits via `UserService.createUser({ ..., roleIds: [customerRoleId] })`. Customer role id resolved from `UserService.getAllRoles()` (matches "Customer"/"مشتری"); auto-creates it via `createRole` if missing. Cached with React Query.
+- `Order` gains `customerId?: string`.
 
-Each product picks its own **pricing strategy** for how its multi-batch price is exposed: FIFO, Latest, or Weighted-Average.
+## Step 2 — Products (hundreds-scale picker)
+Rewrite `ProductSelector` UI:
+- Left rail: **category tree** via existing `buildCategoryTree`, with:
+  - Sticky search (matches name; auto-expands ancestors of hits).
+  - Pinned recent/favorite categories (per-user `localStorage`).
+  - Keyboard nav (↑/↓/Enter), product-count badges.
+- Top: **brand chips** (multi-select) loaded from `BrandService`, filtered by selected category.
+- Main: product results with search, weight/piece badge, qty stepper (existing behavior preserved).
+- Categories/brands via React Query (`staleTime: 5min`) with skeletons.
 
-## What gets built
+## Step 3 — Payment & Discount
+New `PaymentPanel`:
+- Discount: percent | amount → updates `discountAmount`, `finalTotal`.
+- Hybrid payment splits — repeatable rows `{ method, amount, reference?, gatewayTxnId?, dueDate? }`.
+  - Methods: cash, card, bank_transfer, online_gateway, wallet, cheque, credit (طلب/قسط).
+  - Live validator: Σ splits === `finalTotal` (badge shows remaining/overpaid).
+  - `card`/`online_gateway` require `gatewayTxnId`; `credit` requires `dueDate`.
+- Computed `paymentStatus`: paid | partial | unpaid.
 
-### 1. Types & service (`src/types/inventory-input.ts`, `src/services/inventory-input-service.ts`)
+## Step 4 — Summary
+Customer card + items table + totals breakdown (subtotal, discount, final) + payments recap + submit.
 
-- `StockInput` model: `id, productId, productName, batchNumber, quantity, soldQuantity, costPrice, salePrice, currency, supplierId, supplierName, shelfId, shelfCode, receivedDate, expiryDate, notes`.
-- `CreateStockInputRequest` mirrors the create payload.
-- Service wired to planned endpoints:
-  - `GET  /api/Inventory/inputs` (filter: productId, supplierId, from, to)
-  - `POST /api/Inventory/inputs`
-  - `GET  /api/Inventory/inputs/recent`
-  - `GET  /api/Inventory/inputs/expiring`
-- All calls go through `apiClient`; UI handles 404/empty gracefully so it works before backend ships.
+## Backend sync (planned endpoints, mirrors existing service patterns)
+- New `OrderService` → POST `/api/Order/orders` with full payload `{ customerId, items, discount, payments, total, finalTotal, paymentStatus, notes }`.
+- `submitOrderWithFinance()` helper: after order create, loops `payments` and calls `FinanceService.createTransaction({ type:'sale', method, amount, reference: orderId, gatewayTxnId })` so finance dashboards stay in sync.
+- Inventory: existing `InventoryEngine` shelf-decrement already wired; backend is source of truth.
 
-### 2. Product pricing strategy
-
-- Extend `Product` and `CreateProductRequest` with `pricingStrategy?: 'fifo' | 'latest' | 'average'` (default `'fifo'`).
-- Add a small select in `ProductForm.tsx` "Pricing & Stock" section, Persian labels:
-  - اولین ورودی، اولین خروج (FIFO)
-  - آخرین قیمت
-  - میانگین وزنی
-- Helper `getEffectivePrice(product, batches)` in `src/lib/pricing.ts` returns the display price based on the chosen strategy.
-
-### 3. "Add Stock Input" dialog (`src/components/inventory/AddStockInputDialog.tsx`)
-
-Single dialog reused everywhere. Fields:
-
-- Product picker (searchable, existing products only — cannot create new product here)
-- Quantity + unit (read from product)
-- Cost price, Sale price, Currency
-- Supplier picker
-- Shelf picker (StorageLocationPicker)
-- Batch number (auto-suggested: `B-{productId}-{yyyymmdd}-{n}`)
-- Received date (PersianDatePicker)
-- Expiry date (PersianDatePicker, optional)
-- Notes
-
-Uses `useMutation`, invalidates `["stock-inputs"]`, `["products"]`, toasts success in Persian, refreshes the list automatically.
-
-### 4. Inventory landing redesign (`src/pages/Inventory.tsx`)
-
-New layout, RTL, semantic tokens only:
-
-```text
-┌───────────────────────────────────────────────────────┐
-│  مدیریت انبار                  [+ ثبت ورود کالا]      │  ← primary CTA opens AddStockInputDialog
-├───────────────────────────────────────────────────────┤
-│  KPI strip: کل موجودی · فضاهای انبار · ورودی‌ها · کمبود │
-├───────────────────────────┬───────────────────────────┤
-│  هشدار کمبود موجودی       │  آخرین ورودی‌ها             │
-│  product · qty · [شارژ]  │  product · qty · supplier  │
-│  …                        │  …                         │
-├───────────────────────────┼───────────────────────────┤
-│  نزدیک به انقضا             │  دسترسی سریع                │
-│  product · batch · 7 روز  │  فضاها · زون‌ها · قفسه‌ها      │
-└───────────────────────────┴───────────────────────────┘
-```
-
-- "هشدار کمبود موجودی" lists products where `stock < reorderLevel`; each row has a "شارژ" button that pre-fills AddStockInputDialog with that product selected.
-- "آخرین ورودی‌ها" hits `/inputs/recent` (or filters from full list).
-- "نزدیک به انقضا" hits `/inputs/expiring`, shows days-left badge colored by urgency.
-- "دسترسی سریع" links to existing `/inventory/storage`, `/inventory/locations`, `/inventory/inputs`.
-- All numbers via `toPersianDigits`, dates via `formatPersianDateShort`.
-
-### 5. Inputs page (`src/pages/inventory/InventoryInputs.tsx`)
-
-Replace existing placeholder content with a real table powered by the new service: columns product, batch, qty, sold, cost, sale, supplier, shelf, received, expiry. Filter bar (product, supplier, date range). Same "+ ثبت ورود کالا" button opens the dialog.
-
-### 6. Product detail integration
-
-In `ViewProductDialog.tsx`, add a "ورودی‌های انبار" tab/section listing all batches for the product (qty remaining, prices, dates) with a "+ ورود جدید" button — same dialog, product pre-selected.
-
-## Non-goals (this round)
-
-- No automatic FIFO sale deduction logic on the order side (data model supports it via `soldQuantity`; wiring the sale flow to decrement specific batches is a follow-up).
-- No backend implementation — UI is built against the planned routes above.
-- No bulk import.
+## Returns flow (new)
+- `ReturnOrderDialog` in `src/pages/orders/ReturnedOrders.tsx`:
+  - Pick order (search by code/customer), list items with return-qty inputs + per-item reason (defect/wrong-item/changed-mind/expired/other).
+  - Refund panel reuses `PaymentPanel` splits (cash, card-reverse w/ gatewayTxnId, wallet/store-credit).
+  - Submit → `OrderService.createReturn(orderId, ...)` restocks inventory and creates `FinanceService.createTransaction({ type:'refund', ... })` per refund split.
 
 ## Files
 
-**Create**: `src/types/inventory-input.ts`, `src/services/inventory-input-service.ts`, `src/lib/pricing.ts`, `src/components/inventory/AddStockInputDialog.tsx`, `src/components/inventory/LowStockAlerts.tsx`, `src/components/inventory/RecentInputsList.tsx`, `src/components/inventory/ExpiringBatchesList.tsx`.
+**New**
+- `src/components/orders/CustomerPicker.tsx`
+- `src/components/orders/CategoryTreePicker.tsx`
+- `src/components/orders/BrandChips.tsx`
+- `src/components/orders/PaymentPanel.tsx`
+- `src/components/orders/ReturnOrderDialog.tsx`
+- `src/services/order-service.ts`
+- `src/types/payment.ts`
 
-**Edit**: `src/types/product.ts` (+ `pricingStrategy`), `src/components/products/ProductForm.tsx` (strategy select), `src/pages/Inventory.tsx` (redesign), `src/pages/inventory/InventoryInputs.tsx` (real table), `src/components/products/ViewProductDialog.tsx` (batches section).
+**Edited**
+- `src/types/order.ts` — add `customerId`, `discount`, `payments[]`, `finalTotal`, `paymentStatus`.
+- `src/components/orders/OrderFormDialog.tsx` — 4-tab wizard.
+- `src/components/orders/ProductSelector.tsx` — replace flat filters with `CategoryTreePicker` + `BrandChips`.
+- `src/pages/orders/ReturnedOrders.tsx` — wire return dialog.
 
-Approve and I'll build it end-to-end.
+## Out of scope
+- Real backend implementation (uses planned endpoints + optimistic UI, same pattern as `inventory-input-service`).
+- Tax engine (handled separately by finance).
+
+## Conventions
+- All money via existing `PriceInput` / `formatPrice` / `formatPersianNumber` (Latin in inputs, Persian in display).
+- Validation via Zod on submit + inline `toast.error`.
+- React Query for all server data with cached role/category/brand lookups.

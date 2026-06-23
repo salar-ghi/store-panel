@@ -26,6 +26,7 @@ import { Order } from "@/types/order";
 import { mockOrders, mockProducts, mockCategories, mockBrands } from "@/data/ordersData";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
+import { OrderService } from "@/services/order-service";
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -111,7 +112,9 @@ export default function Orders() {
         date: new Date().toLocaleDateString("fa-IR"),
       };
       setOrders([newOrder, ...orders]);
-      toast.success(`سفارش ${newOrder.id} ایجاد شد.`);
+      // Sync payment splits to finance module (non-blocking — mocks may fail).
+      OrderService.syncPaymentsToFinance(newOrder).catch(() => undefined);
+      toast.success(`سفارش ${newOrder.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
     }
   };
 
