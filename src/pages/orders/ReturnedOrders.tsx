@@ -322,6 +322,12 @@ export default function ReturnedOrders() {
           </CardContent>
         </Card>
       </div>
+
+      <ReturnOrderDialog
+        open={showReturnDialog}
+        onOpenChange={setShowReturnDialog}
+        orders={mockOrders}
+      />
     </div>
   );
 }
