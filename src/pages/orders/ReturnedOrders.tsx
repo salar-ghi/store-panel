@@ -101,6 +101,8 @@ const statusBadgeMap: Record<string, string> = {
 export default function ReturnedOrders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showReturnDialog, setShowReturnDialog] = useState(false);
+
 
   const filteredOrders = mockReturnedOrders.filter((order) => {
     const matchesSearch = 
