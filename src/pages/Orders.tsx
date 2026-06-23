@@ -26,6 +26,7 @@ import { Order } from "@/types/order";
 import { mockOrders, mockProducts, mockCategories, mockBrands } from "@/data/ordersData";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
+import { OrderService } from "@/services/order-service";
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
