@@ -43,6 +43,23 @@ export default function Orders() {
 
   const [orders, setOrders] = useState<Order[]>(mockOrders);
 
+  // Real data from server — no mocks in the New Order dialog.
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => ProductService.getAll(),
+    staleTime: 60 * 1000,
+  });
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => CategoryService.getAllCategories(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: brands = [] } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => BrandService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const filteredOrders = orders.filter(
     (order) =>
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
