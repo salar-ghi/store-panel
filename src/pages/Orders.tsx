@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Edit, Eye } from "lucide-react";
+import { Search, Plus, Edit, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -23,10 +24,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Order } from "@/types/order";
-import { mockOrders, mockProducts, mockCategories, mockBrands } from "@/data/ordersData";
+import { mockOrders } from "@/data/ordersData";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
 import { OrderService } from "@/services/order-service";
+import { ProductService } from "@/services/product-service";
+import { CategoryService } from "@/services/category-service";
+import { BrandService } from "@/services/brand-service";
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
