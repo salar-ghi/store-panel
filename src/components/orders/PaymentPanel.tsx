@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   OrderDiscount,
   OrderPaymentMethod,
@@ -6,6 +7,7 @@ import {
   PaymentSplit,
   PaymentStatus,
 } from '@/types/payment';
+import { OrderItem } from '@/types/order';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,9 +25,13 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Plus, Trash2, Wallet, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Wallet, AlertCircle, CheckCircle2, Ticket, X } from 'lucide-react';
 import { PriceInput } from '@/components/ui/price-input';
 import { formatPrice } from '@/lib/format';
+import { PromotionService } from '@/services/promotion-service';
+import { evaluateDiscount, DiscountScopeLabels } from '@/lib/discount-eval';
+import type { Discount } from '@/types/promotion';
+import { toast } from 'sonner';
 
 interface PaymentPanelProps {
   subtotal: number;
@@ -33,6 +39,10 @@ interface PaymentPanelProps {
   onDiscountChange: (d: OrderDiscount) => void;
   payments: PaymentSplit[];
   onPaymentsChange: (p: PaymentSplit[]) => void;
+  /** Context needed to validate promotion codes against their scope. */
+  items?: OrderItem[];
+  customerId?: string;
+  customerRoleIds?: string[];
 }
 
 export function computeDiscountAmount(subtotal: number, d: OrderDiscount) {
