@@ -421,9 +421,9 @@ export default function Orders() {
         open={showFormDialog}
         onOpenChange={setShowFormDialog}
         order={editingOrder}
-        products={mockProducts}
-        categories={mockCategories}
-        brands={mockBrands}
+        products={products}
+        categories={categories}
+        brands={brands}
         onSave={handleSaveOrder}
       />
     </div>
