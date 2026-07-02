@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   OrderDiscount,
   OrderPaymentMethod,
@@ -6,6 +7,7 @@ import {
   PaymentSplit,
   PaymentStatus,
 } from '@/types/payment';
+import { OrderItem } from '@/types/order';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,9 +25,13 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Plus, Trash2, Wallet, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Wallet, AlertCircle, CheckCircle2, Ticket, X } from 'lucide-react';
 import { PriceInput } from '@/components/ui/price-input';
 import { formatPrice } from '@/lib/format';
+import { PromotionService } from '@/services/promotion-service';
+import { evaluateDiscount, DiscountScopeLabels } from '@/lib/discount-eval';
+import type { Discount } from '@/types/promotion';
+import { toast } from 'sonner';
 
 interface PaymentPanelProps {
   subtotal: number;
@@ -33,6 +39,10 @@ interface PaymentPanelProps {
   onDiscountChange: (d: OrderDiscount) => void;
   payments: PaymentSplit[];
   onPaymentsChange: (p: PaymentSplit[]) => void;
+  /** Context needed to validate promotion codes against their scope. */
+  items?: OrderItem[];
+  customerId?: string;
+  customerRoleIds?: string[];
 }
 
 export function computeDiscountAmount(subtotal: number, d: OrderDiscount) {
@@ -71,6 +81,9 @@ export function PaymentPanel({
   onDiscountChange,
   payments,
   onPaymentsChange,
+  items = [],
+  customerId,
+  customerRoleIds = [],
 }: PaymentPanelProps) {
   const discountAmount = computeDiscountAmount(subtotal, discount);
   const finalTotal = Math.max(0, subtotal - discountAmount);
@@ -81,6 +94,47 @@ export function PaymentPanel({
     () => computePaymentStatus(finalTotal, payments),
     [finalTotal, payments],
   );
+
+  // --- Promotion code apply ---
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Discount | null>(null);
+
+  const { data: discounts = [] } = useQuery({
+    queryKey: ['discounts'],
+    queryFn: () => PromotionService.getAllDiscounts(),
+    staleTime: 60 * 1000,
+  });
+
+  const applyCoupon = () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    const d = discounts.find((x) => x.code.toLowerCase() === code.toLowerCase());
+    if (!d) {
+      toast.error('کد تخفیف نامعتبر است');
+      return;
+    }
+    const res = evaluateDiscount(d, {
+      items,
+      subtotal,
+      customerId,
+      customerRoleIds,
+    });
+    if (!res.eligible) {
+      toast.error(res.reason ?? 'این کد تخفیف قابل اعمال نیست');
+      return;
+    }
+    setAppliedCoupon(d);
+    // Apply as a fixed-amount discount so the computed value is preserved
+    // (percent + scope makes it a variable calculation, so we lock in the toman amount).
+    onDiscountChange({ type: 'amount', value: res.amount });
+    toast.success(`کد «${d.code}» اعمال شد — ${formatPrice(res.amount)} تخفیف`);
+  };
+
+  const clearCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    onDiscountChange({ type: 'percent', value: 0 });
+  };
 
   const addSplit = (preset?: Partial<PaymentSplit>) => {
     const split: PaymentSplit = {
@@ -105,6 +159,63 @@ export function PaymentPanel({
 
   return (
     <div className="space-y-4">
+      {/* --- Coupon code --- */}
+      <Card className="space-y-3 p-4">
+        <div className="flex items-center gap-2">
+          <Ticket className="h-4 w-4 text-primary" />
+          <p className="text-sm font-semibold">کد تخفیف</p>
+        </div>
+        {appliedCoupon ? (
+          <div className="flex items-center justify-between rounded-lg border border-success/40 bg-success/10 p-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-success text-success-foreground">
+                  {appliedCoupon.code}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {DiscountScopeLabels[appliedCoupon.scope?.type ?? 'all']}
+                </span>
+              </div>
+              <p className="text-xs text-success">
+                تخفیف اعمال‌شده: {formatPrice(discountAmount)}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={clearCoupon}
+              className="text-destructive"
+            >
+              <X className="ml-1 h-3.5 w-3.5" />
+              حذف کد
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              dir="ltr"
+              placeholder="مثال: SUMMER50"
+              value={couponInput}
+              onChange={(e) => setCouponInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  applyCoupon();
+                }
+              }}
+            />
+            <Button type="button" onClick={applyCoupon} variant="outline">
+              اعمال
+            </Button>
+          </div>
+        )}
+        <p className="text-[11px] text-muted-foreground">
+          کدهای تخفیف بر اساس محدوده تعریف‌شده (دسته، برند، محصول، کاربر یا گروه کاربری) اعتبارسنجی می‌شوند.
+        </p>
+      </Card>
+
+
       {/* --- Discount card --- */}
       <Card className="space-y-3 p-4">
         <div className="flex items-center justify-between">

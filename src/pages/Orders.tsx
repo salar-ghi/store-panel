@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Edit, Eye } from "lucide-react";
+import { Search, Plus, Edit, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -23,10 +24,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Order } from "@/types/order";
-import { mockOrders, mockProducts, mockCategories, mockBrands } from "@/data/ordersData";
+import { mockOrders } from "@/data/ordersData";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
 import { OrderService } from "@/services/order-service";
+import { ProductService } from "@/services/product-service";
+import { CategoryService } from "@/services/category-service";
+import { BrandService } from "@/services/brand-service";
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +42,23 @@ export default function Orders() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
   const [orders, setOrders] = useState<Order[]>(mockOrders);
+
+  // Real data from server — no mocks in the New Order dialog.
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => ProductService.getAll(),
+    staleTime: 60 * 1000,
+  });
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => CategoryService.getAllCategories(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: brands = [] } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => BrandService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const filteredOrders = orders.filter(
     (order) =>
@@ -400,9 +421,9 @@ export default function Orders() {
         open={showFormDialog}
         onOpenChange={setShowFormDialog}
         order={editingOrder}
-        products={mockProducts}
-        categories={mockCategories}
-        brands={mockBrands}
+        products={products}
+        categories={categories}
+        brands={brands}
         onSave={handleSaveOrder}
       />
     </div>

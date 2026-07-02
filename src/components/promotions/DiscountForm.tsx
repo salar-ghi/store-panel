@@ -33,9 +33,17 @@ import { z } from "zod";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { PersianDatePicker } from "@/components/ui/persian-datepicker";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PromotionService } from "@/services/promotion-service";
-import { Loader2 } from "lucide-react";
+import { CategoryService } from "@/services/category-service";
+import { BrandService } from "@/services/brand-service";
+import { ProductService } from "@/services/product-service";
+import { UserService } from "@/services/user-service";
+import { MultiSelectCheckbox } from "@/components/ui/multi-select-checkbox";
+import { DiscountScopeLabels } from "@/lib/discount-eval";
+import type { DiscountScopeType } from "@/types/promotion";
+import { Loader2, Target } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const discountFormSchema = z
   .object({
@@ -50,11 +58,36 @@ const discountFormSchema = z
     maxUsage: z.string().optional(),
     description: z.string().optional(),
     isActive: z.boolean().default(true),
+    scopeType: z.enum(["all", "categories", "brands", "products", "users", "roles"]),
+    scopeCategoryIds: z.array(z.string()).default([]),
+    scopeBrandIds: z.array(z.string()).default([]),
+    scopeProductIds: z.array(z.string()).default([]),
+    scopeUserIds: z.array(z.string()).default([]),
+    scopeRoleIds: z.array(z.string()).default([]),
   })
   .refine((d) => d.endDate >= d.startDate, {
     message: "تاریخ پایان باید بعد از تاریخ شروع باشد",
     path: ["endDate"],
-  });
+  })
+  .refine(
+    (d) => {
+      switch (d.scopeType) {
+        case "categories":
+          return d.scopeCategoryIds.length > 0;
+        case "brands":
+          return d.scopeBrandIds.length > 0;
+        case "products":
+          return d.scopeProductIds.length > 0;
+        case "users":
+          return d.scopeUserIds.length > 0;
+        case "roles":
+          return d.scopeRoleIds.length > 0;
+        default:
+          return true;
+      }
+    },
+    { message: "حداقل یک مورد را برای محدوده تخفیف انتخاب کنید", path: ["scopeType"] },
+  );
 
 type DiscountFormValues = z.infer<typeof discountFormSchema>;
 
@@ -79,12 +112,65 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
       maxUsage: "",
       description: "",
       isActive: true,
+      scopeType: "all",
+      scopeCategoryIds: [],
+      scopeBrandIds: [],
+      scopeProductIds: [],
+      scopeUserIds: [],
+      scopeRoleIds: [],
     },
   });
 
+  const scopeType = form.watch("scopeType");
+
+  // Only fetch options needed by the current scope, but cache them.
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => CategoryService.getAllCategories(),
+    enabled: open && scopeType === "categories",
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: brands = [] } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => BrandService.getAll(),
+    enabled: open && scopeType === "brands",
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: products = [] } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => ProductService.getAll(),
+    enabled: open && scopeType === "products",
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => UserService.getAllUsers(),
+    enabled: open && scopeType === "users",
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: roles = [] } = useQuery({
+    queryKey: ["roles"],
+    queryFn: () => UserService.getAllRoles(),
+    enabled: open && scopeType === "roles",
+    staleTime: 5 * 60 * 1000,
+  });
+
   const createMutation = useMutation({
-    mutationFn: (data: DiscountFormValues) =>
-      PromotionService.createDiscount({
+    mutationFn: (data: DiscountFormValues) => {
+      const scope =
+        data.scopeType === "all"
+          ? { type: "all" as DiscountScopeType }
+          : data.scopeType === "categories"
+          ? { type: "categories" as DiscountScopeType, categoryIds: data.scopeCategoryIds.map(Number) }
+          : data.scopeType === "brands"
+          ? { type: "brands" as DiscountScopeType, brandIds: data.scopeBrandIds.map(Number) }
+          : data.scopeType === "products"
+          ? { type: "products" as DiscountScopeType, productIds: data.scopeProductIds.map(Number) }
+          : data.scopeType === "users"
+          ? { type: "users" as DiscountScopeType, userIds: data.scopeUserIds }
+          : { type: "roles" as DiscountScopeType, roleIds: data.scopeRoleIds };
+
+      return PromotionService.createDiscount({
         code: data.code,
         discountType: data.discountType,
         amount: Number(data.amount),
@@ -94,7 +180,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
         maxUsage: data.maxUsage ? Number(data.maxUsage) : undefined,
         description: data.description,
         isActive: data.isActive,
-      }),
+        scope,
+      });
+    },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ["discounts"] });
       toast({
@@ -115,7 +203,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="sm:max-w-[640px] max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>ایجاد کد تخفیف جدید</DialogTitle>
           <DialogDescription>اطلاعات کد تخفیف جدید را وارد کنید.</DialogDescription>
@@ -239,7 +327,11 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   <FormItem>
                     <FormLabel>حداقل سفارش (تومان)</FormLabel>
                     <FormControl>
-                      <Input type="text" placeholder="اختیاری" {...field} />
+                      <PriceInput
+                        value={field.value ? Number(field.value) : undefined}
+                        onChange={(n) => field.onChange(String(n))}
+                        placeholder="اختیاری"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,13 +345,169 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   <FormItem>
                     <FormLabel>حداکثر استفاده</FormLabel>
                     <FormControl>
-                      <Input type="text" placeholder="اختیاری" {...field} />
+                      <Input type="number" min={1} placeholder="اختیاری" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            {/* --- Scope / eligibility --- */}
+            <Card className="space-y-3 p-4">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                <p className="text-sm font-semibold">محدوده اعمال تخفیف</p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="scopeType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>این کد تخفیف روی چه چیزی اعمال شود؟</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {(Object.keys(DiscountScopeLabels) as DiscountScopeType[]).map(
+                          (k) => (
+                            <SelectItem key={k} value={k}>
+                              {DiscountScopeLabels[k]}
+                            </SelectItem>
+                          ),
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {scopeType === "categories" && (
+                <FormField
+                  control={form.control}
+                  name="scopeCategoryIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground">
+                        دسته‌بندی‌های مشمول
+                      </FormLabel>
+                      <MultiSelectCheckbox
+                        items={categories.map((c) => ({
+                          id: String(c.id),
+                          name: c.name,
+                          description: c.description,
+                        }))}
+                        selectedIds={field.value}
+                        onSelectionChange={field.onChange}
+                        maxHeight="14rem"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {scopeType === "brands" && (
+                <FormField
+                  control={form.control}
+                  name="scopeBrandIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground">
+                        برندهای مشمول
+                      </FormLabel>
+                      <MultiSelectCheckbox
+                        items={brands.map((b) => ({
+                          id: String(b.id),
+                          name: b.name,
+                          description: b.description,
+                        }))}
+                        selectedIds={field.value}
+                        onSelectionChange={field.onChange}
+                        maxHeight="14rem"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {scopeType === "products" && (
+                <FormField
+                  control={form.control}
+                  name="scopeProductIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground">
+                        محصولات مشمول
+                      </FormLabel>
+                      <MultiSelectCheckbox
+                        items={products.map((p) => ({
+                          id: String(p.id),
+                          name: p.name,
+                          description: `${p.categoryName ?? ""} - ${p.brandName ?? ""}`,
+                        }))}
+                        selectedIds={field.value}
+                        onSelectionChange={field.onChange}
+                        maxHeight="14rem"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {scopeType === "users" && (
+                <FormField
+                  control={form.control}
+                  name="scopeUserIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground">
+                        کاربران مشمول
+                      </FormLabel>
+                      <MultiSelectCheckbox
+                        items={users.map((u) => ({
+                          id: u.id,
+                          name: `${u.firstName} ${u.lastName}`,
+                          description: u.phoneNumber,
+                        }))}
+                        selectedIds={field.value}
+                        onSelectionChange={field.onChange}
+                        maxHeight="14rem"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {scopeType === "roles" && (
+                <FormField
+                  control={form.control}
+                  name="scopeRoleIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground">
+                        گروه‌های کاربری مشمول (مثلاً VIP، عمده‌فروش)
+                      </FormLabel>
+                      <MultiSelectCheckbox
+                        items={roles.map((r) => ({ id: r.id, name: r.name }))}
+                        selectedIds={field.value}
+                        onSelectionChange={field.onChange}
+                        maxHeight="14rem"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </Card>
 
             <FormField
               control={form.control}
