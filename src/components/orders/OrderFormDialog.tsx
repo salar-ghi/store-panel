@@ -529,6 +529,8 @@ export function OrderFormDialog({
               onDiscountChange={setDiscount}
               payments={payments}
               onPaymentsChange={setPayments}
+              items={orderItems}
+              customerId={customerData.id}
             />
           </TabsContent>
 
