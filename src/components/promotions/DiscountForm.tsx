@@ -66,7 +66,14 @@ function ScopePicker({
   const selectedItems = items.filter((i) => selectedIds.includes(i.id));
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        {items.length > 0 && (
+          <span className="text-[11px] text-muted-foreground">
+            {selectedItems.length} / {items.length}
+          </span>
+        )}
+      </div>
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -81,16 +88,17 @@ function ScopePicker({
             maxHeight="14rem"
             emptyMessage={emptyMessage}
             emptySubMessage=""
+            dense
           />
           {selectedItems.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 rounded-md border bg-muted/40 p-2">
+            <div className="flex flex-wrap gap-1 rounded-md border bg-muted/40 p-1.5">
               {selectedItems.map((it) => (
                 <Badge
                   key={it.id}
                   variant="secondary"
-                  className="gap-1 pr-1"
+                  className="gap-1 pr-1 py-0 text-[11px] font-normal"
                 >
-                  <span className="max-w-[160px] truncate">{it.name}</span>
+                  <span className="max-w-[140px] truncate">{it.name}</span>
                   <button
                     type="button"
                     onClick={() =>
