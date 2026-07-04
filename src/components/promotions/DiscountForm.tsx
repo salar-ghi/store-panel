@@ -190,31 +190,31 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
   const scopeType = form.watch("scopeType");
 
   // Only fetch options needed by the current scope, but cache them.
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], isLoading: loadingCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: () => CategoryService.getAllCategories(),
     enabled: open && scopeType === "categories",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: brands = [] } = useQuery({
+  const { data: brands = [], isLoading: loadingBrands } = useQuery({
     queryKey: ["brands"],
     queryFn: () => BrandService.getAll(),
     enabled: open && scopeType === "brands",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: loadingProducts } = useQuery({
     queryKey: ["products"],
     queryFn: () => ProductService.getAll(),
     enabled: open && scopeType === "products",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: users = [] } = useQuery({
+  const { data: users = [], isLoading: loadingUsers } = useQuery({
     queryKey: ["users"],
     queryFn: () => UserService.getAllUsers(),
     enabled: open && scopeType === "users",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: roles = [] } = useQuery({
+  const { data: roles = [], isLoading: loadingRoles } = useQuery({
     queryKey: ["roles"],
     queryFn: () => UserService.getAllRoles(),
     enabled: open && scopeType === "roles",
