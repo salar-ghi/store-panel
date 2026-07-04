@@ -28,6 +28,7 @@ interface MultiSelectCheckboxProps {
   maxHeight?: string;
   showSearch?: boolean;
   showSelectAll?: boolean;
+  dense?: boolean;
 }
 
 export function MultiSelectCheckbox({
