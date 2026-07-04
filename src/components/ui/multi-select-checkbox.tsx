@@ -28,6 +28,7 @@ interface MultiSelectCheckboxProps {
   maxHeight?: string;
   showSearch?: boolean;
   showSelectAll?: boolean;
+  dense?: boolean;
 }
 
 export function MultiSelectCheckbox({
@@ -45,6 +46,7 @@ export function MultiSelectCheckbox({
   maxHeight = "16rem",
   showSearch = true,
   showSelectAll = true,
+  dense = false,
 }: MultiSelectCheckboxProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -126,9 +128,32 @@ export function MultiSelectCheckbox({
       >
         {items.length > 0 ? (
           filteredItems.length > 0 ? (
-            <div className="space-y-2">
+            <div className={dense ? "divide-y rounded-md border" : "space-y-2"}>
               {filteredItems.map((item) => {
                 const isSelected = selectedIds.includes(item.id);
+                if (dense) {
+                  return (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => handleToggle(item.id)}
+                      className={cn(
+                        "flex w-full items-center gap-2 px-2 py-1.5 text-right text-sm transition-colors",
+                        isSelected
+                          ? "bg-primary/10 text-foreground"
+                          : "hover:bg-muted/60",
+                      )}
+                    >
+                      <Checkbox checked={isSelected} className="h-3.5 w-3.5 pointer-events-none" />
+                      <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                      {item.description && (
+                        <span className="text-[11px] text-muted-foreground truncate max-w-[45%]">
+                          {item.description}
+                        </span>
+                      )}
+                    </button>
+                  );
+                }
                 return (
                   <div
                     key={item.id}
