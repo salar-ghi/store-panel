@@ -46,6 +46,7 @@ export function MultiSelectCheckbox({
   maxHeight = "16rem",
   showSearch = true,
   showSelectAll = true,
+  dense = false,
 }: MultiSelectCheckboxProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
