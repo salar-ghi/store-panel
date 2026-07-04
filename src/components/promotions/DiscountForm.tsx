@@ -39,11 +39,77 @@ import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { ProductService } from "@/services/product-service";
 import { UserService } from "@/services/user-service";
-import { MultiSelectCheckbox } from "@/components/ui/multi-select-checkbox";
+import { MultiSelectCheckbox, MultiSelectItem } from "@/components/ui/multi-select-checkbox";
 import { DiscountScopeLabels } from "@/lib/discount-eval";
 import type { DiscountScopeType } from "@/types/promotion";
-import { Loader2, Target } from "lucide-react";
+import { Loader2, Target, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+interface ScopePickerProps {
+  label: string;
+  isLoading: boolean;
+  items: MultiSelectItem[];
+  selectedIds: string[];
+  onSelectionChange: (ids: string[]) => void;
+  emptyMessage?: string;
+}
+
+function ScopePicker({
+  label,
+  isLoading,
+  items,
+  selectedIds,
+  onSelectionChange,
+  emptyMessage = "موردی برای انتخاب وجود ندارد",
+}: ScopePickerProps) {
+  const selectedItems = items.filter((i) => selectedIds.includes(i.id));
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          در حال بارگذاری از سرور...
+        </div>
+      ) : (
+        <>
+          <MultiSelectCheckbox
+            items={items}
+            selectedIds={selectedIds}
+            onSelectionChange={onSelectionChange}
+            maxHeight="14rem"
+            emptyMessage={emptyMessage}
+            emptySubMessage=""
+          />
+          {selectedItems.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 rounded-md border bg-muted/40 p-2">
+              {selectedItems.map((it) => (
+                <Badge
+                  key={it.id}
+                  variant="secondary"
+                  className="gap-1 pr-1"
+                >
+                  <span className="max-w-[160px] truncate">{it.name}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSelectionChange(selectedIds.filter((id) => id !== it.id))
+                    }
+                    className="rounded-full p-0.5 hover:bg-background/60"
+                    aria-label="حذف"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 const discountFormSchema = z
   .object({
