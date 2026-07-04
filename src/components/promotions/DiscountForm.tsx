@@ -459,10 +459,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeCategoryIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        دسته‌بندی‌های مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="دسته‌بندی‌های مشمول (از دسته‌های ثبت‌شده در سرور)"
+                        isLoading={loadingCategories}
                         items={categories.map((c) => ({
                           id: String(c.id),
                           name: c.name,
@@ -470,7 +469,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="دسته‌بندی‌ای در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -484,10 +483,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeBrandIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        برندهای مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="برندهای مشمول (از برندهای ثبت‌شده در سرور)"
+                        isLoading={loadingBrands}
                         items={brands.map((b) => ({
                           id: String(b.id),
                           name: b.name,
@@ -495,7 +493,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="برندی در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -509,10 +507,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeProductIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        محصولات مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="محصولات مشمول (از محصولات ثبت‌شده در سرور)"
+                        isLoading={loadingProducts}
                         items={products.map((p) => ({
                           id: String(p.id),
                           name: p.name,
@@ -520,7 +517,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="محصولی در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -534,10 +531,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeUserIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        کاربران مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="کاربران مشمول (از کاربران ثبت‌شده در سرور)"
+                        isLoading={loadingUsers}
                         items={users.map((u) => ({
                           id: u.id,
                           name: `${u.firstName} ${u.lastName}`,
@@ -545,7 +541,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="کاربری در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -559,14 +555,13 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeRoleIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        گروه‌های کاربری مشمول (مثلاً VIP، عمده‌فروش)
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="گروه‌های کاربری مشمول (مثلاً VIP، عمده‌فروش)"
+                        isLoading={loadingRoles}
                         items={roles.map((r) => ({ id: r.id, name: r.name }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="گروهی در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
