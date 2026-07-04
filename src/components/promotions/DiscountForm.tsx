@@ -39,11 +39,77 @@ import { CategoryService } from "@/services/category-service";
 import { BrandService } from "@/services/brand-service";
 import { ProductService } from "@/services/product-service";
 import { UserService } from "@/services/user-service";
-import { MultiSelectCheckbox } from "@/components/ui/multi-select-checkbox";
+import { MultiSelectCheckbox, MultiSelectItem } from "@/components/ui/multi-select-checkbox";
 import { DiscountScopeLabels } from "@/lib/discount-eval";
 import type { DiscountScopeType } from "@/types/promotion";
-import { Loader2, Target } from "lucide-react";
+import { Loader2, Target, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+interface ScopePickerProps {
+  label: string;
+  isLoading: boolean;
+  items: MultiSelectItem[];
+  selectedIds: string[];
+  onSelectionChange: (ids: string[]) => void;
+  emptyMessage?: string;
+}
+
+function ScopePicker({
+  label,
+  isLoading,
+  items,
+  selectedIds,
+  onSelectionChange,
+  emptyMessage = "موردی برای انتخاب وجود ندارد",
+}: ScopePickerProps) {
+  const selectedItems = items.filter((i) => selectedIds.includes(i.id));
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          در حال بارگذاری از سرور...
+        </div>
+      ) : (
+        <>
+          <MultiSelectCheckbox
+            items={items}
+            selectedIds={selectedIds}
+            onSelectionChange={onSelectionChange}
+            maxHeight="14rem"
+            emptyMessage={emptyMessage}
+            emptySubMessage=""
+          />
+          {selectedItems.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 rounded-md border bg-muted/40 p-2">
+              {selectedItems.map((it) => (
+                <Badge
+                  key={it.id}
+                  variant="secondary"
+                  className="gap-1 pr-1"
+                >
+                  <span className="max-w-[160px] truncate">{it.name}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSelectionChange(selectedIds.filter((id) => id !== it.id))
+                    }
+                    className="rounded-full p-0.5 hover:bg-background/60"
+                    aria-label="حذف"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 const discountFormSchema = z
   .object({
@@ -124,31 +190,31 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
   const scopeType = form.watch("scopeType");
 
   // Only fetch options needed by the current scope, but cache them.
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], isLoading: loadingCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: () => CategoryService.getAllCategories(),
     enabled: open && scopeType === "categories",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: brands = [] } = useQuery({
+  const { data: brands = [], isLoading: loadingBrands } = useQuery({
     queryKey: ["brands"],
     queryFn: () => BrandService.getAll(),
     enabled: open && scopeType === "brands",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: loadingProducts } = useQuery({
     queryKey: ["products"],
     queryFn: () => ProductService.getAll(),
     enabled: open && scopeType === "products",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: users = [] } = useQuery({
+  const { data: users = [], isLoading: loadingUsers } = useQuery({
     queryKey: ["users"],
     queryFn: () => UserService.getAllUsers(),
     enabled: open && scopeType === "users",
     staleTime: 5 * 60 * 1000,
   });
-  const { data: roles = [] } = useQuery({
+  const { data: roles = [], isLoading: loadingRoles } = useQuery({
     queryKey: ["roles"],
     queryFn: () => UserService.getAllRoles(),
     enabled: open && scopeType === "roles",
@@ -393,10 +459,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeCategoryIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        دسته‌بندی‌های مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="دسته‌بندی‌های مشمول (از دسته‌های ثبت‌شده در سرور)"
+                        isLoading={loadingCategories}
                         items={categories.map((c) => ({
                           id: String(c.id),
                           name: c.name,
@@ -404,7 +469,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="دسته‌بندی‌ای در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -418,10 +483,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeBrandIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        برندهای مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="برندهای مشمول (از برندهای ثبت‌شده در سرور)"
+                        isLoading={loadingBrands}
                         items={brands.map((b) => ({
                           id: String(b.id),
                           name: b.name,
@@ -429,7 +493,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="برندی در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -443,10 +507,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeProductIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        محصولات مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="محصولات مشمول (از محصولات ثبت‌شده در سرور)"
+                        isLoading={loadingProducts}
                         items={products.map((p) => ({
                           id: String(p.id),
                           name: p.name,
@@ -454,7 +517,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="محصولی در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -468,10 +531,9 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeUserIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        کاربران مشمول
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="کاربران مشمول (از کاربران ثبت‌شده در سرور)"
+                        isLoading={loadingUsers}
                         items={users.map((u) => ({
                           id: u.id,
                           name: `${u.firstName} ${u.lastName}`,
@@ -479,7 +541,7 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                         }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="کاربری در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
@@ -493,14 +555,13 @@ export function DiscountForm({ open, onOpenChange }: DiscountFormProps) {
                   name="scopeRoleIds"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-muted-foreground">
-                        گروه‌های کاربری مشمول (مثلاً VIP، عمده‌فروش)
-                      </FormLabel>
-                      <MultiSelectCheckbox
+                      <ScopePicker
+                        label="گروه‌های کاربری مشمول (مثلاً VIP، عمده‌فروش)"
+                        isLoading={loadingRoles}
                         items={roles.map((r) => ({ id: r.id, name: r.name }))}
                         selectedIds={field.value}
                         onSelectionChange={field.onChange}
-                        maxHeight="14rem"
+                        emptyMessage="گروهی در سرور یافت نشد"
                       />
                       <FormMessage />
                     </FormItem>
