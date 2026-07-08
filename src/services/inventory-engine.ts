@@ -1,10 +1,10 @@
 // Inventory engine — single source of truth for "what is sellable, where".
-// Mock layer that distributes each product's stock across the shelves defined
-// in StorageService. Replace `ensureInit` body with real API calls when the
-// backend exists; the public API of this module should not need to change.
+// Seeds from real products (or falls back to mocks) and distributes each
+// product's stock across the shelves defined in StorageService.
 
 import { StorageService } from './storage-service';
 import { mockProducts } from '@/data/ordersData';
+import type { Product } from '@/types/product';
 
 export interface StockLocation {
   spaceId: number;
@@ -24,9 +24,22 @@ export interface InventoryScope {
 }
 
 let _stockMap: Map<number, StockLocation[]> | null = null;
+let _seededKey: string | null = null;
 
-async function ensureInit() {
-  if (_stockMap) return;
+function keyForProducts(products: Product[]): string {
+  return products
+    .map((p) => `${p.id}:${p.stock?.quantity ?? p.stockQuantity ?? 0}`)
+    .join('|');
+}
+
+async function ensureInit(productsOverride?: Product[]) {
+  const source: Product[] =
+    productsOverride && productsOverride.length > 0
+      ? productsOverride
+      : (mockProducts as unknown as Product[]);
+  const key = keyForProducts(source);
+  if (_stockMap && _seededKey === key) return;
+
   const [spaces, zones, shelves] = await Promise.all([
     StorageService.getSpaces(),
     StorageService.getZones(),
@@ -34,15 +47,20 @@ async function ensureInit() {
   ]);
 
   _stockMap = new Map();
+  _seededKey = key;
   if (shelves.length === 0) return;
 
-  mockProducts.forEach((p, idx) => {
-    const total = p.stockQuantity ?? 0;
+  source.forEach((p, idx) => {
+    const total = p.stock?.quantity ?? p.stockQuantity ?? 0;
     if (total <= 0) return;
 
-    // distribute across 1–2 shelves so a product can live in multiple places
-    const primary = shelves[idx % shelves.length];
-    const useSecondary = total > 30 && shelves.length > 1;
+    // Prefer the product's own configured shelf when available.
+    const configuredShelf =
+      p.stock?.shelfId != null
+        ? shelves.find((s) => s.id === p.stock!.shelfId)
+        : undefined;
+    const primary = configuredShelf ?? shelves[idx % shelves.length];
+    const useSecondary = !configuredShelf && total > 30 && shelves.length > 1;
     const secondary = useSecondary ? shelves[(idx + 1) % shelves.length] : null;
 
     const parts: Array<{ shelf: typeof primary; qty: number }> = secondary
@@ -80,6 +98,11 @@ function applyScope(locs: StockLocation[], scope?: InventoryScope) {
 }
 
 export const InventoryEngine = {
+  /** Seed the engine from a real product list (usually from the backend). */
+  async seed(products: Product[]): Promise<void> {
+    await ensureInit(products);
+  },
+
   async getLocations(productId: number, scope?: InventoryScope): Promise<StockLocation[]> {
     await ensureInit();
     const list = _stockMap!.get(productId) ?? [];

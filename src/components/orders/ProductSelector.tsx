@@ -40,7 +40,7 @@ export function ProductSelector({
     const map: Record<number, number> = {};
     for (const p of products) {
       const sellable =
-        p.status === "active" &&
+        (p.status === "active" || p.status === undefined) &&
         (p.availability === "available" || p.availability === undefined) &&
         (availableMap[p.id] ?? 0) > 0;
       if (!sellable) continue;
@@ -58,7 +58,7 @@ export function ProductSelector({
       const matchesBrand =
         brandIds.length === 0 || brandIds.includes(product.brandId);
       const isSellable =
-        product.status === "active" &&
+        (product.status === "active" || product.status === undefined) &&
         (product.availability === "available" || product.availability === undefined);
       const hasStock = (availableMap[product.id] ?? 0) > 0;
       return matchesSearch && matchesCategory && matchesBrand && isSellable && hasStock;

@@ -112,12 +112,26 @@ export function OrderFormDialog({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    InventoryEngine.getAvailableMap(
-      products.map((p) => p.id),
-      scope
-    ).then((map) => {
-      if (!cancelled) setAvailableMap(map);
-    });
+    (async () => {
+      // Seed the inventory engine from the real product list before querying,
+      // otherwise availableMap is empty and the product list is filtered out.
+      await InventoryEngine.seed(products);
+      const map = await InventoryEngine.getAvailableMap(
+        products.map((p) => p.id),
+        scope,
+      );
+      if (cancelled) return;
+      // Fallback: if the engine could not derive a per-shelf breakdown for a
+      // product (e.g. no shelves configured yet), fall back to the product's
+      // own stockQuantity so it still becomes selectable.
+      const merged: Record<number, number> = { ...map };
+      for (const p of products) {
+        if (!merged[p.id]) {
+          merged[p.id] = p.stock?.quantity ?? p.stockQuantity ?? 0;
+        }
+      }
+      setAvailableMap(merged);
+    })();
     return () => {
       cancelled = true;
     };
