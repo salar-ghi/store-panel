@@ -35,19 +35,18 @@ export function ProductSelector({
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [brandIds, setBrandIds] = useState<number[]>([]);
 
-  // Pre-compute count of sellable products per category.
+  // Pre-compute count of visible products per category (based on sellable status only).
   const categoryCounts = useMemo(() => {
     const map: Record<number, number> = {};
     for (const p of products) {
       const sellable =
         (p.status === "active" || p.status === undefined) &&
-        (p.availability === "available" || p.availability === undefined) &&
-        (availableMap[p.id] ?? 0) > 0;
+        (p.availability === "available" || p.availability === undefined);
       if (!sellable) continue;
       map[p.categoryId] = (map[p.categoryId] ?? 0) + 1;
     }
     return map;
-  }, [products, availableMap]);
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -60,10 +59,9 @@ export function ProductSelector({
       const isSellable =
         (product.status === "active" || product.status === undefined) &&
         (product.availability === "available" || product.availability === undefined);
-      const hasStock = (availableMap[product.id] ?? 0) > 0;
-      return matchesSearch && matchesCategory && matchesBrand && isSellable && hasStock;
+      return matchesSearch && matchesCategory && matchesBrand && isSellable;
     });
-  }, [products, searchTerm, categoryId, brandIds, availableMap]);
+  }, [products, searchTerm, categoryId, brandIds]);
 
   const handleQuantityChange = (productId: number, delta: number, isWeight: boolean) => {
     const currentQty = selectedProducts.get(productId) || 0;
