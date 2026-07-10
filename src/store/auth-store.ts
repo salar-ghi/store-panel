@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (credentials) => {
         try {
           // Dev shortcut
-          if (credentials.username === "admin" && credentials.password === "123456") {
+          if (credentials.PhoneNumber === "admin" && credentials.password === "123456") {
             const adminUser: User = {
               id: "1",
               username: "admin",

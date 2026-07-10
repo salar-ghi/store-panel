@@ -19,8 +19,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAuthStore } from "@/store/auth-store";
 
 const formSchema = z.object({
-  username: z.string().min(3, {
-    message: "نام کاربری باید حداقل ۳ کاراکتر باشد.",
+  PhoneNumber: z.string().min(3, {
+    message: "شماره موبایل باید حداقل ۳ کاراکتر باشد.",
   }),
   password: z.string().min(6, {
     message: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
@@ -42,7 +42,7 @@ export default function Login() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      PhoneNumber: "",
       password: "",
     },
   });
@@ -55,7 +55,7 @@ export default function Login() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const loginData = {
-      username: values.username,
+      PhoneNumber: values.PhoneNumber,
       password: values.password
     };
     
@@ -76,7 +76,7 @@ export default function Login() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="username"
+                name="PhoneNumber"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>نام کاربری</FormLabel>
