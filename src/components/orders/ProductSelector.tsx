@@ -133,8 +133,8 @@ export function ProductSelector({
             {filteredProducts.length === 0 ? (
               <div className="flex h-[300px] flex-col items-center justify-center gap-2 text-muted-foreground">
                 <PackageX className="h-8 w-8" />
-                <p className="text-sm">محصول قابل فروشی با این فیلترها یافت نشد</p>
-                <p className="text-xs">محصولات بدون موجودی نمایش داده نمی‌شوند</p>
+                <p className="text-sm">محصولی با این فیلترها یافت نشد</p>
+                <p className="text-xs">فیلتر دسته‌بندی یا برند را تغییر دهید</p>
               </div>
             ) : (
               filteredProducts.map((product) => {
