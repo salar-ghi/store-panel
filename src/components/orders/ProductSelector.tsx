@@ -35,19 +35,18 @@ export function ProductSelector({
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [brandIds, setBrandIds] = useState<number[]>([]);
 
-  // Pre-compute count of sellable products per category.
+  // Pre-compute count of visible products per category (based on sellable status only).
   const categoryCounts = useMemo(() => {
     const map: Record<number, number> = {};
     for (const p of products) {
       const sellable =
         (p.status === "active" || p.status === undefined) &&
-        (p.availability === "available" || p.availability === undefined) &&
-        (availableMap[p.id] ?? 0) > 0;
+        (p.availability === "available" || p.availability === undefined);
       if (!sellable) continue;
       map[p.categoryId] = (map[p.categoryId] ?? 0) + 1;
     }
     return map;
-  }, [products, availableMap]);
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -60,10 +59,9 @@ export function ProductSelector({
       const isSellable =
         (product.status === "active" || product.status === undefined) &&
         (product.availability === "available" || product.availability === undefined);
-      const hasStock = (availableMap[product.id] ?? 0) > 0;
-      return matchesSearch && matchesCategory && matchesBrand && isSellable && hasStock;
+      return matchesSearch && matchesCategory && matchesBrand && isSellable;
     });
-  }, [products, searchTerm, categoryId, brandIds, availableMap]);
+  }, [products, searchTerm, categoryId, brandIds]);
 
   const handleQuantityChange = (productId: number, delta: number, isWeight: boolean) => {
     const currentQty = selectedProducts.get(productId) || 0;
@@ -126,7 +124,7 @@ export function ProductSelector({
 
         {scopeLabel && (
           <div className="text-xs text-muted-foreground">
-            فقط محصولات دارای موجودی در «{scopeLabel}» نمایش داده می‌شوند.
+            موجودی نمایش‌داده‌شده مربوط به «{scopeLabel}» است. محصولات بدون موجودی هم برای اطلاع نمایش داده می‌شوند.
           </div>
         )}
 
@@ -135,8 +133,8 @@ export function ProductSelector({
             {filteredProducts.length === 0 ? (
               <div className="flex h-[300px] flex-col items-center justify-center gap-2 text-muted-foreground">
                 <PackageX className="h-8 w-8" />
-                <p className="text-sm">محصول قابل فروشی با این فیلترها یافت نشد</p>
-                <p className="text-xs">محصولات بدون موجودی نمایش داده نمی‌شوند</p>
+                <p className="text-sm">محصولی با این فیلترها یافت نشد</p>
+                <p className="text-xs">فیلتر دسته‌بندی یا برند را تغییر دهید</p>
               </div>
             ) : (
               filteredProducts.map((product) => {
@@ -175,12 +173,16 @@ export function ProductSelector({
                         <Badge
                           variant="outline"
                           className={`text-xs ${
-                            lowStock
+                            available === 0
+                              ? "border-destructive/40 bg-destructive/10 text-destructive"
+                              : lowStock
                               ? "border-warning/40 bg-warning/10 text-warning"
                               : "border-success/40 bg-success/10 text-success"
                           }`}
                         >
-                          موجودی: {formatPersianNumber(available)} {unitLabel}
+                          {available === 0
+                            ? "بدون موجودی"
+                            : `موجودی: ${formatPersianNumber(available)} ${unitLabel}`}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
