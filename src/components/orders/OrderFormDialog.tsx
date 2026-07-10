@@ -121,12 +121,14 @@ export function OrderFormDialog({
         scope,
       );
       if (cancelled) return;
-      // Fallback: if the engine could not derive a per-shelf breakdown for a
-      // product (e.g. no shelves configured yet), fall back to the product's
-      // own stockQuantity so it still becomes selectable.
+      // Fallback: when the engine has no per-shelf breakdown for a product
+      // (no shelves configured, or no space scope selected), use the product's
+      // own stock quantity so it can still be sold. When a specific space is
+      // scoped, keep the engine's value (0 means "not stocked in that space").
       const merged: Record<number, number> = { ...map };
       for (const p of products) {
-        if (!merged[p.id]) {
+        const engineVal = merged[p.id];
+        if (engineVal === undefined || (!scope && engineVal === 0)) {
           merged[p.id] = p.stock?.quantity ?? p.stockQuantity ?? 0;
         }
       }
