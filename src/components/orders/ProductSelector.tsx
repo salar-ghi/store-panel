@@ -173,12 +173,16 @@ export function ProductSelector({
                         <Badge
                           variant="outline"
                           className={`text-xs ${
-                            lowStock
+                            available === 0
+                              ? "border-destructive/40 bg-destructive/10 text-destructive"
+                              : lowStock
                               ? "border-warning/40 bg-warning/10 text-warning"
                               : "border-success/40 bg-success/10 text-success"
                           }`}
                         >
-                          موجودی: {formatPersianNumber(available)} {unitLabel}
+                          {available === 0
+                            ? "بدون موجودی"
+                            : `موجودی: ${formatPersianNumber(available)} ${unitLabel}`}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
