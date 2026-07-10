@@ -35,14 +35,22 @@ export function ProductSelector({
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [brandIds, setBrandIds] = useState<number[]>([]);
 
+  // A product is "sellable" unless it's explicitly archived / discontinued.
+  // We deliberately allow status="draft"/"available"="draft" here because the
+  // backend often returns products in draft state that are still orderable.
+  const isSellable = (p: Product) => {
+    const status = (p.status as string | undefined)?.toLowerCase();
+    if (status === "inactive" || status === "archived" || status === "deleted") return false;
+    const availability = (p.availability as string | undefined)?.toLowerCase();
+    if (availability === "discontinued" || availability === "archived") return false;
+    return true;
+  };
+
   // Pre-compute count of visible products per category (based on sellable status only).
   const categoryCounts = useMemo(() => {
     const map: Record<number, number> = {};
     for (const p of products) {
-      const sellable =
-        (p.status === "active" || p.status === undefined) &&
-        (p.availability === "available" || p.availability === undefined);
-      if (!sellable) continue;
+      if (!isSellable(p)) continue;
       map[p.categoryId] = (map[p.categoryId] ?? 0) + 1;
     }
     return map;
@@ -56,10 +64,7 @@ export function ProductSelector({
       const matchesCategory = categoryId == null || product.categoryId === categoryId;
       const matchesBrand =
         brandIds.length === 0 || brandIds.includes(product.brandId);
-      const isSellable =
-        (product.status === "active" || product.status === undefined) &&
-        (product.availability === "available" || product.availability === undefined);
-      return matchesSearch && matchesCategory && matchesBrand && isSellable;
+      return matchesSearch && matchesCategory && matchesBrand && isSellable(product);
     });
   }, [products, searchTerm, categoryId, brandIds]);
 
