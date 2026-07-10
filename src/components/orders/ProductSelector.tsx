@@ -124,7 +124,7 @@ export function ProductSelector({
 
         {scopeLabel && (
           <div className="text-xs text-muted-foreground">
-            فقط محصولات دارای موجودی در «{scopeLabel}» نمایش داده می‌شوند.
+            موجودی نمایش‌داده‌شده مربوط به «{scopeLabel}» است. محصولات بدون موجودی هم برای اطلاع نمایش داده می‌شوند.
           </div>
         )}
 
