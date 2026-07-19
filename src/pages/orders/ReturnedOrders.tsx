@@ -331,7 +331,7 @@ export default function ReturnedOrders() {
       <ReturnOrderDialog
         open={showReturnDialog}
         onOpenChange={setShowReturnDialog}
-        orders={mockOrders}
+        orders={allOrders}
       />
     </div>
   );
