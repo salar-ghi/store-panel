@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Edit, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -24,7 +24,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Order } from "@/types/order";
-import { mockOrders } from "@/data/ordersData";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
 import { OrderService } from "@/services/order-service";
@@ -41,10 +40,15 @@ export default function Orders() {
   const [showFormDialog, setShowFormDialog] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const queryClient = useQueryClient();
+  const refreshOrders = () => queryClient.invalidateQueries({ queryKey: ["orders"] });
 
-  // Real data from server — no mocks in the New Order dialog.
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  // Real data from server — no mocks anywhere.
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => OrderService.list(),
+  });
+  const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: () => ProductService.getAll(),
     staleTime: 60 * 1000,
@@ -69,31 +73,35 @@ export default function Orders() {
       )
   );
 
-  const handleApproveOrder = (order: Order) => {
-    setOrders(
-      orders.map((o) =>
-        o.id === order.id ? { ...o, status: "approved" } : o
-      )
-    );
-    toast.success(`سفارش ${order.id} تایید شد.`);
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: Order["status"] }) => {
+      return OrderService.update(id, { status } as any);
+    },
+    onSuccess: () => refreshOrders(),
+  });
+
+  const handleApproveOrder = async (order: Order) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: order.id, status: "approved" });
+      toast.success(`سفارش ${order.id} تایید شد.`);
+    } catch {
+      toast.error("خطا در تایید سفارش");
+    }
     setShowViewDialog(false);
     setSelectedOrder(null);
   };
 
-  const handleRejectOrder = () => {
-    if (selectedOrder) {
-      setOrders(
-        orders.map((order) =>
-          order.id === selectedOrder.id
-            ? { ...order, status: "rejected" }
-            : order
-        )
-      );
-      setShowRejectDialog(false);
+  const handleRejectOrder = async () => {
+    if (!selectedOrder) return;
+    try {
+      await updateStatusMutation.mutateAsync({ id: selectedOrder.id, status: "rejected" });
       toast.error(`سفارش ${selectedOrder.id} رد شد.`);
-      setSelectedOrder(null);
-      setRejectReason("");
+    } catch {
+      toast.error("خطا در رد سفارش");
     }
+    setShowRejectDialog(false);
+    setSelectedOrder(null);
+    setRejectReason("");
   };
 
   const handleCreateOrder = () => {
@@ -111,33 +119,24 @@ export default function Orders() {
     setShowViewDialog(true);
   };
 
-  const handleSaveOrder = (
+  const handleSaveOrder = async (
     orderData: Omit<Order, "id" | "date" | "status">
   ) => {
-    if (editingOrder) {
-      // Update existing order
-      setOrders(
-        orders.map((order) =>
-          order.id === editingOrder.id
-            ? { ...order, ...orderData }
-            : order
-        )
-      );
-      toast.success(`سفارش ${editingOrder.id} ویرایش شد.`);
-    } else {
-      // Create new order
-      const newOrder: Order = {
-        id: `ORD-${String(orders.length + 1).padStart(3, "0")}`,
-        ...orderData,
-        status: "pending",
-        date: new Date().toLocaleDateString("fa-IR"),
-      };
-      setOrders([newOrder, ...orders]);
-      // Sync payment splits to finance module (non-blocking — mocks may fail).
-      OrderService.syncPaymentsToFinance(newOrder).catch(() => undefined);
-      toast.success(`سفارش ${newOrder.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
+    try {
+      if (editingOrder) {
+        await OrderService.update(editingOrder.id, orderData as any);
+        toast.success(`سفارش ${editingOrder.id} ویرایش شد.`);
+      } else {
+        const created = await OrderService.create(orderData as any);
+        OrderService.syncPaymentsToFinance(created).catch(() => undefined);
+        toast.success(`سفارش ${created.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
+      }
+      refreshOrders();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "خطا در ذخیره سفارش");
     }
   };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -218,7 +217,11 @@ export default function Orders() {
         </div>
       </div>
 
-      {filteredOrders.length > 0 ? (
+      {ordersLoading ? (
+        <div className="flex h-[50vh] items-center justify-center rounded-md border border-dashed">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filteredOrders.length > 0 ? (
         <Card className="animate-fade-in">
           <CardHeader>
             <CardTitle>لیست سفارش‌ها</CardTitle>

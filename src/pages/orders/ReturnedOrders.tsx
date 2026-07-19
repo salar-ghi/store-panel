@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ReturnOrderDialog } from "@/components/orders/ReturnOrderDialog";
-import { mockOrders } from "@/data/ordersData";
+import { useQuery } from "@tanstack/react-query";
+import { OrderService } from "@/services/order-service";
 
 // Mock data for rejected orders
 const mockReturnedOrders = [
@@ -99,6 +100,10 @@ const statusBadgeMap: Record<string, string> = {
 };
 
 export default function ReturnedOrders() {
+  const { data: allOrders = [] } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => OrderService.list(),
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showReturnDialog, setShowReturnDialog] = useState(false);
@@ -326,7 +331,7 @@ export default function ReturnedOrders() {
       <ReturnOrderDialog
         open={showReturnDialog}
         onOpenChange={setShowReturnDialog}
-        orders={mockOrders}
+        orders={allOrders}
       />
     </div>
   );
