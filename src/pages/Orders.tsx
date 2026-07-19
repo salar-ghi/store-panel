@@ -73,31 +73,35 @@ export default function Orders() {
       )
   );
 
-  const handleApproveOrder = (order: Order) => {
-    setOrders(
-      orders.map((o) =>
-        o.id === order.id ? { ...o, status: "approved" } : o
-      )
-    );
-    toast.success(`سفارش ${order.id} تایید شد.`);
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: Order["status"] }) => {
+      return OrderService.update(id, { status } as any);
+    },
+    onSuccess: () => refreshOrders(),
+  });
+
+  const handleApproveOrder = async (order: Order) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: order.id, status: "approved" });
+      toast.success(`سفارش ${order.id} تایید شد.`);
+    } catch {
+      toast.error("خطا در تایید سفارش");
+    }
     setShowViewDialog(false);
     setSelectedOrder(null);
   };
 
-  const handleRejectOrder = () => {
-    if (selectedOrder) {
-      setOrders(
-        orders.map((order) =>
-          order.id === selectedOrder.id
-            ? { ...order, status: "rejected" }
-            : order
-        )
-      );
-      setShowRejectDialog(false);
+  const handleRejectOrder = async () => {
+    if (!selectedOrder) return;
+    try {
+      await updateStatusMutation.mutateAsync({ id: selectedOrder.id, status: "rejected" });
       toast.error(`سفارش ${selectedOrder.id} رد شد.`);
-      setSelectedOrder(null);
-      setRejectReason("");
+    } catch {
+      toast.error("خطا در رد سفارش");
     }
+    setShowRejectDialog(false);
+    setSelectedOrder(null);
+    setRejectReason("");
   };
 
   const handleCreateOrder = () => {
@@ -115,33 +119,24 @@ export default function Orders() {
     setShowViewDialog(true);
   };
 
-  const handleSaveOrder = (
+  const handleSaveOrder = async (
     orderData: Omit<Order, "id" | "date" | "status">
   ) => {
-    if (editingOrder) {
-      // Update existing order
-      setOrders(
-        orders.map((order) =>
-          order.id === editingOrder.id
-            ? { ...order, ...orderData }
-            : order
-        )
-      );
-      toast.success(`سفارش ${editingOrder.id} ویرایش شد.`);
-    } else {
-      // Create new order
-      const newOrder: Order = {
-        id: `ORD-${String(orders.length + 1).padStart(3, "0")}`,
-        ...orderData,
-        status: "pending",
-        date: new Date().toLocaleDateString("fa-IR"),
-      };
-      setOrders([newOrder, ...orders]);
-      // Sync payment splits to finance module (non-blocking — mocks may fail).
-      OrderService.syncPaymentsToFinance(newOrder).catch(() => undefined);
-      toast.success(`سفارش ${newOrder.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
+    try {
+      if (editingOrder) {
+        await OrderService.update(editingOrder.id, orderData as any);
+        toast.success(`سفارش ${editingOrder.id} ویرایش شد.`);
+      } else {
+        const created = await OrderService.create(orderData as any);
+        OrderService.syncPaymentsToFinance(created).catch(() => undefined);
+        toast.success(`سفارش ${created.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
+      }
+      refreshOrders();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "خطا در ذخیره سفارش");
     }
   };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
