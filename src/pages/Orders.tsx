@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Edit, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -24,7 +24,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Order } from "@/types/order";
-import { mockOrders } from "@/data/ordersData";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
 import { OrderService } from "@/services/order-service";
@@ -41,10 +40,15 @@ export default function Orders() {
   const [showFormDialog, setShowFormDialog] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const queryClient = useQueryClient();
+  const refreshOrders = () => queryClient.invalidateQueries({ queryKey: ["orders"] });
 
-  // Real data from server — no mocks in the New Order dialog.
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  // Real data from server — no mocks anywhere.
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => OrderService.list(),
+  });
+  const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: () => ProductService.getAll(),
     staleTime: 60 * 1000,
