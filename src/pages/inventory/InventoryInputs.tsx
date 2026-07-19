@@ -1,342 +1,227 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from "@/components/ui/table";
-import { Calendar, Truck, FileText, Printer, Download, Filter, Plus } from "lucide-react";
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription
-} from "@/components/ui/form";
-import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
-
-// Mock data for inventory inputs
-const mockInputs = [
-  { id: "INV-001", date: "1402/02/15", supplier: "شرکت آسیا تک", location: "انبار مرکزی", items: 12, status: "تکمیل شده" },
-  { id: "INV-002", date: "1402/02/18", supplier: "پارس نوین", location: "انبار شرق", items: 8, status: "در انتظار تایید" },
-  { id: "INV-003", date: "1402/02/20", supplier: "بازرگانی آریا", location: "انبار مرکزی", items: 5, status: "تکمیل شده" },
-  { id: "INV-004", date: "1402/02/22", supplier: "شرکت آسیا تک", location: "انبار غرب", items: 15, status: "تکمیل شده" },
-  { id: "INV-005", date: "1402/02/25", supplier: "کالای دیجیتال سام", location: "انبار شمال", items: 10, status: "در انتظار تایید" },
-];
-
-// Mock data for locations
-const locations = [
-  { id: 1, name: "انبار مرکزی" },
-  { id: 2, name: "انبار شرق" },
-  { id: 3, name: "انبار غرب" },
-  { id: 4, name: "انبار شمال" },
-  { id: 5, name: "انبار جنوب" },
-];
-
-// Mock data for suppliers
-const suppliers = [
-  { id: 1, name: "شرکت آسیا تک" },
-  { id: 2, name: "پارس نوین" },
-  { id: 3, name: "بازرگانی آریا" },
-  { id: 4, name: "کالای دیجیتال سام" },
-];
-
-const inputFormSchema = z.object({
-  supplier: z.string({ required_error: "تامین‌کننده را انتخاب کنید" }),
-  location: z.string({ required_error: "مکان انبار را انتخاب کنید" }),
-  items: z.coerce.number().positive({ message: "تعداد اقلام باید عدد مثبت باشد" }),
-  notes: z.string().optional(),
-});
-
-type InputFormValues = z.infer<typeof inputFormSchema>;
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Truck, Filter, PackagePlus, Search, Loader2 } from 'lucide-react';
+import { InventoryInputService } from '@/services/inventory-input-service';
+import { ProductService } from '@/services/product-service';
+import { SupplierService } from '@/services/supplier-service';
+import { AddStockInputDialog } from '@/components/inventory/AddStockInputDialog';
+import { toPersianDigits } from '@/lib/persian-date';
+import { formatNumber } from '@/lib/format';
 
 export default function InventoryInputs() {
-  const [inputs, setInputs] = useState(mockInputs);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [filter, setFilter] = useState<string>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [productFilter, setProductFilter] = useState<string>('all');
+  const [supplierFilter, setSupplierFilter] = useState<string>('all');
 
-  const form = useForm<InputFormValues>({
-    resolver: zodResolver(inputFormSchema),
-    defaultValues: {
-      supplier: "",
-      location: "",
-      items: 1,
-      notes: "",
-    },
+  const { data: inputs = [], isLoading } = useQuery({
+    queryKey: ['stock-inputs', 'all'],
+    queryFn: () => InventoryInputService.getAll(),
+  });
+  const { data: products = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: () => ProductService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: () => SupplierService.getAll(),
+    staleTime: 5 * 60 * 1000,
   });
 
-  const onSubmit = (data: InputFormValues) => {
-    // Generate a new input entry
-    const newInput = {
-      id: `INV-${String(inputs.length + 1).padStart(3, '0')}`,
-      date: new Date().toLocaleDateString('fa-IR'),
-      supplier: suppliers.find(s => s.id.toString() === data.supplier)?.name || data.supplier,
-      location: locations.find(l => l.id.toString() === data.location)?.name || data.location,
-      items: data.items,
-      status: "در انتظار تایید",
-    };
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return inputs.filter((r) => {
+      if (productFilter !== 'all' && String(r.productId) !== productFilter) return false;
+      if (supplierFilter !== 'all' && String(r.supplierId ?? '') !== supplierFilter) return false;
+      if (!q) return true;
+      return (
+        r.batchNumber?.toLowerCase().includes(q) ||
+        r.productName?.toLowerCase().includes(q) ||
+        r.supplierName?.toLowerCase().includes(q)
+      );
+    });
+  }, [inputs, search, productFilter, supplierFilter]);
 
-    setInputs([...inputs, newInput]);
-    toast.success("ورودی انبار با موفقیت ثبت شد");
-    setIsDialogOpen(false);
-    form.reset();
-  };
-
-  const filteredInputs = filter === "all" 
-    ? inputs 
-    : inputs.filter((input) => input.status === filter);
+  const totals = useMemo(() => {
+    const qty = filtered.reduce((s, r) => s + (r.quantity ?? 0), 0);
+    const cost = filtered.reduce((s, r) => s + (r.costPrice ?? 0) * (r.quantity ?? 0), 0);
+    return { qty, cost, count: filtered.length };
+  }, [filtered]);
 
   return (
-    <div className="space-y-6 py-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 py-6" dir="rtl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">ثبت ورودی انبار</h1>
-          <p className="text-muted-foreground">مدیریت ورودی‌های محصولات به انبار</p>
+          <h1 className="text-3xl font-bold tracking-tight">لیست ورودی‌های انبار</h1>
+          <p className="text-muted-foreground mt-1">
+            تاریخچه کامل شارژ‌های موجودی. هر ورود کالا با شماره سری، قیمت خرید و فروش خاص خود ثبت می‌شود.
+          </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          ثبت ورودی جدید
+        <Button onClick={() => setDialogOpen(true)} size="lg" className="gap-2 shadow-md">
+          <PackagePlus className="h-5 w-5" />
+          ثبت ورود کالا
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        <Card className="bg-gradient-to-br from-orange-50 to-white dark:from-gray-900 dark:to-gray-800 w-full md:w-1/3">
-          <CardHeader>
-            <CardTitle className="text-center">خلاصه وضعیت</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <span>کل ورودی‌ها:</span>
-              <span className="font-bold">{inputs.length}</span>
+      {/* KPI summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-5 pb-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm text-muted-foreground">تعداد ورودی‌ها</div>
+              <div className="text-2xl font-bold mt-1">{toPersianDigits(totals.count)}</div>
             </div>
-            <div className="flex justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <span>تکمیل شده:</span>
-              <span className="font-bold text-green-600">
-                {inputs.filter(input => input.status === "تکمیل شده").length}
-              </span>
-            </div>
-            <div className="flex justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <span>در انتظار تایید:</span>
-              <span className="font-bold text-amber-600">
-                {inputs.filter(input => input.status === "در انتظار تایید").length}
-              </span>
-            </div>
-            <div className="flex justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <span>مجموع اقلام:</span>
-              <span className="font-bold text-blue-600">
-                {inputs.reduce((sum, input) => sum + input.items, 0)}
-              </span>
-            </div>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Truck className="h-5 w-5" />
+            </span>
           </CardContent>
         </Card>
-
-        <Card className="bg-gradient-to-br from-orange-50 to-white dark:from-gray-900 dark:to-gray-800 flex-1">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>لیست ورودی‌های انبار</CardTitle>
-            <div className="flex gap-2">
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="فیلتر بر اساس وضعیت" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">همه ورودی‌ها</SelectItem>
-                  <SelectItem value="تکمیل شده">تکمیل شده</SelectItem>
-                  <SelectItem value="در انتظار تایید">در انتظار تایید</SelectItem>
-                </SelectContent>
-              </Select>
+        <Card>
+          <CardContent className="pt-5 pb-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm text-muted-foreground">مجموع اقلام</div>
+              <div className="text-2xl font-bold mt-1">{toPersianDigits(totals.qty)}</div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>شناسه</TableHead>
-                    <TableHead>تاریخ</TableHead>
-                    <TableHead>تامین‌کننده</TableHead>
-                    <TableHead>مکان انبار</TableHead>
-                    <TableHead>تعداد اقلام</TableHead>
-                    <TableHead>وضعیت</TableHead>
-                    <TableHead className="text-left">عملیات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredInputs.map((input) => (
-                    <TableRow key={input.id}>
-                      <TableCell className="font-medium">{input.id}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {input.date}
-                        </div>
-                      </TableCell>
-                      <TableCell>{input.supplier}</TableCell>
-                      <TableCell>{input.location}</TableCell>
-                      <TableCell>{input.items}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          input.status === "تکمیل شده" 
-                            ? "bg-green-100 text-green-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}>
-                          {input.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="flex justify-end">
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="مشاهده جزئیات">
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" title="چاپ رسید">
-                            <Printer className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {filteredInputs.length === 0 && (
-                <div className="py-6 text-center text-muted-foreground">
-                  هیچ ورودی‌ای با این وضعیت پیدا نشد
-                </div>
-              )}
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <PackagePlus className="h-5 w-5" />
+            </span>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm text-muted-foreground">ارزش خرید</div>
+              <div className="text-2xl font-bold mt-1">{formatNumber(totals.cost)}</div>
             </div>
-            <div className="mt-4 flex justify-end">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                دانلود گزارش
-              </Button>
-            </div>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <Calendar className="h-5 w-5" />
+            </span>
           </CardContent>
         </Card>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>ثبت ورودی جدید به انبار</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" dir="rtl">
-              <div className="flex items-center p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 rounded-lg">
-                <Truck className="h-5 w-5 ml-3" />
-                <div className="text-sm">ثبت ورودی جدید به معنای افزایش موجودی کالا در انبار است.</div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="supplier"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>تامین‌کننده</FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="انتخاب تامین‌کننده" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {suppliers.map((supplier) => (
-                              <SelectItem key={supplier.id} value={supplier.id.toString()}>
-                                {supplier.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>مکان انبار</FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="انتخاب مکان انبار" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {locations.map((location) => (
-                              <SelectItem key={location.id} value={location.id.toString()}>
-                                {location.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="items"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>تعداد اقلام</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="1" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      تعداد کل اقلام ورودی در این محموله را وارد کنید
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+      <Card>
+        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <CardTitle className="text-base">فیلترها</CardTitle>
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <div className="relative">
+              <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pr-8 sm:w-64"
+                placeholder="جستجو در سری، محصول، تامین‌کننده..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>یادداشت (اختیاری)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="یادداشت یا توضیحات اضافی..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+            </div>
+            <Select value={productFilter} onValueChange={setProductFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Filter className="h-4 w-4 ml-2" />
+                <SelectValue placeholder="محصول" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">همه محصولات</SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={supplierFilter} onValueChange={setSupplierFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Filter className="h-4 w-4 ml-2" />
+                <SelectValue placeholder="تامین‌کننده" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">همه تامین‌کنندگان</SelectItem>
+                {suppliers.map((s: any) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>شماره سری</TableHead>
+                  <TableHead>محصول</TableHead>
+                  <TableHead>تامین‌کننده</TableHead>
+                  <TableHead>مکان</TableHead>
+                  <TableHead>تعداد</TableHead>
+                  <TableHead>قیمت خرید</TableHead>
+                  <TableHead>قیمت فروش</TableHead>
+                  <TableHead>تاریخ ورود</TableHead>
+                  <TableHead>انقضا</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-10">
+                      <Loader2 className="h-5 w-5 animate-spin inline text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">
+                      هیچ ورودی‌ای یافت نشد
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="font-mono text-xs">{r.batchNumber}</TableCell>
+                      <TableCell>{r.productName ?? `#${r.productId}`}</TableCell>
+                      <TableCell>{r.supplierName ?? '—'}</TableCell>
+                      <TableCell className="text-xs">
+                        {[r.spaceName, r.zoneName, r.shelfCode].filter(Boolean).join(' / ') || '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{toPersianDigits(r.quantity)}</Badge>
+                      </TableCell>
+                      <TableCell>{formatNumber(r.costPrice)}</TableCell>
+                      <TableCell>{formatNumber(r.salePrice)}</TableCell>
+                      <TableCell className="text-xs">
+                        {r.receivedDate ? new Date(r.receivedDate).toLocaleDateString('fa-IR') : '—'}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {r.expiryDate ? new Date(r.expiryDate).toLocaleDateString('fa-IR') : '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
-              />
-              
-              <DialogFooter>
-                <Button type="submit" className="mt-4">
-                  ثبت ورودی
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AddStockInputDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
