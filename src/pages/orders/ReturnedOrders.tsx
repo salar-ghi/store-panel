@@ -100,6 +100,10 @@ const statusBadgeMap: Record<string, string> = {
 };
 
 export default function ReturnedOrders() {
+  const { data: allOrders = [] } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => OrderService.list(),
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showReturnDialog, setShowReturnDialog] = useState(false);
