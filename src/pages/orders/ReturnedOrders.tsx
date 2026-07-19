@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ReturnOrderDialog } from "@/components/orders/ReturnOrderDialog";
-import { mockOrders } from "@/data/ordersData";
+import { useQuery } from "@tanstack/react-query";
+import { OrderService } from "@/services/order-service";
 
 // Mock data for rejected orders
 const mockReturnedOrders = [
