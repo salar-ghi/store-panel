@@ -217,7 +217,11 @@ export default function Orders() {
         </div>
       </div>
 
-      {filteredOrders.length > 0 ? (
+      {ordersLoading ? (
+        <div className="flex h-[50vh] items-center justify-center rounded-md border border-dashed">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filteredOrders.length > 0 ? (
         <Card className="animate-fade-in">
           <CardHeader>
             <CardTitle>لیست سفارش‌ها</CardTitle>
