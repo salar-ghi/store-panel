@@ -68,14 +68,21 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return users
+    // Prefer customers first — but still show all users when there are none.
+    const isCustomer = (u: (typeof users)[number]) =>
+      (u.roles ?? []).some((r) =>
+        ['customer', 'مشتری', 'client'].includes(r?.toLowerCase?.() ?? ''),
+      );
+    const customers = users.filter(isCustomer);
+    const pool = customers.length > 0 ? customers : users;
+    if (!q) return pool.slice(0, 8);
+    return pool
       .filter((u) =>
         [u.firstName, u.lastName, u.phoneNumber, u.username, u.email]
           .filter(Boolean)
           .some((f) => f!.toString().toLowerCase().includes(q)),
       )
-      .slice(0, 8);
+      .slice(0, 12);
   }, [users, query]);
 
   // Sync draft → value when in create mode so parent always has latest input.
