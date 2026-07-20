@@ -201,14 +201,40 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
             )}
           </div>
 
-          {query.trim() && (
-            <Card className="overflow-hidden">
-              <ScrollArea className="max-h-[260px]">
-                {results.length === 0 ? (
-                  <div className="space-y-3 p-6 text-center">
-                    <UserRound className="mx-auto h-8 w-8 text-muted-foreground/40" />
-                    <p className="text-sm text-muted-foreground">
-                      مشتری‌ای با این مشخصات یافت نشد
+          <Card className="overflow-hidden">
+            <div className="flex items-center justify-between border-b px-3 py-2 text-xs text-muted-foreground">
+              <span>
+                {query.trim() ? 'نتایج جستجو' : `مشتریان اخیر (${results.length})`}
+              </span>
+              <span>{users.length} کاربر در سیستم</span>
+            </div>
+            <ScrollArea className="max-h-[260px]">
+              {results.length === 0 ? (
+                <div className="space-y-3 p-6 text-center">
+                  <UserRound className="mx-auto h-8 w-8 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">
+                    {query.trim()
+                      ? 'مشتری‌ای با این مشخصات یافت نشد'
+                      : 'هنوز مشتری‌ای ثبت نشده است'}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      const isPhone = /^\d+$/.test(query.trim());
+                      setDraft((d) => ({
+                        ...d,
+                        phone: isPhone ? query.trim() : d.phone,
+                        firstName: !isPhone && query.trim() ? query.trim() : d.firstName,
+                      }));
+                      setShowCreate(true);
+                    }}
+                  >
+                    <UserPlus className="ml-1.5 h-4 w-4" />
+                    ثبت مشتری جدید
+                  </Button>
+                </div>
+              ) : (
                     </p>
                     <Button
                       type="button"
