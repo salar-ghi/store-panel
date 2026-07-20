@@ -270,7 +270,6 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
                 )}
               </ScrollArea>
             </Card>
-          )}
 
           <Button
             type="button"
