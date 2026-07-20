@@ -235,26 +235,6 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
                   </Button>
                 </div>
               ) : (
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        // Pre-fill new-customer form from search query if it looks like a phone.
-                        const isPhone = /^\d+$/.test(query.trim());
-                        setDraft((d) => ({
-                          ...d,
-                          phone: isPhone ? query.trim() : d.phone,
-                          firstName: !isPhone ? query.trim() : d.firstName,
-                        }));
-                        setShowCreate(true);
-                      }}
-                    >
-                      <UserPlus className="ml-1.5 h-4 w-4" />
-                      ثبت مشتری جدید
-                    </Button>
-                  </div>
-                ) : (
                   <ul className="divide-y">
                     {results.map((u) => (
                       <li
