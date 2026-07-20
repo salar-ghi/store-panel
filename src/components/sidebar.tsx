@@ -74,6 +74,7 @@ const sidebarItems = [
     subItems: [
       { title: "سفارشات جدید", path: "/orders", icon: ShoppingCart },
       { title: "سفارشات مرجوعی", path: "/orders/returned", icon: PackageX },
+      { title: "تحلیل سفارشات", path: "/orders/analytics", icon: BarChart3 },
     ]
   },
   

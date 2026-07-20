@@ -25,6 +25,7 @@ import InventoryLocations from "@/pages/inventory/InventoryLocations";
 import InventoryStorage from "@/pages/inventory/InventoryStorage";
 import InventoryInputs from "@/pages/inventory/InventoryInputs";
 import ReturnedOrders from "@/pages/orders/ReturnedOrders";
+import OrdersAnalytics from "@/pages/orders/OrdersAnalytics";
 import Notifications from "@/pages/notifications/Notifications";
 import Messages from "@/pages/notifications/Messages";
 import NotificationSettings from "@/pages/notifications/NotificationSettings";
