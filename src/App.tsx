@@ -156,6 +156,14 @@ const App = () => {
                   </Layout>
                 </ProtectedRoute>
               } />
+
+              <Route path="/orders/analytics" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <OrdersAnalytics />
+                  </Layout>
+                </ProtectedRoute>
+              } />
               
               {/* Redirect /customers to /users */}
               <Route path="/customers" element={<Navigate to="/users" replace />} />
