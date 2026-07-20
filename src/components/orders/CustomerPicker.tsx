@@ -68,14 +68,21 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return users
+    // Prefer customers first — but still show all users when there are none.
+    const isCustomer = (u: (typeof users)[number]) =>
+      (u.roles ?? []).some((r) =>
+        ['customer', 'مشتری', 'client'].includes(r?.toLowerCase?.() ?? ''),
+      );
+    const customers = users.filter(isCustomer);
+    const pool = customers.length > 0 ? customers : users;
+    if (!q) return pool.slice(0, 8);
+    return pool
       .filter((u) =>
         [u.firstName, u.lastName, u.phoneNumber, u.username, u.email]
           .filter(Boolean)
           .some((f) => f!.toString().toLowerCase().includes(q)),
       )
-      .slice(0, 8);
+      .slice(0, 12);
   }, [users, query]);
 
   // Sync draft → value when in create mode so parent always has latest input.
@@ -194,34 +201,40 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
             )}
           </div>
 
-          {query.trim() && (
-            <Card className="overflow-hidden">
-              <ScrollArea className="max-h-[260px]">
-                {results.length === 0 ? (
-                  <div className="space-y-3 p-6 text-center">
-                    <UserRound className="mx-auto h-8 w-8 text-muted-foreground/40" />
-                    <p className="text-sm text-muted-foreground">
-                      مشتری‌ای با این مشخصات یافت نشد
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        // Pre-fill new-customer form from search query if it looks like a phone.
-                        const isPhone = /^\d+$/.test(query.trim());
-                        setDraft((d) => ({
-                          ...d,
-                          phone: isPhone ? query.trim() : d.phone,
-                          firstName: !isPhone ? query.trim() : d.firstName,
-                        }));
-                        setShowCreate(true);
-                      }}
-                    >
-                      <UserPlus className="ml-1.5 h-4 w-4" />
-                      ثبت مشتری جدید
-                    </Button>
-                  </div>
-                ) : (
+          <Card className="overflow-hidden">
+            <div className="flex items-center justify-between border-b px-3 py-2 text-xs text-muted-foreground">
+              <span>
+                {query.trim() ? 'نتایج جستجو' : `مشتریان اخیر (${results.length})`}
+              </span>
+              <span>{users.length} کاربر در سیستم</span>
+            </div>
+            <ScrollArea className="max-h-[260px]">
+              {results.length === 0 ? (
+                <div className="space-y-3 p-6 text-center">
+                  <UserRound className="mx-auto h-8 w-8 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">
+                    {query.trim()
+                      ? 'مشتری‌ای با این مشخصات یافت نشد'
+                      : 'هنوز مشتری‌ای ثبت نشده است'}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      const isPhone = /^\d+$/.test(query.trim());
+                      setDraft((d) => ({
+                        ...d,
+                        phone: isPhone ? query.trim() : d.phone,
+                        firstName: !isPhone && query.trim() ? query.trim() : d.firstName,
+                      }));
+                      setShowCreate(true);
+                    }}
+                  >
+                    <UserPlus className="ml-1.5 h-4 w-4" />
+                    ثبت مشتری جدید
+                  </Button>
+                </div>
+              ) : (
                   <ul className="divide-y">
                     {results.map((u) => (
                       <li
@@ -257,7 +270,6 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
                 )}
               </ScrollArea>
             </Card>
-          )}
 
           <Button
             type="button"
