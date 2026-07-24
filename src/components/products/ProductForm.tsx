@@ -12,6 +12,7 @@ import { ProductImageUpload } from "./ProductImageUpload";
 import { SelectFields } from "./SelectFields";
 import { ProductTagSelect } from "./ProductTagSelect";
 import { ProductVariantEditor } from "./ProductVariantEditor";
+import { GenderField } from "./GenderField";
 import {
   Form,
   FormControl,
@@ -624,6 +625,11 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
               <CardContent>
                 <SelectFields control={form.control} />
+                <GenderField
+                  control={form.control}
+                  attributes={attributes}
+                  setAttributes={setAttributes}
+                />
               </CardContent>
             </Card>
 
