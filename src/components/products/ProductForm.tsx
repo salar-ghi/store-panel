@@ -12,6 +12,7 @@ import { ProductImageUpload } from "./ProductImageUpload";
 import { SelectFields } from "./SelectFields";
 import { ProductTagSelect } from "./ProductTagSelect";
 import { ProductVariantEditor } from "./ProductVariantEditor";
+import { GenderField } from "./GenderField";
 import {
   Form,
   FormControl,
