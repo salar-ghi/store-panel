@@ -95,6 +95,8 @@ export interface ProductVariant {
   displayOrder?: number;
 }
 
+import { ProductAttributeValue } from './attribute';
+
 export interface Product {
   id: number;
   name: string;
@@ -130,6 +132,8 @@ export interface Product {
   pricingStrategy?: 'fifo' | 'latest' | 'average';
   /** How this product is sold (piece / by weight / both). Default 'piece'. */
   salesUnit?: SalesUnitConfig;
+  /** Typed EAV values driven by the category's attribute definitions. */
+  attributeValues?: ProductAttributeValue[];
 }
 
 export interface CreateProductRequest {
@@ -152,6 +156,7 @@ export interface CreateProductRequest {
   variants?: ProductVariant[];
   pricingStrategy?: 'fifo' | 'latest' | 'average';
   salesUnit?: SalesUnitConfig;
+  attributeValues?: ProductAttributeValue[];
 }
 
 export interface UpdateProductRequest {
@@ -174,4 +179,5 @@ export interface UpdateProductRequest {
   variants?: ProductVariant[];
   pricingStrategy?: 'fifo' | 'latest' | 'average';
   salesUnit?: SalesUnitConfig;
+  attributeValues?: ProductAttributeValue[];
 }

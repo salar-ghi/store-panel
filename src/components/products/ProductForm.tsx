@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { PersianDatePicker } from "@/components/ui/persian-datepicker";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { SelectFields } from "./SelectFields";
+import { ProductAttributeFields } from "@/components/products/ProductAttributeFields";
+import { ProductAttributeValue } from "@/types/attribute";
+import { valuesFromList } from "@/lib/attribute-values";
 import { ProductTagSelect } from "./ProductTagSelect";
 import { ProductVariantEditor } from "./ProductVariantEditor";
 import { GenderField } from "./GenderField";
@@ -188,6 +191,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   const [attributes, setAttributes] = useState<ProductAttribute[]>(initialData?.attributes || []);
   const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
   const [activeTab, setActiveTab] = useState("basic");
+  const [attributeValues, setAttributeValues] = useState<Record<number, ProductAttributeValue>>(
+    valuesFromList(initialData?.attributeValues)
+  );
 
   const { data: spaces = [] } = useQuery({
     queryKey: ['storage', 'spaces'],
@@ -269,6 +275,16 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       coverImage: resolvedCover,
       tags: selectedTags,
       attributes: attributes,
+      attributeValues: Object.values(attributeValues).filter(
+        (v) =>
+          v.stringValue != null ||
+          v.intValue != null ||
+          v.decimalValue != null ||
+          v.boolValue != null ||
+          v.dateValue != null ||
+          v.attributeOptionId != null ||
+          (v.attributeOptionIds && v.attributeOptionIds.length > 0)
+      ),
       location: data.location,
       reorderLevel: data.reorderLevel,
       status: data.status,
@@ -1331,6 +1347,12 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
 
           {/* Tab 6: Attributes & Tags */}
           <TabsContent value="attributes" className="space-y-5">
+            <ProductAttributeFields
+              categoryId={form.watch("categoryId")}
+              values={attributeValues}
+              onChange={setAttributeValues}
+            />
+
             <Card className="shadow-none">
               <CardHeader className="py-4">
                 <CardTitle className="text-base">تگ‌های محصول</CardTitle>
@@ -1348,8 +1370,8 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             <Card className="shadow-none">
               <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base">ویژگی‌های محصول</CardTitle>
-                  <CardDescription>ویژگی‌های فنی به‌صورت کلید/مقدار</CardDescription>
+                  <CardTitle className="text-base">ویژگی‌های آزاد (کلید/مقدار)</CardTitle>
+                  <CardDescription>در صورت نیاز، ویژگی‌های خارج از تعریف دسته‌بندی</CardDescription>
                 </div>
                 <Button 
                   type="button"

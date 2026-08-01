@@ -16,10 +16,12 @@ import {
 import { CreateCategoryForm } from "@/components/categories/CreateCategoryForm";
 import { EmptyCategories } from "@/components/categories/EmptyCategories";
 import { CategoryTreeView } from "@/components/categories/CategoryTreeView";
+import { CategoryAttributesDialog } from "@/components/categories/CategoryAttributesDialog";
 
 export default function Categories() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [attributesCategory, setAttributesCategory] = useState<Category | null>(null);
 
   const { data: categories = [], isLoading, error, refetch } = useQuery({
     queryKey: ['categories'],
@@ -136,10 +138,17 @@ export default function Categories() {
           categories={categories}
           onEditCategory={openEditDialog}
           onDeleteCategory={handleDeleteCategory}
+          onManageAttributes={setAttributesCategory}
         />
       ) : (
         <EmptyCategories onClick={() => setIsDialogOpen(true)} />
       )}
+
+      <CategoryAttributesDialog
+        open={!!attributesCategory}
+        onOpenChange={(open) => !open && setAttributesCategory(null)}
+        category={attributesCategory}
+      />
     </div>
   );
 }

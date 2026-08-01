@@ -14,6 +14,7 @@ import {
   FolderOpen,
   Search,
   Layers,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,12 +23,14 @@ interface CategoryTreeViewProps {
   categories: Category[];
   onEditCategory: (category: Category) => void;
   onDeleteCategory: (id: number) => void | Promise<void>;
+  onManageAttributes?: (category: Category) => void;
 }
 
 export function CategoryTreeView({
   categories,
   onEditCategory,
   onDeleteCategory,
+  onManageAttributes,
 }: CategoryTreeViewProps) {
   const [expanded, setExpanded] = useState<Set<number>>(() => {
     // Expand roots by default
@@ -147,6 +150,7 @@ export function CategoryTreeView({
                 onToggle={toggle}
                 onEdit={onEditCategory}
                 onDelete={onDeleteCategory}
+                onManageAttributes={onManageAttributes}
               />
             ))}
           </ul>
@@ -162,12 +166,14 @@ function CategoryTreeNode({
   onToggle,
   onEdit,
   onDelete,
+  onManageAttributes,
 }: {
   node: CategoryNode;
   expanded: Set<number>;
   onToggle: (id: number) => void;
   onEdit: (c: Category) => void;
   onDelete: (id: number) => void | Promise<void>;
+  onManageAttributes?: (c: Category) => void;
 }) {
   const isOpen = expanded.has(node.id);
   const hasChildren = node.children.length > 0;
@@ -304,6 +310,17 @@ function CategoryTreeNode({
 
         {/* Actions */}
         <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+          {onManageAttributes && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs text-primary"
+              onClick={() => onManageAttributes(node)}
+            >
+              <Tag className="h-3.5 w-3.5 ml-1" />
+              ویژگی‌ها
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -341,6 +358,7 @@ function CategoryTreeNode({
                 onToggle={onToggle}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onManageAttributes={onManageAttributes}
               />
             ))}
           </motion.ul>
