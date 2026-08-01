@@ -1,3 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
+import { AttributeService } from "@/services/attribute-service";
+import { CategoryService } from "@/services/category-service";
+import { formatAttributeValue, isValueEmpty, valuesFromList } from "@/lib/attribute-values";
 import {
   Dialog,
   DialogContent,
@@ -249,6 +253,8 @@ export function ViewProductDialog({ product, open, onOpenChange }: ViewProductDi
                 <EmptyHint text="ابعاد و وزن ثبت نشده است." />
               )}
 
+              <CategoryAttributeValues product={product} />
+
               {product.attributes && product.attributes.length > 0 ? (
                 <Card className="p-4">
                   <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-3">
@@ -267,9 +273,7 @@ export function ViewProductDialog({ product, open, onOpenChange }: ViewProductDi
                     ))}
                   </div>
                 </Card>
-              ) : (
-                <EmptyHint text="ویژگی خاصی ثبت نشده است." />
-              )}
+              ) : null}
             </TabsContent>
 
             {/* Batches */}
@@ -422,5 +426,55 @@ function EmptyHint({ text }: { text: string }) {
     <div className="text-center py-8 text-sm text-muted-foreground border border-dashed rounded-xl">
       {text}
     </div>
+  );
+}
+
+/** Typed EAV attribute values resolved from the product's category definitions. */
+function CategoryAttributeValues({ product }: { product: Product }) {
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: CategoryService.getAllCategories,
+  });
+
+  const { data: attributes = [] } = useQuery({
+    queryKey: ["category-attributes", product.categoryId],
+    queryFn: () => AttributeService.resolveCategoryAttributes(product.categoryId, categories),
+    enabled: !!product.categoryId && categories.length > 0,
+  });
+
+  const { data: values = [] } = useQuery({
+    queryKey: ["product-attribute-values", product.id],
+    queryFn: () => AttributeService.getProductAttributeValues(product.id),
+    enabled: !!product.id,
+    retry: false,
+  });
+
+  const map = valuesFromList(
+    (product.attributeValues && product.attributeValues.length > 0 ? product.attributeValues : values) || []
+  );
+  const rows = attributes.filter((a) => !isValueEmpty(a.attributeDefinition.dataType, map[a.attributeDefinitionId]));
+
+  if (rows.length === 0) return null;
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-3">
+        <Sparkles className="w-3.5 h-3.5" />
+        ویژگی‌های دسته‌بندی
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {rows.map((a) => (
+          <div
+            key={a.attributeDefinitionId}
+            className="flex items-center justify-between text-sm border rounded-lg px-3 py-2 bg-muted/30"
+          >
+            <span className="text-muted-foreground">{a.attributeDefinition.name}</span>
+            <span className="font-medium">
+              {formatAttributeValue(a, map[a.attributeDefinitionId])}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
