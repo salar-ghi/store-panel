@@ -81,15 +81,15 @@ export function AttributeValueField({ attribute, value, onChange, invalid }: Pro
       ) : def.dataType === "MultiSelect" ? (
         <MultiSelectCheckbox
           dense
-          options={options.map((o) => ({ value: String(o.id), label: o.label || o.value }))}
-          selected={(base.attributeOptionIds ?? []).map(String)}
-          onChange={(vals) => patch({ attributeOptionIds: vals.map(Number) })}
+          items={options.map((o) => ({ id: String(o.id), name: o.label || o.value }))}
+          selectedIds={(base.attributeOptionIds ?? []).map(String)}
+          onSelectionChange={(vals) => patch({ attributeOptionIds: vals.map(Number) })}
           placeholder={`انتخاب ${def.name}`}
         />
       ) : def.dataType === "Date" ? (
         <PersianDatePicker
-          value={base.dateValue || ""}
-          onChange={(v) => patch({ dateValue: v })}
+          value={base.dateValue ? new Date(base.dateValue) : undefined}
+          onChange={(d) => patch({ dateValue: d ? d.toISOString() : null })}
           placeholder={`انتخاب ${def.name}`}
         />
       ) : def.dataType === "Integer" ? (
