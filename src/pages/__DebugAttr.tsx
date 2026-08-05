@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AttributeValueField } from "@/components/attributes/AttributeValueField";
 import { ProductAttributeValue, ResolvedCategoryAttribute } from "@/types/attribute";
 
@@ -15,5 +16,11 @@ const attr = {
 
 export default function DebugAttr() {
   const [values, setValues] = useState<Record<number, ProductAttributeValue>>({});
-  return <div className="p-8"><AttributeValueField attribute={attr} value={values[1]} onChange={(v)=>setValues({...values,[1]:v})} /></div>;
+  return (
+    <Dialog open>
+      <DialogContent className="max-w-2xl">
+        <AttributeValueField attribute={attr} value={values[1]} onChange={(v)=>setValues({...values,[1]:v})} />
+      </DialogContent>
+    </Dialog>
+  );
 }
