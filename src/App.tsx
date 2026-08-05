@@ -12,6 +12,7 @@ import Analytics from "@/pages/Analytics";
 import Promotions from "@/pages/Promotions";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
+import DebugAttr from "@/pages/__DebugAttr";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Brands from "@/pages/Brands";
@@ -107,6 +108,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/__debug-attr" element={<DebugAttr />} />
               <Route path="/register" element={<Register />} />
               
               <Route path="/" element={
