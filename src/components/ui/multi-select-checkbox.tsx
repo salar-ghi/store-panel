@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, CheckSquare, Square } from "lucide-react";
+import { Search, CheckSquare, Square, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface MultiSelectItem {
@@ -144,7 +144,7 @@ export function MultiSelectCheckbox({
                           : "hover:bg-muted/60",
                       )}
                     >
-                      <Checkbox checked={isSelected} className="h-3.5 w-3.5 pointer-events-none" />
+                      <span className={cn("h-3.5 w-3.5 shrink-0 rounded-[3px] border flex items-center justify-center", isSelected ? "bg-primary border-primary text-primary-foreground" : "border-input")}>{isSelected && <Check className="h-2.5 w-2.5" />}</span>
                       <span className="flex-1 min-w-0 truncate">{item.name}</span>
                       {item.description && (
                         <span className="text-[11px] text-muted-foreground truncate max-w-[45%]">
