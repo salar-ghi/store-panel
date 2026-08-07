@@ -425,6 +425,12 @@ export default function Orders() {
                   </p>
                   {getStatusBadge(selectedOrder.status)}
                 </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    منبع سفارش
+                  </p>
+                  {getChannelBadge(selectedOrder)}
+                </div>
               </div>
 
               {selectedOrder.customerAddress && (
