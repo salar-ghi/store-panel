@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Edit, Eye, Loader2 } from "lucide-react";
+import { Search, Plus, Edit, Eye, Loader2, Globe, Monitor, Truck, PackageCheck } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
@@ -39,6 +39,7 @@ export default function Orders() {
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [showFormDialog, setShowFormDialog] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [channelFilter, setChannelFilter] = useState<"all" | "online" | "panel">("all");
 
   const queryClient = useQueryClient();
   const refreshOrders = () => queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -64,14 +65,48 @@ export default function Orders() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const orderChannel = (order: Order): "online" | "panel" =>
+    order.channel === "online" || order.basketId ? "online" : "panel";
+
   const filteredOrders = orders.filter(
     (order) =>
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (channelFilter === "all" || orderChannel(order) === channelFilter) &&
+      (order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.items.some((item) =>
         item.productName.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      ))
   );
+
+  const channelCounts = {
+    all: orders.length,
+    online: orders.filter((o) => orderChannel(o) === "online").length,
+    panel: orders.filter((o) => orderChannel(o) === "panel").length,
+  };
+
+  const getChannelBadge = (order: Order) => {
+    const channel = orderChannel(order);
+    return channel === "online" ? (
+      <Badge variant="outline" className="gap-1 bg-info/10 text-info border-info/20">
+        <Globe className="h-3 w-3" />
+        فروشگاه آنلاین
+      </Badge>
+    ) : (
+      <Badge variant="outline" className="gap-1 bg-muted text-muted-foreground border-border">
+        <Monitor className="h-3 w-3" />
+        پنل مدیریت
+      </Badge>
+    );
+  };
+
+  const handleFulfill = async (order: Order, status: Order["status"], label: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: order.id, status });
+      toast.success(`سفارش ${order.id} ${label}`);
+    } catch {
+      toast.error("خطا در بروزرسانی وضعیت سفارش");
+    }
+  };
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: Order["status"] }) => {
@@ -127,7 +162,7 @@ export default function Orders() {
         await OrderService.update(editingOrder.id, orderData as any);
         toast.success(`سفارش ${editingOrder.id} ویرایش شد.`);
       } else {
-        const created = await OrderService.create(orderData as any);
+        const created = await OrderService.create({ ...(orderData as any), channel: "panel" });
         OrderService.syncPaymentsToFinance(created).catch(() => undefined);
         toast.success(`سفارش ${created.id} ایجاد شد و تراکنش‌های مالی ثبت شد.`);
       }
@@ -204,7 +239,26 @@ export default function Orders() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-1.5 rounded-lg border bg-card p-1">
+          {([
+            { key: "all", label: "همه سفارش‌ها" },
+            { key: "online", label: "فروشگاه آنلاین" },
+            { key: "panel", label: "پنل مدیریت" },
+          ] as const).map((tab) => (
+            <Button
+              key={tab.key}
+              size="sm"
+              variant={channelFilter === tab.key ? "default" : "ghost"}
+              onClick={() => setChannelFilter(tab.key)}
+            >
+              {tab.label}
+              <Badge variant="secondary" className="mr-2">
+                {channelCounts[tab.key]}
+              </Badge>
+            </Button>
+          ))}
+        </div>
         <div className="relative flex-1">
           <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -232,6 +286,7 @@ export default function Orders() {
                 <TableRow>
                   <TableHead>شناسه</TableHead>
                   <TableHead>مشتری</TableHead>
+                  <TableHead>منبع سفارش</TableHead>
                   <TableHead>تعداد اقلام</TableHead>
                   <TableHead>مبلغ کل</TableHead>
                   <TableHead>وضعیت</TableHead>
@@ -244,6 +299,7 @@ export default function Orders() {
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
                     <TableCell>{order.customer}</TableCell>
+                    <TableCell>{getChannelBadge(order)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">
                         {order.items.length} محصول
@@ -268,6 +324,28 @@ export default function Orders() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        {order.status === "approved" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 bg-info/10 hover:bg-info/20 text-info border-info/30"
+                            onClick={() => handleFulfill(order, "shipped", "برای ارسال آماده شد")}
+                          >
+                            <Truck className="h-4 w-4" />
+                            آماده‌سازی و ارسال
+                          </Button>
+                        )}
+                        {order.status === "shipped" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 bg-primary/10 hover:bg-primary/20 text-primary border-primary/30"
+                            onClick={() => handleFulfill(order, "delivered", "تحویل داده شد")}
+                          >
+                            <PackageCheck className="h-4 w-4" />
+                            تحویل شد
+                          </Button>
+                        )}
                         {order.status === "pending" && (
                           <>
                             <Button
@@ -346,6 +424,12 @@ export default function Orders() {
                     وضعیت
                   </p>
                   {getStatusBadge(selectedOrder.status)}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    منبع سفارش
+                  </p>
+                  {getChannelBadge(selectedOrder)}
                 </div>
               </div>
 
