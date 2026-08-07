@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import { BasketService } from "@/services/basket-service";
 import { Basket, BasketItem, BasketStatusLabels, BasketStatus } from "@/types/basket";
 import { formatPersianNumber, formatPrice } from "@/lib/format";
-import { formatJalaaliDateTime } from "@/lib/persian-date";
+import { formatPersianDate } from "@/lib/persian-date";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<BasketStatus, string> = {
@@ -54,7 +54,7 @@ function safeDate(iso?: string) {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "—";
   try {
-    return formatJalaaliDateTime ? formatJalaaliDateTime(d) : d.toLocaleString("fa-IR");
+    return formatPersianDate(d);
   } catch {
     return d.toLocaleString("fa-IR");
   }
