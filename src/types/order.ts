@@ -43,6 +43,10 @@ export interface Order {
   payments?: PaymentSplit[];
   paymentStatus?: PaymentStatus;
   status: 'pending' | 'approved' | 'rejected' | 'shipped' | 'delivered';
+  /** Where the order originated: the online storefront or this admin panel. */
+  channel?: 'online' | 'panel';
+  /** Optional basket the order was converted from (storefront carts). */
+  basketId?: string;
   date: string;
   notes?: string;
 }
@@ -59,6 +63,8 @@ export interface CreateOrderRequest {
   finalTotal: number;
   payments: PaymentSplit[];
   paymentStatus: PaymentStatus;
+  channel?: 'online' | 'panel';
+  basketId?: string;
   notes?: string;
 }
 

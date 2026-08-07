@@ -6,6 +6,8 @@ import { UserDetailsDialog } from "@/components/users/UserDetailsDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { UserService } from "@/services/user-service";
+import { CustomerSegmentsTab } from "@/components/users/CustomerSegmentsTab";
+import { BasketsTab } from "@/components/users/BasketsTab";
 
 export default function Users() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -50,8 +52,10 @@ export default function Users() {
       />
 
       <Tabs defaultValue="users" className="w-full" dir="rtl">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="users">لیست کاربران</TabsTrigger>
+          <TabsTrigger value="segments">سگمنت‌ها</TabsTrigger>
+          <TabsTrigger value="baskets">سبدهای خرید</TabsTrigger>
           <TabsTrigger value="roles">مدیریت نقش‌ها</TabsTrigger>
         </TabsList>
         
@@ -59,6 +63,14 @@ export default function Users() {
           <UsersTabContent onUserClick={handleUserClick} />
         </TabsContent>
         
+        <TabsContent value="segments" dir="rtl" className="mt-6">
+          <CustomerSegmentsTab onUserClick={handleUserClick} />
+        </TabsContent>
+
+        <TabsContent value="baskets" dir="rtl" className="mt-6">
+          <BasketsTab />
+        </TabsContent>
+
         <TabsContent value="roles" dir="rtl">
           <RolesTabContent onRoleAdded={handleRoleAdded} />
         </TabsContent>
