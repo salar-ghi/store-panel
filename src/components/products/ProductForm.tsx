@@ -14,8 +14,7 @@ import { ProductAttributeFields } from "@/components/products/ProductAttributeFi
 import { ProductAttributeValue, ResolvedCategoryAttribute } from "@/types/attribute";
 import { AttributeService } from "@/services/attribute-service";
 import { CategoryService } from "@/services/category-service";
-import { hasAttributeValue } from "@/lib/attribute-values";
-import { valuesFromList } from "@/lib/attribute-values";
+import { valuesFromList, isValueEmpty, toPayload } from "@/lib/attribute-values";
 import { ProductTagSelect } from "./ProductTagSelect";
 import { ProductVariantEditor } from "./ProductVariantEditor";
 import { GenderField } from "./GenderField";
