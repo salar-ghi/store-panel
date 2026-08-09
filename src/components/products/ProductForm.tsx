@@ -1356,7 +1356,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                           name={`prices.${index}.effectiveDate`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>تاریخ ورود به انبار</FormLabel>
+                              <FormLabel>تاریخ ورود به انبار (اختیاری)</FormLabel>
                               <FormControl>
                                 <PersianDatePicker
                                   value={field.value ? new Date(field.value) : undefined}
@@ -1364,7 +1364,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                   placeholder="انتخاب تاریخ ورود"
                                 />
                               </FormControl>
-                              <FormDescription>تاریخ شمسی</FormDescription>
+                              <FormDescription>در صورت خالی بودن، تاریخ امروز ثبت می‌شود</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
