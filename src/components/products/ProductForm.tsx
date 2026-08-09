@@ -311,16 +311,18 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       coverImage: resolvedCover,
       tags: selectedTags,
       attributes: attributes,
-      attributeValues: Object.values(attributeValues).filter(
-        (v) =>
-          v.stringValue != null ||
-          v.intValue != null ||
-          v.decimalValue != null ||
-          v.boolValue != null ||
-          v.dateValue != null ||
-          v.attributeOptionId != null ||
-          (v.attributeOptionIds && v.attributeOptionIds.length > 0)
-      ),
+      attributeValues: categoryAttributes.length
+        ? toPayload(categoryAttributes, attributeValues)
+        : Object.values(attributeValues).filter(
+            (v) =>
+              v.stringValue != null ||
+              v.intValue != null ||
+              v.decimalValue != null ||
+              v.boolValue != null ||
+              v.dateValue != null ||
+              v.attributeOptionId != null ||
+              (v.attributeOptionIds && v.attributeOptionIds.length > 0)
+          ),
       location: data.location,
       reorderLevel: data.reorderLevel,
       status: data.status,
