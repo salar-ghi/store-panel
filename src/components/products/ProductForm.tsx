@@ -386,7 +386,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       batchNumber: `BATCH-${Date.now()}`,
       amount: 0,
       costPrice: 0,
-      currency: "IRR",
+      currency: form.getValues("currency") || "IRT",
       pricingTier: "retail",
       effectiveDate: new Date().toISOString().split('T')[0],
       expiryDate: "",
