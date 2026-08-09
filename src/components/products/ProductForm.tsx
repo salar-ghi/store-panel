@@ -1436,9 +1436,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 6: Attributes & Tags */}
           <TabsContent value="attributes" className="space-y-5">
             <ProductAttributeFields
-              categoryId={form.watch("categoryId")}
+              categoryId={selectedCategoryId}
               values={attributeValues}
-              onChange={setAttributeValues}
+              invalidIds={invalidAttributeIds}
+              onChange={(v) => {
+                setAttributeValues(v);
+                setInvalidAttributeIds([]);
+              }}
             />
 
             <Card className="shadow-none">
