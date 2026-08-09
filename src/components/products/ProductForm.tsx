@@ -919,7 +919,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                 value={field.value}
                                 onChange={field.onChange}
                                 placeholder="مثلاً ۱۵۰٬۰۰۰"
-                                suffix={form.watch('salesUnit.weightUnit') === 'gram' ? 'تومان/گرم' : 'تومان/کیلو'}
+                                suffix={`${currencyLabel}/${form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلو'}`}
                               />
                             </FormControl>
                             <FormDescription>
