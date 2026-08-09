@@ -1284,10 +1284,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                   onChange={field.onChange}
                                   allowDecimal
                                   placeholder="0"
+                                  suffix={currencyLabel}
                                 />
                               </FormControl>
                               {field.value ? (
-                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                                <FormDescription className="text-[11px]">
+                                  {formatPrice(field.value, currencyLabel)}
+                                </FormDescription>
                               ) : null}
                               <FormMessage />
                             </FormItem>
@@ -1306,15 +1309,19 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                   onChange={field.onChange}
                                   allowDecimal
                                   placeholder="0"
+                                  suffix={currencyLabel}
                                 />
                               </FormControl>
                               {field.value ? (
-                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                                <FormDescription className="text-[11px]">
+                                  {formatPrice(field.value, currencyLabel)}
+                                </FormDescription>
                               ) : null}
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
