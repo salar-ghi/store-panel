@@ -201,11 +201,18 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   const [attributeValues, setAttributeValues] = useState<Record<number, ProductAttributeValue>>(
     valuesFromList(initialData?.attributeValues)
   );
+  const [invalidAttributeIds, setInvalidAttributeIds] = useState<number[]>([]);
 
   const { data: spaces = [] } = useQuery({
     queryKey: ['storage', 'spaces'],
     queryFn: () => StorageService.getSpaces(),
   });
+
+  const { data: allCategories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: CategoryService.getAllCategories,
+  });
+
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
