@@ -1511,20 +1511,28 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
 
           <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
             <AlertCircle className="h-3.5 w-3.5" />
-            برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند
+            {isLastStep && missingAttributes.length > 0
+              ? `${formatPersianNumber(missingAttributes.length)} ویژگی الزامی این دسته‌بندی تکمیل نشده است`
+              : "برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند"}
           </div>
 
           {!isLastStep ? (
-            <Button type="button" onClick={handleNext} className="gap-1 min-w-[140px]">
+            <Button key="next" type="button" onClick={handleNext} className="gap-1 min-w-[140px]">
               مرحله بعد: {steps[currentStepIndex + 1].label}
               <ChevronLeft className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" className="min-w-[160px] gap-1 ">
+            <Button
+              key="submit"
+              type="button"
+              onClick={handleFinalSubmit}
+              className="min-w-[160px] gap-1"
+            >
               <Check className="h-4 w-4" />
               {isEditMode ? "بروزرسانی محصول" : "ایجاد نهایی محصول"}
             </Button>
           )}
+
         </div>
       </form>
     </Form>
