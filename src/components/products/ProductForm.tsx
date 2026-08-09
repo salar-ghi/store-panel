@@ -1121,7 +1121,43 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
             </Card>
 
+            {/* One currency for the whole product — every price below uses it */}
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <Card className="shadow-none">
+                    <CardHeader className="py-4">
+                      <CardTitle className="text-base">واحد پول محصول</CardTitle>
+                      <CardDescription>
+                        همه قیمت‌های این محصول (خرید، فروش، قیمت وزنی) با این واحد ثبت و نمایش داده می‌شوند.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select onValueChange={field.onChange} value={field.value || 'IRT'}>
+                        <FormControl>
+                          <SelectTrigger className="md:w-72">
+                            <SelectValue placeholder="انتخاب واحد پول" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </CardContent>
+                  </Card>
+                </FormItem>
+              )}
+            />
+
             {/* Per-product pricing strategy across multiple batches */}
+
             <FormField
               control={form.control}
               name="pricingStrategy"
