@@ -798,35 +798,26 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="stock.quantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center justify-between">
-                          <span>موجودی اولیه</span>
-                          <Badge variant="secondary" className="text-[10px] font-normal">
-                            از سری‌ها محاسبه می‌شود
-                          </Badge>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            min={0}
-                            step="any"
-                            value={getTotalStock()}
-                            readOnly
-                            className="bg-muted/40 cursor-not-allowed"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          مجموع «تعداد وارده − فروخته‌شده» همه سری‌های مرحله ۴ (قیمت و سری ورود).
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Read-only summary instead of a disabled input — stock always
+                      comes from the batches registered in step 4 */}
+                  <div className="rounded-lg border bg-muted/30 p-3 flex flex-col justify-center">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm text-muted-foreground">موجودی اولیه</span>
+                      <Badge variant="secondary" className="text-[10px] font-normal">
+                        از سری‌های ورود
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-2xl font-bold tabular-nums">
+                      {formatPersianNumber(getTotalStock())}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("pricing")}
+                      className="mt-1 self-start text-xs text-primary hover:underline"
+                    >
+                      ثبت موجودی در مرحله «قیمت و سری ورود» ←
+                    </button>
+                  </div>
 
 
                   <FormField
@@ -838,11 +829,14 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         <FormControl>
                           <Input type="number" placeholder="0" min={0} step={1} {...field} />
                         </FormControl>
-                        <FormDescription>هنگام رسیدن به این عدد اطلاع‌رسانی می‌شود</FormDescription>
+                        <FormDescription>
+                          وقتی موجودی ({formatPersianNumber(getTotalStock())}) به این عدد برسد هشدار کمبود ارسال می‌شود
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                 </div>
               </CardContent>
             </Card>
