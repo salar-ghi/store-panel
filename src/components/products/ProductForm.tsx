@@ -918,7 +918,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                             </FormControl>
                             <FormDescription>
                               {field.value
-                                ? formatPrice(field.value) + ' برای هر ' + (form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم')
+                                ? formatPrice(field.value, currencyLabel) + ' برای هر ' + (form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم')
                                 : 'قیمت پایه برای فروش وزنی'}
                             </FormDescription>
                             <FormMessage />
