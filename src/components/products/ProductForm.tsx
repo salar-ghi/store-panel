@@ -85,15 +85,20 @@ const dimensionUnits: { value: DimensionUnit; label: string }[] = [
   { value: 'ft', label: 'فوت (ft)' },
 ];
 
-// Currency options
+// Currency options — one currency per product; every price input in the
+// pricing step uses this same unit so labels never contradict each other.
 const currencies = [
-  { value: 'IRR', label: 'ریال ایران (IRR)' },
-  { value: 'IRT', label: 'تومان ایران (IRT)' },
-  { value: 'USD', label: 'دلار آمریکا (USD)' },
-  { value: 'EUR', label: 'یورو (EUR)' },
-  { value: 'GBP', label: 'پوند (GBP)' },
-  { value: 'AED', label: 'درهم امارات (AED)' },
+  { value: 'IRT', label: 'تومان ایران (IRT)', short: 'تومان' },
+  { value: 'IRR', label: 'ریال ایران (IRR)', short: 'ریال' },
+  { value: 'USD', label: 'دلار آمریکا (USD)', short: 'دلار' },
+  { value: 'EUR', label: 'یورو (EUR)', short: 'یورو' },
+  { value: 'GBP', label: 'پوند (GBP)', short: 'پوند' },
+  { value: 'AED', label: 'درهم امارات (AED)', short: 'درهم' },
 ];
+
+const currencyShort = (code?: string) =>
+  currencies.find((c) => c.value === (code || 'IRT'))?.short || 'تومان';
+
 
 // Status options
 const statusOptions: { value: ProductStatus; label: string; description: string }[] = [
