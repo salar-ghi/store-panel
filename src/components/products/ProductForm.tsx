@@ -526,7 +526,17 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
 
   return (
     <Form {...form}>
-      <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        onKeyDown={(e) => {
+          // never submit on Enter — only the explicit final button submits
+          if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+            e.preventDefault();
+          }
+        }}
+        className="space-y-6"
+        dir="rtl"
+      >
         {/* Enterprise stepper */}
         <div className="sticky top-0 z-10 -mx-6 px-6 pt-1 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="rounded-lg border bg-card">
