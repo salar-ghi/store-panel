@@ -130,13 +130,13 @@ const stockSchema = z.object({
 
 const priceSchema = z.object({
   batchNumber: z.string().optional(),
-  amount: z.coerce.number().positive({ message: "قیمت فروش باید عدد مثبت باشد." }),
+  amount: z.coerce.number().nonnegative({ message: "قیمت فروش باید عدد غیرمنفی باشد." }),
   costPrice: z.coerce.number().nonnegative({ message: "قیمت خرید باید عدد غیرمنفی باشد." }),
-  currency: z.string().min(1, { message: "لطفا واحد پول را انتخاب کنید." }),
+  currency: z.string().optional(),
   pricingTier: z.enum(['retail', 'wholesale', 'discount', 'premium']),
-  effectiveDate: z.string().min(1, { message: "تاریخ شروع اعتبار الزامی است." }),
+  effectiveDate: z.string().optional(),
   expiryDate: z.string().optional(),
-  quantity: z.coerce.number().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
+  quantity: z.coerce.number().nonnegative({ message: "تعداد وارده باید عدد غیرمنفی باشد." }),
   soldQuantity: z.coerce.number().nonnegative().optional(),
   notes: z.string().optional(),
 });
@@ -163,6 +163,7 @@ const formSchema = z.object({
   availability: z.enum(['available', 'unavailable', 'discontinued', 'draft', 'out_of_stock']).optional(),
   dimensions: dimensionSchema.optional(),
   stock: stockSchema.optional(),
+  currency: z.string().min(1, { message: "لطفا واحد پول را انتخاب کنید." }).default('IRT'),
   prices: z.array(priceSchema).optional(),
   attributes: z.array(
     z.object({
@@ -173,6 +174,7 @@ const formSchema = z.object({
   pricingStrategy: z.enum(['fifo', 'latest', 'average']).optional(),
   salesUnit: salesUnitSchema,
 });
+
 
 type FormData = z.infer<typeof formSchema>;
 
