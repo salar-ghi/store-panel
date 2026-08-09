@@ -11,8 +11,10 @@ import { PersianDatePicker } from "@/components/ui/persian-datepicker";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { SelectFields } from "./SelectFields";
 import { ProductAttributeFields } from "@/components/products/ProductAttributeFields";
-import { ProductAttributeValue } from "@/types/attribute";
-import { valuesFromList } from "@/lib/attribute-values";
+import { ProductAttributeValue, ResolvedCategoryAttribute } from "@/types/attribute";
+import { AttributeService } from "@/services/attribute-service";
+import { CategoryService } from "@/services/category-service";
+import { valuesFromList, isValueEmpty, toPayload } from "@/lib/attribute-values";
 import { ProductTagSelect } from "./ProductTagSelect";
 import { ProductVariantEditor } from "./ProductVariantEditor";
 import { GenderField } from "./GenderField";
@@ -85,15 +87,20 @@ const dimensionUnits: { value: DimensionUnit; label: string }[] = [
   { value: 'ft', label: 'فوت (ft)' },
 ];
 
-// Currency options
+// Currency options — one currency per product; every price input in the
+// pricing step uses this same unit so labels never contradict each other.
 const currencies = [
-  { value: 'IRR', label: 'ریال ایران (IRR)' },
-  { value: 'IRT', label: 'تومان ایران (IRT)' },
-  { value: 'USD', label: 'دلار آمریکا (USD)' },
-  { value: 'EUR', label: 'یورو (EUR)' },
-  { value: 'GBP', label: 'پوند (GBP)' },
-  { value: 'AED', label: 'درهم امارات (AED)' },
+  { value: 'IRT', label: 'تومان ایران (IRT)', short: 'تومان' },
+  { value: 'IRR', label: 'ریال ایران (IRR)', short: 'ریال' },
+  { value: 'USD', label: 'دلار آمریکا (USD)', short: 'دلار' },
+  { value: 'EUR', label: 'یورو (EUR)', short: 'یورو' },
+  { value: 'GBP', label: 'پوند (GBP)', short: 'پوند' },
+  { value: 'AED', label: 'درهم امارات (AED)', short: 'درهم' },
 ];
+
+const currencyShort = (code?: string) =>
+  currencies.find((c) => c.value === (code || 'IRT'))?.short || 'تومان';
+
 
 // Status options
 const statusOptions: { value: ProductStatus; label: string; description: string }[] = [
@@ -130,13 +137,13 @@ const stockSchema = z.object({
 
 const priceSchema = z.object({
   batchNumber: z.string().optional(),
-  amount: z.coerce.number().positive({ message: "قیمت فروش باید عدد مثبت باشد." }),
+  amount: z.coerce.number().nonnegative({ message: "قیمت فروش باید عدد غیرمنفی باشد." }),
   costPrice: z.coerce.number().nonnegative({ message: "قیمت خرید باید عدد غیرمنفی باشد." }),
-  currency: z.string().min(1, { message: "لطفا واحد پول را انتخاب کنید." }),
+  currency: z.string().optional(),
   pricingTier: z.enum(['retail', 'wholesale', 'discount', 'premium']),
-  effectiveDate: z.string().min(1, { message: "تاریخ شروع اعتبار الزامی است." }),
+  effectiveDate: z.string().optional(),
   expiryDate: z.string().optional(),
-  quantity: z.coerce.number().positive({ message: "تعداد وارده باید عدد مثبت باشد." }),
+  quantity: z.coerce.number().nonnegative({ message: "تعداد وارده باید عدد غیرمنفی باشد." }),
   soldQuantity: z.coerce.number().nonnegative().optional(),
   notes: z.string().optional(),
 });
@@ -163,6 +170,7 @@ const formSchema = z.object({
   availability: z.enum(['available', 'unavailable', 'discontinued', 'draft', 'out_of_stock']).optional(),
   dimensions: dimensionSchema.optional(),
   stock: stockSchema.optional(),
+  currency: z.string().min(1, { message: "لطفا واحد پول را انتخاب کنید." }).default('IRT'),
   prices: z.array(priceSchema).optional(),
   attributes: z.array(
     z.object({
@@ -173,6 +181,7 @@ const formSchema = z.object({
   pricingStrategy: z.enum(['fifo', 'latest', 'average']).optional(),
   salesUnit: salesUnitSchema,
 });
+
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -194,11 +203,18 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   const [attributeValues, setAttributeValues] = useState<Record<number, ProductAttributeValue>>(
     valuesFromList(initialData?.attributeValues)
   );
+  const [invalidAttributeIds, setInvalidAttributeIds] = useState<number[]>([]);
 
   const { data: spaces = [] } = useQuery({
     queryKey: ['storage', 'spaces'],
     queryFn: () => StorageService.getSpaces(),
   });
+
+  const { data: allCategories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: CategoryService.getAllCategories,
+  });
+
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -237,11 +253,12 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         shelfId: 0,
         quantityUnit: "piece",
       },
+      currency: initialData?.prices?.[0]?.currency || 'IRT',
       prices: initialData?.prices || [{
         batchNumber: `BATCH-${Date.now()}`,
         amount: 0,
         costPrice: 0,
-        currency: "IRR",
+        currency: "IRT",
         pricingTier: "retail",
         effectiveDate: new Date().toISOString().split('T')[0],
         expiryDate: "",
@@ -260,6 +277,25 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     name: "prices"
   });
 
+  const selectedCategoryId = form.watch("categoryId");
+  const currency = form.watch("currency") || 'IRT';
+  const currencyLabel = currencyShort(currency);
+
+  // Category attributes (incl. inherited) — used for validation on the last step
+  const { data: categoryAttributes = [] } = useQuery<ResolvedCategoryAttribute[]>({
+    queryKey: ["category-attributes", selectedCategoryId],
+    queryFn: () => AttributeService.resolveCategoryAttributes(selectedCategoryId!, allCategories),
+    enabled: !!selectedCategoryId && allCategories.length > 0,
+  });
+
+  const requiredAttributes = categoryAttributes.filter(
+    (a) => a.isRequired ?? a.attributeDefinition.isRequired
+  );
+  const missingAttributes = requiredAttributes.filter((a) =>
+    isValueEmpty(a.attributeDefinition.dataType, attributeValues[a.attributeDefinitionId])
+  );
+
+
   const handleSubmit = (data: FormData) => {
     const resolvedCover = coverImage && productImages.includes(coverImage)
       ? coverImage
@@ -275,16 +311,18 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       coverImage: resolvedCover,
       tags: selectedTags,
       attributes: attributes,
-      attributeValues: Object.values(attributeValues).filter(
-        (v) =>
-          v.stringValue != null ||
-          v.intValue != null ||
-          v.decimalValue != null ||
-          v.boolValue != null ||
-          v.dateValue != null ||
-          v.attributeOptionId != null ||
-          (v.attributeOptionIds && v.attributeOptionIds.length > 0)
-      ),
+      attributeValues: categoryAttributes.length
+        ? toPayload(categoryAttributes, attributeValues)
+        : Object.values(attributeValues).filter(
+            (v) =>
+              v.stringValue != null ||
+              v.intValue != null ||
+              v.decimalValue != null ||
+              v.boolValue != null ||
+              v.dateValue != null ||
+              v.attributeOptionId != null ||
+              (v.attributeOptionIds && v.attributeOptionIds.length > 0)
+          ),
       location: data.location,
       reorderLevel: data.reorderLevel,
       status: data.status,
@@ -309,10 +347,10 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         batchNumber: price.batchNumber,
         amount: price.amount,
         costPrice: price.costPrice,
-        currency: price.currency,
+        currency: data.currency || 'IRT',
         pricingTier: price.pricingTier,
-        effectiveDate: price.effectiveDate,
-        expiryDate: price.expiryDate,
+        effectiveDate: price.effectiveDate || new Date().toISOString().split('T')[0],
+        expiryDate: price.expiryDate || undefined,
         quantity: price.quantity,
         soldQuantity: price.soldQuantity || 0,
         notes: price.notes,
@@ -348,7 +386,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       batchNumber: `BATCH-${Date.now()}`,
       amount: 0,
       costPrice: 0,
-      currency: "IRR",
+      currency: form.getValues("currency") || "IRT",
       pricingTier: "retail",
       effectiveDate: new Date().toISOString().split('T')[0],
       expiryDate: "",
@@ -442,7 +480,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   };
 
   // Validate every step before final submit
-  const handleFinalSubmit = form.handleSubmit(handleSubmit, (errors) => {
+  const submitForm = form.handleSubmit(handleSubmit, (errors) => {
     // find first step with an error and jump there
     const firstBadStep = steps.find((s) =>
       s.fields.some((f) => {
@@ -460,9 +498,45 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     }
   });
 
+  /**
+   * Submission happens ONLY from the explicit final button (and only when the
+   * category's required attributes are filled). Native form submit is blocked
+   * so pressing Enter or landing on the last step never fires a request.
+   */
+  const handleFinalSubmit = async (e?: React.BaseSyntheticEvent) => {
+    e?.preventDefault();
+    if (activeTab !== "attributes") {
+      setActiveTab("attributes");
+      return;
+    }
+    if (missingAttributes.length > 0) {
+      setInvalidAttributeIds(missingAttributes.map((a) => a.attributeDefinitionId));
+      toast.error("ویژگی‌های الزامی این دسته‌بندی تکمیل نشده است", {
+        description: missingAttributes
+          .map((a) => a.attributeDefinition.name)
+          .slice(0, 4)
+          .join(" • "),
+      });
+      return;
+    }
+    setInvalidAttributeIds([]);
+    await submitForm(e);
+  };
+
+
   return (
     <Form {...form}>
-      <form onSubmit={handleFinalSubmit} className="space-y-6" dir="rtl">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        onKeyDown={(e) => {
+          // never submit on Enter — only the explicit final button submits
+          if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+            e.preventDefault();
+          }
+        }}
+        className="space-y-6"
+        dir="rtl"
+      >
         {/* Enterprise stepper */}
         <div className="sticky top-0 z-10 -mx-6 px-6 pt-1 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="rounded-lg border bg-card">
@@ -724,35 +798,26 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="stock.quantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center justify-between">
-                          <span>موجودی اولیه</span>
-                          <Badge variant="secondary" className="text-[10px] font-normal">
-                            از سری‌ها محاسبه می‌شود
-                          </Badge>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            min={0}
-                            step="any"
-                            value={getTotalStock()}
-                            readOnly
-                            className="bg-muted/40 cursor-not-allowed"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          مجموع «تعداد وارده − فروخته‌شده» همه سری‌های مرحله ۴ (قیمت و سری ورود).
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Read-only summary instead of a disabled input — stock always
+                      comes from the batches registered in step 4 */}
+                  <div className="rounded-lg border bg-muted/30 p-3 flex flex-col justify-center">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm text-muted-foreground">موجودی اولیه</span>
+                      <Badge variant="secondary" className="text-[10px] font-normal">
+                        از سری‌های ورود
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-2xl font-bold tabular-nums">
+                      {formatPersianNumber(getTotalStock())}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("pricing")}
+                      className="mt-1 self-start text-xs text-primary hover:underline"
+                    >
+                      ثبت موجودی در مرحله «قیمت و سری ورود» ←
+                    </button>
+                  </div>
 
 
                   <FormField
@@ -764,11 +829,14 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         <FormControl>
                           <Input type="number" placeholder="0" min={0} step={1} {...field} />
                         </FormControl>
-                        <FormDescription>هنگام رسیدن به این عدد اطلاع‌رسانی می‌شود</FormDescription>
+                        <FormDescription>
+                          وقتی موجودی ({formatPersianNumber(getTotalStock())}) به این عدد برسد هشدار کمبود ارسال می‌شود
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                 </div>
               </CardContent>
             </Card>
@@ -845,12 +913,12 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                 value={field.value}
                                 onChange={field.onChange}
                                 placeholder="مثلاً ۱۵۰٬۰۰۰"
-                                suffix={form.watch('salesUnit.weightUnit') === 'gram' ? 'تومان/گرم' : 'تومان/کیلو'}
+                                suffix={`${currencyLabel}/${form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلو'}`}
                               />
                             </FormControl>
                             <FormDescription>
                               {field.value
-                                ? formatPrice(field.value) + ' برای هر ' + (form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم')
+                                ? formatPrice(field.value, currencyLabel) + ' برای هر ' + (form.watch('salesUnit.weightUnit') === 'gram' ? 'گرم' : 'کیلوگرم')
                                 : 'قیمت پایه برای فروش وزنی'}
                             </FormDescription>
                             <FormMessage />
@@ -1047,7 +1115,43 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
             </Card>
 
+            {/* One currency for the whole product — every price below uses it */}
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <Card className="shadow-none">
+                    <CardHeader className="py-4">
+                      <CardTitle className="text-base">واحد پول محصول</CardTitle>
+                      <CardDescription>
+                        همه قیمت‌های این محصول (خرید، فروش، قیمت وزنی) با این واحد ثبت و نمایش داده می‌شوند.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select onValueChange={field.onChange} value={field.value || 'IRT'}>
+                        <FormControl>
+                          <SelectTrigger className="md:w-72">
+                            <SelectValue placeholder="انتخاب واحد پول" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </CardContent>
+                  </Card>
+                </FormItem>
+              )}
+            />
+
             {/* Per-product pricing strategy across multiple batches */}
+
             <FormField
               control={form.control}
               name="pricingStrategy"
@@ -1174,10 +1278,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                   onChange={field.onChange}
                                   allowDecimal
                                   placeholder="0"
+                                  suffix={currencyLabel}
                                 />
                               </FormControl>
                               {field.value ? (
-                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                                <FormDescription className="text-[11px]">
+                                  {formatPrice(field.value, currencyLabel)}
+                                </FormDescription>
                               ) : null}
                               <FormMessage />
                             </FormItem>
@@ -1196,42 +1303,23 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                   onChange={field.onChange}
                                   allowDecimal
                                   placeholder="0"
+                                  suffix={currencyLabel}
                                 />
                               </FormControl>
                               {field.value ? (
-                                <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                                <FormDescription className="text-[11px]">
+                                  {formatPrice(field.value, currencyLabel)}
+                                </FormDescription>
                               ) : null}
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`prices.${index}.currency`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>واحد پول</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="انتخاب" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {currencies.map((c) => (
-                                    <SelectItem key={c.value} value={c.value}>
-                                      {c.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+
 
                         <FormField
                           control={form.control}
@@ -1262,7 +1350,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                           name={`prices.${index}.effectiveDate`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>تاریخ ورود به انبار</FormLabel>
+                              <FormLabel>تاریخ ورود به انبار (اختیاری)</FormLabel>
                               <FormControl>
                                 <PersianDatePicker
                                   value={field.value ? new Date(field.value) : undefined}
@@ -1270,7 +1358,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                                   placeholder="انتخاب تاریخ ورود"
                                 />
                               </FormControl>
-                              <FormDescription>تاریخ شمسی</FormDescription>
+                              <FormDescription>در صورت خالی بودن، تاریخ امروز ثبت می‌شود</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1348,9 +1436,13 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
           {/* Tab 6: Attributes & Tags */}
           <TabsContent value="attributes" className="space-y-5">
             <ProductAttributeFields
-              categoryId={form.watch("categoryId")}
+              categoryId={selectedCategoryId}
               values={attributeValues}
-              onChange={setAttributeValues}
+              invalidIds={invalidAttributeIds}
+              onChange={(v) => {
+                setAttributeValues(v);
+                setInvalidAttributeIds([]);
+              }}
             />
 
             <Card className="shadow-none">
@@ -1437,20 +1529,28 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
 
           <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
             <AlertCircle className="h-3.5 w-3.5" />
-            برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند
+            {isLastStep && missingAttributes.length > 0
+              ? `${formatPersianNumber(missingAttributes.length)} ویژگی الزامی این دسته‌بندی تکمیل نشده است`
+              : "برای رفتن به مرحله بعد، فیلدهای ضروری این مرحله باید تکمیل شوند"}
           </div>
 
           {!isLastStep ? (
-            <Button type="button" onClick={handleNext} className="gap-1 min-w-[140px]">
+            <Button key="next" type="button" onClick={handleNext} className="gap-1 min-w-[140px]">
               مرحله بعد: {steps[currentStepIndex + 1].label}
               <ChevronLeft className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" className="min-w-[160px] gap-1 ">
+            <Button
+              key="submit"
+              type="button"
+              onClick={handleFinalSubmit}
+              className="min-w-[160px] gap-1"
+            >
               <Check className="h-4 w-4" />
               {isEditMode ? "بروزرسانی محصول" : "ایجاد نهایی محصول"}
             </Button>
           )}
+
         </div>
       </form>
     </Form>
