@@ -480,7 +480,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
   };
 
   // Validate every step before final submit
-  const handleFinalSubmit = form.handleSubmit(handleSubmit, (errors) => {
+  const submitForm = form.handleSubmit(handleSubmit, (errors) => {
     // find first step with an error and jump there
     const firstBadStep = steps.find((s) =>
       s.fields.some((f) => {
@@ -497,6 +497,32 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       });
     }
   });
+
+  /**
+   * Submission happens ONLY from the explicit final button (and only when the
+   * category's required attributes are filled). Native form submit is blocked
+   * so pressing Enter or landing on the last step never fires a request.
+   */
+  const handleFinalSubmit = async (e?: React.BaseSyntheticEvent) => {
+    e?.preventDefault();
+    if (activeTab !== "attributes") {
+      setActiveTab("attributes");
+      return;
+    }
+    if (missingAttributes.length > 0) {
+      setInvalidAttributeIds(missingAttributes.map((a) => a.attributeDefinitionId));
+      toast.error("ویژگی‌های الزامی این دسته‌بندی تکمیل نشده است", {
+        description: missingAttributes
+          .map((a) => a.attributeDefinition.name)
+          .slice(0, 4)
+          .join(" • "),
+      });
+      return;
+    }
+    setInvalidAttributeIds([]);
+    await submitForm(e);
+  };
+
 
   return (
     <Form {...form}>
