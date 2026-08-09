@@ -1281,31 +1281,8 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`prices.${index}.currency`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>واحد پول</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="انتخاب" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {currencies.map((c) => (
-                                    <SelectItem key={c.value} value={c.value}>
-                                      {c.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+
 
                         <FormField
                           control={form.control}
