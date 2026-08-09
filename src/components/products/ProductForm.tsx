@@ -253,11 +253,12 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         shelfId: 0,
         quantityUnit: "piece",
       },
+      currency: initialData?.prices?.[0]?.currency || 'IRT',
       prices: initialData?.prices || [{
         batchNumber: `BATCH-${Date.now()}`,
         amount: 0,
         costPrice: 0,
-        currency: "IRR",
+        currency: "IRT",
         pricingTier: "retail",
         effectiveDate: new Date().toISOString().split('T')[0],
         expiryDate: "",
@@ -275,6 +276,25 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     control: form.control,
     name: "prices"
   });
+
+  const selectedCategoryId = form.watch("categoryId");
+  const currency = form.watch("currency") || 'IRT';
+  const currencyLabel = currencyShort(currency);
+
+  // Category attributes (incl. inherited) — used for validation on the last step
+  const { data: categoryAttributes = [] } = useQuery<ResolvedCategoryAttribute[]>({
+    queryKey: ["category-attributes", selectedCategoryId],
+    queryFn: () => AttributeService.resolveCategoryAttributes(selectedCategoryId!, allCategories),
+    enabled: !!selectedCategoryId && allCategories.length > 0,
+  });
+
+  const requiredAttributes = categoryAttributes.filter(
+    (a) => a.isRequired ?? a.attributeDefinition.isRequired
+  );
+  const missingAttributes = requiredAttributes.filter((a) =>
+    isValueEmpty(a.attributeDefinition.dataType, attributeValues[a.attributeDefinitionId])
+  );
+
 
   const handleSubmit = (data: FormData) => {
     const resolvedCover = coverImage && productImages.includes(coverImage)
