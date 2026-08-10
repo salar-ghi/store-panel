@@ -1,5 +1,5 @@
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import { ProductForm } from "./ProductForm";
 import { ProductService } from "@/services/product-service";
@@ -18,8 +18,17 @@ interface EditProductDialogProps {
   product: Product;
 }
 
-export function EditProductDialog({ open, onOpenChange, product }: EditProductDialogProps) {
+export function EditProductDialog({ open, onOpenChange, product: baseProduct }: EditProductDialogProps) {
   const queryClient = useQueryClient();
+
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ["product-detail", baseProduct.id],
+    queryFn: () => ProductService.getDetail(baseProduct.id),
+    enabled: open && !!baseProduct.id,
+  });
+
+  const product: Product = detail ? { ...baseProduct, ...detail } : baseProduct;
+
 
   const handleSubmit = async (data: CreateProductRequest) => {
     try {
