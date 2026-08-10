@@ -73,6 +73,9 @@ export function EditProductDialog({ open, onOpenChange, product: baseProduct }: 
     prices: product.prices || [],
     attributes: product.attributes || [],
     variants: product.variants || [],
+    pricingStrategy: product.pricingStrategy,
+    salesUnit: product.salesUnit,
+    attributeValues: product.attributeValues || [],
   };
 
   return (
@@ -84,12 +87,16 @@ export function EditProductDialog({ open, onOpenChange, product: baseProduct }: 
             اطلاعات محصول را ویرایش کنید.
           </DialogDescription>
         </DialogHeader>
-        <ProductForm 
-          onSubmit={handleSubmit} 
-          initialData={initialData}
-          isEditMode={true}
-        />
-      </DialogContent>
+        {isLoading && !detail ? (
+          <div className="py-12 text-center text-muted-foreground">در حال بارگذاری اطلاعات محصول...</div>
+        ) : (
+          <ProductForm
+            key={detail ? `detail-${product.id}` : `base-${product.id}`}
+            onSubmit={handleSubmit}
+            initialData={initialData}
+            isEditMode={true}
+          />
+        )}
     </Dialog>
   );
 }
