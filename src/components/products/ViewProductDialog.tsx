@@ -10,6 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Product } from "@/types/product";
+import { ProductService } from "@/services/product-service";
 import { getProductPrice, getProductStock } from "@/data/ordersData";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -38,7 +39,15 @@ interface ViewProductDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function ViewProductDialog({ product, open, onOpenChange }: ViewProductDialogProps) {
+export function ViewProductDialog({ product: baseProduct, open, onOpenChange }: ViewProductDialogProps) {
+  const { data: detail } = useQuery({
+    queryKey: ["product-detail", baseProduct.id],
+    queryFn: () => ProductService.getDetail(baseProduct.id),
+    enabled: open && !!baseProduct.id,
+  });
+
+  const product: Product = detail ? { ...baseProduct, ...detail } : baseProduct;
+
   const price = getProductPrice(product);
   const stock = getProductStock(product);
   const lowStock = stock <= (product.reorderLevel ?? 5);

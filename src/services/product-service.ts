@@ -13,6 +13,12 @@ export class ProductService {
     return response.data;
   }
 
+  /** Full product detail (prices, stock, variants, attribute values, ...). */
+  static async getDetail(id: number): Promise<Product> {
+    const response = await apiClient.get<Product>(`/api/Product/products/${id}/detail`);
+    return response.data;
+  }
+
   static async create(data: CreateProductRequest): Promise<Product> {
     const response = await apiClient.post<Product>('/api/Product/products', data);
     return response.data;

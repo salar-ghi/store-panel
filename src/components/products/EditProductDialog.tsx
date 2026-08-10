@@ -1,5 +1,5 @@
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import { ProductForm } from "./ProductForm";
 import { ProductService } from "@/services/product-service";
@@ -18,8 +18,17 @@ interface EditProductDialogProps {
   product: Product;
 }
 
-export function EditProductDialog({ open, onOpenChange, product }: EditProductDialogProps) {
+export function EditProductDialog({ open, onOpenChange, product: baseProduct }: EditProductDialogProps) {
   const queryClient = useQueryClient();
+
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ["product-detail", baseProduct.id],
+    queryFn: () => ProductService.getDetail(baseProduct.id),
+    enabled: open && !!baseProduct.id,
+  });
+
+  const product: Product = detail ? { ...baseProduct, ...detail } : baseProduct;
+
 
   const handleSubmit = async (data: CreateProductRequest) => {
     try {
@@ -64,6 +73,9 @@ export function EditProductDialog({ open, onOpenChange, product }: EditProductDi
     prices: product.prices || [],
     attributes: product.attributes || [],
     variants: product.variants || [],
+    pricingStrategy: product.pricingStrategy,
+    salesUnit: product.salesUnit,
+    attributeValues: product.attributeValues || [],
   };
 
   return (
@@ -75,11 +87,16 @@ export function EditProductDialog({ open, onOpenChange, product }: EditProductDi
             اطلاعات محصول را ویرایش کنید.
           </DialogDescription>
         </DialogHeader>
-        <ProductForm 
-          onSubmit={handleSubmit} 
-          initialData={initialData}
-          isEditMode={true}
-        />
+        {isLoading && !detail ? (
+          <div className="py-12 text-center text-muted-foreground">در حال بارگذاری اطلاعات محصول...</div>
+        ) : (
+          <ProductForm
+            key={detail ? `detail-${product.id}` : `base-${product.id}`}
+            onSubmit={handleSubmit}
+            initialData={initialData}
+            isEditMode={true}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
