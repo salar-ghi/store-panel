@@ -264,25 +264,6 @@ export function ViewProductDialog({ product: baseProduct, open, onOpenChange }: 
 
               <CategoryAttributeValues product={product} />
 
-              {product.attributes && product.attributes.length > 0 ? (
-                <Card className="p-4">
-                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-3">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    ویژگی‌ها
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {product.attributes.map((a, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between text-sm border rounded-lg px-3 py-2 bg-muted/30"
-                      >
-                        <span className="text-muted-foreground">{a.key}</span>
-                        <span className="font-medium">{a.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              ) : null}
             </TabsContent>
 
             {/* Batches */}

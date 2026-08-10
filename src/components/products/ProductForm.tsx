@@ -1459,59 +1459,6 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardContent>
             </Card>
 
-            <Card className="shadow-none">
-              <CardHeader className="py-4 flex flex-row items-center justify-between gap-3">
-                <div>
-                  <CardTitle className="text-base">ویژگی‌های آزاد (کلید/مقدار)</CardTitle>
-                  <CardDescription>در صورت نیاز، ویژگی‌های خارج از تعریف دسته‌بندی</CardDescription>
-                </div>
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleAddAttribute}
-                  className="h-8 shrink-0"
-                >
-                  <Plus className="h-4 w-4 ml-1" />
-                  افزودن ویژگی
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {attributes.map((attribute, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Input
-                        placeholder="نام ویژگی (مثال: رنگ)"
-                        value={attribute.key}
-                        onChange={(e) => handleAttributeChange(index, 'key', e.target.value)}
-                        className="flex-1"
-                      />
-                      <Input
-                        placeholder="مقدار (مثال: آبی)"
-                        value={attribute.value}
-                        onChange={(e) => handleAttributeChange(index, 'value', e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveAttribute(index)}
-                        className="text-destructive"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {attributes.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                      <p className="text-sm">هنوز ویژگی‌ای اضافه نشده است</p>
-                      <p className="text-xs mt-1">می‌توانید ویژگی‌هایی مثل «جنس: چرم» یا «گارانتی: ۱۸ ماهه» اضافه کنید.</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
 
