@@ -97,6 +97,7 @@ export function EditProductDialog({ open, onOpenChange, product: baseProduct }: 
             isEditMode={true}
           />
         )}
+      </DialogContent>
     </Dialog>
   );
 }
