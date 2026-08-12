@@ -748,6 +748,21 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
             </Card>
           </TabsContent>
 
+          {/* Tab 2: Product introduction (blog-style content) */}
+          <TabsContent value="content" className="space-y-5">
+            <Card className="shadow-none">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base">معرفی محصول</CardTitle>
+                <CardDescription>
+                  یک معرفی بلاگ‌مانند از محصول بسازید؛ ترکیبی از عنوان، متن و تصویر که در صفحه محصول نمایش داده می‌شود.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProductIntroEditor value={contentBlocks} onChange={setContentBlocks} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Tab 2: Inventory — Storage Hierarchy (Space → Zone → Shelf) */}
           <TabsContent value="inventory" className="space-y-5">
             {/* Explainer */}
