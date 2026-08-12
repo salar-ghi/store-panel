@@ -15,14 +15,14 @@ import { Menu, Search, User, LogOut, Bell } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export function Navbar() {
   const { toggle } = useSidebarStore();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const handleLogout = () => {
     logout();
@@ -43,18 +43,6 @@ export function Navbar() {
     setNotificationCount(0);
   };
 
-  // For demo purposes, let's add a notification randomly every 30-60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const shouldAddNotification = Math.random() > 0.7;
-      if (shouldAddNotification) {
-        setNotificationCount(prev => prev + 1);
-        toast.info("اعلان جدید دریافت شد");
-      }
-    }, Math.random() * 30000 + 30000); // Random between 30-60 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
