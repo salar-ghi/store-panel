@@ -4,13 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
-import { mockNotifications } from "@/data/mockNotifications";
 import { NotificationType } from "@/types/notification";
 import { NotificationsSidebar } from "@/components/notifications/NotificationsSidebar";
 import { NotificationsContent } from "@/components/notifications/NotificationsContent";
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState<NotificationType[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [currentTab, setCurrentTab] = useState("all");
 
   const markAsRead = (id: number) => {

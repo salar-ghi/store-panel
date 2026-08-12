@@ -76,6 +76,7 @@ export function EditProductDialog({ open, onOpenChange, product: baseProduct }: 
     pricingStrategy: product.pricingStrategy,
     salesUnit: product.salesUnit,
     attributeValues: product.attributeValues || [],
+    contentBlocks: product.contentBlocks || [],
   };
 
   return (

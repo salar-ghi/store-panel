@@ -248,3 +248,8 @@
 .hover-scale {
   @apply transition-transform duration-300 hover:scale-105;
 }
+
+/* Global type scale — slightly more compact across the whole panel */
+html {
+  font-size: 14.5px;
+}
