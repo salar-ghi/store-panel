@@ -134,6 +134,18 @@ export interface Product {
   salesUnit?: SalesUnitConfig;
   /** Typed EAV values driven by the category's attribute definitions. */
   attributeValues?: ProductAttributeValue[];
+  contentBlocks?: ProductContentBlock[];
+}
+
+export type ProductContentBlockType = 'heading' | 'paragraph' | 'image';
+
+export interface ProductContentBlock {
+  id?: string;
+  type: ProductContentBlockType;
+  text?: string;
+  image?: string;
+  caption?: string;
+  sortOrder?: number;
 }
 
 export interface CreateProductRequest {
@@ -157,6 +169,7 @@ export interface CreateProductRequest {
   pricingStrategy?: 'fifo' | 'latest' | 'average';
   salesUnit?: SalesUnitConfig;
   attributeValues?: ProductAttributeValue[];
+  contentBlocks?: ProductContentBlock[];
 }
 
 export interface UpdateProductRequest {
@@ -180,4 +193,5 @@ export interface UpdateProductRequest {
   pricingStrategy?: 'fifo' | 'latest' | 'average';
   salesUnit?: SalesUnitConfig;
   attributeValues?: ProductAttributeValue[];
+  contentBlocks?: ProductContentBlock[];
 }
