@@ -17,7 +17,7 @@ import { CategoryService } from "@/services/category-service";
 import { valuesFromList, isValueEmpty, toPayload } from "@/lib/attribute-values";
 import { ProductTagSelect } from "./ProductTagSelect";
 import { ProductVariantEditor } from "./ProductVariantEditor";
-import { GenderField } from "./GenderField";
+import { ProductIntroEditor } from "./ProductIntroEditor";
 import {
   Form,
   FormControl,
@@ -49,6 +49,7 @@ import {
   ProductAvailability,
   ProductVariant,
   SalesMode,
+  ProductContentBlock,
 } from "@/types/product";
 import { StorageService } from "@/services/storage-service";
 import { Warehouse, Scale } from "lucide-react";
@@ -204,6 +205,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
     valuesFromList(initialData?.attributeValues)
   );
   const [invalidAttributeIds, setInvalidAttributeIds] = useState<number[]>([]);
+  const [contentBlocks, setContentBlocks] = useState<ProductContentBlock[]>(
+    initialData?.contentBlocks || []
+  );
 
   const { data: spaces = [] } = useQuery({
     queryKey: ['storage', 'spaces'],
@@ -356,6 +360,9 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
         notes: price.notes,
       })) : undefined,
       variants: variants.length > 0 ? variants : undefined,
+      contentBlocks: contentBlocks.length
+        ? contentBlocks.map((b, i) => ({ ...b, sortOrder: i }))
+        : undefined,
       pricingStrategy: data.pricingStrategy,
       salesUnit: data.salesUnit
         ? { ...data.salesUnit, mode: data.salesUnit.mode ?? 'piece' }
@@ -415,7 +422,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
 
 
   // ---- Wizard step configuration ----
-  type StepKey = "basic" | "inventory" | "dimensions" | "pricing" | "variants" | "attributes";
+  type StepKey = "basic" | "content" | "inventory" | "dimensions" | "pricing" | "variants" | "attributes";
   const steps: {
     key: StepKey;
     label: string;
@@ -426,6 +433,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
       label: "اطلاعات اولیه",
       fields: ["name", "description", "categoryId", "brandId", "supplierId", "status", "availability"],
     },
+    { key: "content", label: "معرفی محصول", fields: [] },
     {
       key: "inventory",
       label: "موجودی و انبار",
@@ -563,7 +571,7 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
 
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StepKey)} className="w-full" dir="rtl">
-          <TabsList className="grid grid-cols-6 mb-6 h-auto bg-muted/40 p-1">
+          <TabsList className="grid grid-cols-7 mb-6 h-auto bg-muted/40 p-1">
             {steps.map((s, idx) => {
               const done = idx < currentStepIndex;
               const active = idx === currentStepIndex;
@@ -715,11 +723,6 @@ export function ProductForm({ onSubmit, initialData, isEditMode = false }: Produ
               </CardHeader>
               <CardContent>
                 <SelectFields control={form.control} />
-                <GenderField
-                  control={form.control}
-                  attributes={attributes}
-                  setAttributes={setAttributes}
-                />
               </CardContent>
             </Card>
 
