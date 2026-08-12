@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -155,13 +154,13 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[86vh] overflow-y-auto text-xs" dir="rtl">
         <DialogHeader className="text-right">
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-sm">
             <Tag className="h-4 w-4 text-primary" />
             ویژگی‌های دسته‌بندی «{category?.name}»
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-[11px] leading-5">
             ویژگی‌هایی که هنگام ثبت محصول در این دسته‌بندی پرسیده می‌شوند. ویژگی‌های
             دسته‌بندی‌های والد به‌صورت خودکار به ارث می‌رسند.
           </DialogDescription>
@@ -183,7 +182,7 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
                 <div className="rounded-lg border divide-y bg-muted/20">
                   {inherited.map((r) => (
                     <div key={r.attributeDefinitionId} className="flex items-center gap-2 px-3 py-2">
-                      <span className="text-sm font-medium">{r.attributeDefinition.name}</span>
+                      <span className="text-[13px] font-medium">{r.attributeDefinition.name}</span>
                       <code className="text-[10px] text-muted-foreground">
                         {r.attributeDefinition.code}
                       </code>
@@ -207,16 +206,16 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
                 ویژگی‌های این دسته‌بندی ({own.length})
               </h4>
               {own.length === 0 ? (
-                <div className="rounded-lg border-2 border-dashed py-8 text-center text-sm text-muted-foreground">
+                <div className="rounded-lg border-2 border-dashed py-7 text-center text-xs text-muted-foreground">
                   هنوز ویژگی‌ای برای این دسته‌بندی تعریف نشده است
                 </div>
               ) : (
                 <div className="rounded-lg border divide-y">
                   {own.map((r) => (
-                    <div key={r.id} className="px-3 py-2.5 space-y-2">
+                    <div key={r.id} className="px-2.5 py-2 space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">{r.attributeDefinition.name}</span>
-                        <code className="text-[10px] text-muted-foreground">
+                        <span className="text-[13px] font-medium">{r.attributeDefinition.name}</span>
+                        <code className="text-[10px] text-muted-foreground/70" dir="ltr">
                           {r.attributeDefinition.code}
                         </code>
                         <Badge variant="secondary" className="h-4 px-1 text-[10px]">
@@ -238,7 +237,7 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                      <div className="flex items-center gap-4 flex-wrap text-xs">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <ToggleFlag
                           label="اجباری"
                           checked={r.isRequired}
@@ -254,7 +253,7 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
                           }
                         />
                         <ToggleFlag
-                          label="نمایش در صفحه محصول"
+                          label="نمایش در محصول"
                           checked={r.isVisibleOnProductPage}
                           onChange={(v) =>
                             updateMutation.mutate({
@@ -315,8 +314,8 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
                     <Input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="جستجوی ویژگی (نام یا کد)..."
-                      className="h-9 pr-8 text-sm"
+                      placeholder="جستجوی ویژگی..."
+                      className="h-8 pr-8 text-xs"
                     />
                   </div>
                   <div className="max-h-48 overflow-y-auto rounded-lg border divide-y">
@@ -333,7 +332,7 @@ export function CategoryAttributesDialog({ open, onOpenChange, category }: Props
                           className="w-full flex items-center gap-2 px-3 py-2 text-right hover:bg-muted/50 transition-colors"
                         >
                           <Plus className="h-3.5 w-3.5 text-primary shrink-0" />
-                          <span className="text-sm">{d.name}</span>
+                          <span className="text-[13px]">{d.name}</span>
                           <code className="text-[10px] text-muted-foreground">{d.code}</code>
                           <Badge variant="secondary" className="h-4 px-1 text-[10px] me-auto">
                             {ATTRIBUTE_DATA_TYPES.find((t) => t.value === d.dataType)?.label ??
@@ -363,10 +362,18 @@ function ToggleFlag({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-1.5 cursor-pointer">
-      <Switch checked={!!checked} onCheckedChange={onChange} />
-      <span className="text-muted-foreground">{label}</span>
-    </label>
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors",
+        checked
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"
+      )}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -441,10 +448,10 @@ function AttributeDefinitionForm({
   };
 
   return (
-    <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <div className="rounded-lg border bg-muted/20 p-3 space-y-2.5">
+      <div className="grid gap-2.5 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-xs">نام نمایشی</Label>
+          <Label className="text-[11px] text-muted-foreground">نام نمایشی</Label>
           <Input
             value={name}
             onChange={(e) => {
@@ -454,23 +461,23 @@ function AttributeDefinitionForm({
               }
             }}
             placeholder="مثال: رم"
-            className="h-9"
+            className="h-8 text-xs"
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">کد یکتا (انگلیسی)</Label>
+          <Label className="text-[11px] text-muted-foreground">کد یکتا (انگلیسی)</Label>
           <Input
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\s+/g, "_").toLowerCase())}
             placeholder="ram"
             dir="ltr"
-            className="h-9"
+            className="h-8 text-xs"
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">نوع داده</Label>
+          <Label className="text-[11px] text-muted-foreground">نوع داده</Label>
           <Select value={dataType} onValueChange={(v) => setDataType(v as AttributeDataType)}>
-            <SelectTrigger className="h-9">
+            <SelectTrigger className="h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -483,19 +490,19 @@ function AttributeDefinitionForm({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">واحد (اختیاری)</Label>
+          <Label className="text-[11px] text-muted-foreground">واحد (اختیاری)</Label>
           <Input
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             placeholder="GB / ml / GHz"
-            className="h-9"
+            className="h-8 text-xs"
           />
         </div>
       </div>
 
       {needsOptions && (
         <div className="space-y-2">
-          <Label className="text-xs">گزینه‌ها</Label>
+          <Label className="text-[11px] text-muted-foreground">گزینه‌ها</Label>
           <div className="flex gap-2">
             <Input
               value={optionInput}
@@ -507,9 +514,9 @@ function AttributeDefinitionForm({
                 }
               }}
               placeholder="مثال: ۸ گیگابایت"
-              className="h-9"
+              className="h-8 text-xs"
             />
-            <Button type="button" variant="outline" size="sm" onClick={addOption} className="h-9">
+            <Button type="button" variant="outline" size="sm" onClick={addOption} className="h-8 w-9 shrink-0 p-0">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -531,13 +538,13 @@ function AttributeDefinitionForm({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-4 text-xs">
+      <div className="flex flex-wrap gap-1.5">
         <ToggleFlag label="قابل فیلتر" checked={isFilterable} onChange={setIsFilterable} />
         <ToggleFlag label="قابل جستجو" checked={isSearchable} onChange={setIsSearchable} />
         <ToggleFlag label="قابل مقایسه" checked={isComparable} onChange={setIsComparable} />
         <ToggleFlag label="اجباری" checked={isRequired} onChange={setIsRequired} />
         <ToggleFlag
-          label="ویژگی تنوع (واریانت)"
+          label="واریانت"
           checked={isVariantAttribute}
           onChange={setIsVariantAttribute}
         />
