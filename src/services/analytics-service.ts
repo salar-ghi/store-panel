@@ -90,12 +90,12 @@ function toParams(q: AnalyticsQuery) {
 }
 
 /** Give every slice a stable colour so pie/donut charts always render. */
-function withColors<T extends NamedValue | CustomerSegmentStat>(items: T[]): T[] {
-  return (items ?? []).map((item, i) => ({
-    ...item,
-    color: (item as NamedValue).color ?? PALETTE[i % PALETTE.length],
-    fill: (item as NamedValue).fill ?? (item as NamedValue).color ?? PALETTE[i % PALETTE.length],
-  }));
+function withColors<T extends { name: string }>(items: T[]): (T & { color: string; fill: string })[] {
+  return (items ?? []).map((item, i) => {
+    const raw = item as Partial<NamedValue>;
+    const color = raw.color ?? raw.fill ?? PALETTE[i % PALETTE.length];
+    return { ...item, color, fill: raw.fill ?? color };
+  });
 }
 
 function normalize(raw: Partial<AnalyticsOverview>): AnalyticsOverview {
@@ -111,7 +111,7 @@ function normalize(raw: Partial<AnalyticsOverview>): AnalyticsOverview {
     supplierStats: raw.supplierStats ?? [],
     inventoryStatus: withColors(raw.inventoryStatus ?? []),
     ordersHeatmap: raw.ordersHeatmap ?? [],
-    customerSegments: withColors(raw.customerSegments ?? []) as CustomerSegmentStat[],
+    customerSegments: withColors(raw.customerSegments ?? []),
     orderStatus: withColors(raw.orderStatus ?? []),
     returnRate: raw.returnRate ?? [],
     monthlyTargets: raw.monthlyTargets ?? [],

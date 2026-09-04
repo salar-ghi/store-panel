@@ -38,8 +38,8 @@ export interface GrowthTrendPoint {
 export interface NamedValue {
   name: string;
   value: number;
-  color?: string;
-  fill?: string;
+  color: string;
+  fill: string;
 }
 
 export interface TopProduct {
@@ -73,7 +73,7 @@ export interface HeatmapRow {
 export interface CustomerSegmentStat {
   name: string;
   size: number;
-  color?: string;
+  color: string;
 }
 
 export interface ReturnRateRow {
