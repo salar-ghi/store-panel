@@ -25,19 +25,19 @@ function toFinanceMethod(method: string): Transaction['method'] {
 
 export const OrderService = {
   list: async (): Promise<Order[]> => {
-    const res = await apiClient.get<Order[]>('/api/Order/orders');
+    const res = await apiClient.get<Order[]>('/api/Order/admin/orders');
     return res.data;
   },
   create: async (payload: CreateOrderRequest): Promise<Order> => {
-    const res = await apiClient.post<Order>('/api/Order/orders', payload);
+    const res = await apiClient.post<Order>('/api/Order/admin/orders', payload);
     return res.data;
   },
   update: async (id: string, payload: Partial<CreateOrderRequest>): Promise<Order> => {
-    const res = await apiClient.put<Order>(`/api/Order/orders/${id}`, payload);
+    const res = await apiClient.put<Order>(`/api/Order/admin/orders/${id}`, payload);
     return res.data;
   },
   createReturn: async (payload: CreateReturnRequest): Promise<void> => {
-    await apiClient.post(`/api/Order/orders/${payload.orderId}/returns`, payload);
+    await apiClient.post(`/api/Order/admin/orders/${payload.orderId}/returns`, payload);
   },
 
   /**
