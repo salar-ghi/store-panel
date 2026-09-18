@@ -536,6 +536,23 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="locationNote"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>توضیح محل نگهداری</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثلا انبار مرکزی / قفسه A-12" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        با انتخاب فضا و قفسه خودکار پر می‌شود و قابل ویرایش است.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
