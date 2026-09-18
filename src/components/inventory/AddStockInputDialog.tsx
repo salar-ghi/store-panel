@@ -181,13 +181,14 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     if (productSku && !form.getValues('sku')) form.setValue('sku', String(productSku));
   }, [selectedProduct]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep the location note in sync with the chosen space / shelf
+  // Keep the location note in sync with the chosen space / zone / shelf
   useEffect(() => {
     const space = spaces.find((s) => s.id === Number(watchedSpaceId));
+    const zone = zones.find((z) => z.id === Number(watchedZoneId));
     const shelf = shelves.find((s) => s.id === Number(watchedShelfId));
-    const parts = [space?.name, shelf?.code].filter(Boolean);
+    const parts = [space?.name, zone?.name, shelf?.code].filter(Boolean);
     if (parts.length) form.setValue('locationNote', parts.join(' / '));
-  }, [watchedSpaceId, watchedShelfId, spaces, shelves]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [watchedSpaceId, watchedZoneId, watchedShelfId, spaces, zones, shelves]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateStockInputRequest) => InventoryInputService.create(payload),
@@ -216,6 +217,7 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
       currency: values.currency || 'IRT',
       supplierId: values.supplierId,
       spaceId: values.spaceId,
+      zoneId: values.zoneId,
       shelfId: values.shelfId,
       receivedDate: values.receivedDate.toISOString(),
       expiryDate: values.expiryDate?.toISOString(),
