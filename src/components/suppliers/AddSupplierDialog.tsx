@@ -163,15 +163,6 @@ export function AddSupplierDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button 
-          onClick={openDialog} 
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4 ml-1" />
-          افزودن تامین‌کننده
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{editingSupplier ? "ویرایش تامین‌کننده" : "افزودن تامین‌کننده جدید"}</DialogTitle>
