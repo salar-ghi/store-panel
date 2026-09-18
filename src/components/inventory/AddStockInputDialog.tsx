@@ -54,6 +54,7 @@ const schema = z.object({
   currency: z.string().default('IRR'),
   supplierId: z.coerce.number().int().positive().optional(),
   spaceId: z.coerce.number().int().positive().optional(),
+  zoneId: z.coerce.number().int().positive().optional(),
   shelfId: z.coerce.number().int().positive().optional(),
   receivedDate: z.date({ required_error: 'تاریخ ورود الزامی است' }),
   expiryDate: z.date().optional(),
@@ -109,10 +110,20 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
 
   const watchedProductId = form.watch('productId');
   const watchedSpaceId = form.watch('spaceId');
+  const watchedZoneId = form.watch('zoneId');
+
+  const { data: zones = [] } = useQuery({
+    queryKey: ['storage', 'zones', watchedSpaceId],
+    queryFn: () => StorageService.getZones(watchedSpaceId),
+    enabled: !!watchedSpaceId,
+  });
 
   const { data: shelves = [] } = useQuery({
-    queryKey: ['storage', 'shelves', watchedSpaceId],
-    queryFn: () => StorageService.getShelves({ spaceId: watchedSpaceId }),
+    queryKey: ['storage', 'shelves', watchedSpaceId, watchedZoneId],
+    queryFn: () =>
+      StorageService.getShelves(
+        watchedZoneId ? { zoneId: watchedZoneId } : { spaceId: watchedSpaceId },
+      ),
     enabled: !!watchedSpaceId,
   });
 
@@ -170,13 +181,14 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     if (productSku && !form.getValues('sku')) form.setValue('sku', String(productSku));
   }, [selectedProduct]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep the location note in sync with the chosen space / shelf
+  // Keep the location note in sync with the chosen space / zone / shelf
   useEffect(() => {
     const space = spaces.find((s) => s.id === Number(watchedSpaceId));
+    const zone = zones.find((z) => z.id === Number(watchedZoneId));
     const shelf = shelves.find((s) => s.id === Number(watchedShelfId));
-    const parts = [space?.name, shelf?.code].filter(Boolean);
+    const parts = [space?.name, zone?.name, shelf?.code].filter(Boolean);
     if (parts.length) form.setValue('locationNote', parts.join(' / '));
-  }, [watchedSpaceId, watchedShelfId, spaces, shelves]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [watchedSpaceId, watchedZoneId, watchedShelfId, spaces, zones, shelves]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateStockInputRequest) => InventoryInputService.create(payload),
@@ -205,6 +217,7 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
       currency: values.currency || 'IRT',
       supplierId: values.supplierId,
       spaceId: values.spaceId,
+      zoneId: values.zoneId,
       shelfId: values.shelfId,
       receivedDate: values.receivedDate.toISOString(),
       expiryDate: values.expiryDate?.toISOString(),
@@ -484,6 +497,7 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                         <Select
                           onValueChange={(v) => {
                             field.onChange(v ? Number(v) : undefined);
+                            form.setValue('zoneId', undefined);
                             form.setValue('shelfId', undefined);
                           }}
                           value={field.value ? String(field.value) : undefined}
@@ -509,6 +523,41 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
 
                 <FormField
                   control={form.control}
+                  name="zoneId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>زون (اختیاری)</FormLabel>
+                      <Select
+                        onValueChange={(v) => {
+                          field.onChange(v ? Number(v) : undefined);
+                          form.setValue('shelfId', undefined);
+                        }}
+                        value={field.value ? String(field.value) : undefined}
+                        disabled={!watchedSpaceId}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={watchedSpaceId ? 'انتخاب زون' : 'ابتدا فضا را انتخاب کنید'} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {zones.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-muted-foreground">زونی برای این فضا تعریف نشده است</div>
+                          )}
+                          {zones.map((z) => (
+                            <SelectItem key={z.id} value={String(z.id)}>
+                              {z.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="shelfId"
                   render={({ field }) => (
                     <FormItem>
@@ -520,7 +569,15 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={watchedSpaceId ? 'انتخاب قفسه' : 'ابتدا فضا را انتخاب کنید'} />
+                            <SelectValue
+                              placeholder={
+                                !watchedSpaceId
+                                  ? 'ابتدا فضا را انتخاب کنید'
+                                  : watchedZoneId
+                                    ? 'انتخاب قفسه'
+                                    : 'انتخاب قفسه (همه زون‌ها)'
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
