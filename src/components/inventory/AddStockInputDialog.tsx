@@ -347,18 +347,68 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="sku"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>کد کالا (SKU)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثلا IPH17PM-256" dir="ltr" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        در صورت انتخاب محصول به‌صورت خودکار پر می‌شود و قابل ویرایش است.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>واحد پول</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || 'IRT'}>
+                        <FormControl>
+                          <SelectTrigger className="md:w-64">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>همه قیمت‌های زیر بر اساس همین واحد ثبت می‌شوند.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="costPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>قیمت خرید (هر واحد)</FormLabel>
+                        <FormLabel>قیمت خرید (هر واحد — {currencyLabel})</FormLabel>
                         <FormControl>
-                          <PriceInput value={field.value} onChange={field.onChange} allowDecimal />
+                          <PriceInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            allowDecimal
+                            suffix={currencyLabel}
+                          />
                         </FormControl>
                         {field.value ? (
-                          <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                          <FormDescription className="text-[11px]">
+                            {formatPrice(field.value, currencyLabel)}
+                          </FormDescription>
                         ) : null}
                         <FormMessage />
                       </FormItem>
@@ -369,35 +419,20 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                     name="salePrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>قیمت فروش (هر واحد)</FormLabel>
+                        <FormLabel>قیمت فروش (هر واحد — {currencyLabel})</FormLabel>
                         <FormControl>
-                          <PriceInput value={field.value} onChange={field.onChange} allowDecimal />
+                          <PriceInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            allowDecimal
+                            suffix={currencyLabel}
+                          />
                         </FormControl>
                         {field.value ? (
-                          <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                          <FormDescription className="text-[11px]">
+                            {formatPrice(field.value, currencyLabel)}
+                          </FormDescription>
                         ) : null}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>واحد پول</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="IRR">ریال (IRR)</SelectItem>
-                            <SelectItem value="USD">دلار (USD)</SelectItem>
-                            <SelectItem value="EUR">یورو (EUR)</SelectItem>
-                          </SelectContent>
-                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
