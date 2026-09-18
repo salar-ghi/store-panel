@@ -29,8 +29,24 @@ import { CreateStockInputRequest } from '@/types/inventory-input';
 import { toPersianDigits } from '@/lib/persian-date';
 import { formatPrice } from '@/lib/format';
 
+// Currency options — identical list/labels to the product form so the two
+// modules never contradict each other.
+const currencies = [
+  { value: 'IRT', label: 'تومان ایران (IRT)', short: 'تومان' },
+  { value: 'IRR', label: 'ریال ایران (IRR)', short: 'ریال' },
+  { value: 'USD', label: 'دلار آمریکا (USD)', short: 'دلار' },
+  { value: 'EUR', label: 'یورو (EUR)', short: 'یورو' },
+  { value: 'GBP', label: 'پوند (GBP)', short: 'پوند' },
+  { value: 'AED', label: 'درهم امارات (AED)', short: 'درهم' },
+];
+
+const currencyShort = (code?: string) =>
+  currencies.find((c) => c.value === (code || 'IRT'))?.short || 'تومان';
+
 const schema = z.object({
   productId: z.coerce.number().int().positive({ message: 'محصول را انتخاب کنید' }),
+  sku: z.string().min(1, { message: 'کد کالا (SKU) الزامی است' }),
+  locationNote: z.string().min(1, { message: 'توضیح محل نگهداری الزامی است' }),
   batchNumber: z.string().min(2, { message: 'شماره سری الزامی است' }),
   quantity: z.coerce.number().positive({ message: 'تعداد باید بیشتر از صفر باشد' }),
   costPrice: z.coerce.number().nonnegative({ message: 'قیمت خرید نمی‌تواند منفی باشد' }),
