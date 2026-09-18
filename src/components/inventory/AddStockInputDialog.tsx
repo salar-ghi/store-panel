@@ -156,6 +156,28 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     return products.filter((p) => p.name?.toLowerCase().includes(q)).slice(0, 50);
   }, [products, productSearch]);
 
+  const currencyLabel = currencyShort(form.watch('currency'));
+  const watchedShelfId = form.watch('shelfId');
+
+  // Prefill SKU from the selected product (editable afterwards)
+  useEffect(() => {
+    if (!selectedProduct) return;
+    const productSku =
+      (selectedProduct as any).sku ||
+      (selectedProduct as any).code ||
+      (selectedProduct as any).barcode ||
+      '';
+    if (productSku && !form.getValues('sku')) form.setValue('sku', String(productSku));
+  }, [selectedProduct]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep the location note in sync with the chosen space / shelf
+  useEffect(() => {
+    const space = spaces.find((s) => s.id === Number(watchedSpaceId));
+    const shelf = shelves.find((s) => s.id === Number(watchedShelfId));
+    const parts = [space?.name, shelf?.code].filter(Boolean);
+    if (parts.length) form.setValue('locationNote', parts.join(' / '));
+  }, [watchedSpaceId, watchedShelfId, spaces, shelves]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const createMutation = useMutation({
     mutationFn: (payload: CreateStockInputRequest) => InventoryInputService.create(payload),
     onSuccess: () => {
@@ -174,11 +196,13 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
   const onSubmit = (values: FormValues) => {
     const payload: CreateStockInputRequest = {
       productId: values.productId,
+      sku: values.sku.trim(),
+      locationNote: values.locationNote.trim(),
       batchNumber: values.batchNumber,
       quantity: values.quantity,
       costPrice: values.costPrice,
       salePrice: values.salePrice,
-      currency: values.currency || 'IRR',
+      currency: values.currency || 'IRT',
       supplierId: values.supplierId,
       spaceId: values.spaceId,
       shelfId: values.shelfId,
