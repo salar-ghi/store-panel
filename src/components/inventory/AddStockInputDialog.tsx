@@ -54,6 +54,7 @@ const schema = z.object({
   currency: z.string().default('IRR'),
   supplierId: z.coerce.number().int().positive().optional(),
   spaceId: z.coerce.number().int().positive().optional(),
+  zoneId: z.coerce.number().int().positive().optional(),
   shelfId: z.coerce.number().int().positive().optional(),
   receivedDate: z.date({ required_error: 'تاریخ ورود الزامی است' }),
   expiryDate: z.date().optional(),
@@ -109,10 +110,20 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
 
   const watchedProductId = form.watch('productId');
   const watchedSpaceId = form.watch('spaceId');
+  const watchedZoneId = form.watch('zoneId');
+
+  const { data: zones = [] } = useQuery({
+    queryKey: ['storage', 'zones', watchedSpaceId],
+    queryFn: () => StorageService.getZones(watchedSpaceId),
+    enabled: !!watchedSpaceId,
+  });
 
   const { data: shelves = [] } = useQuery({
-    queryKey: ['storage', 'shelves', watchedSpaceId],
-    queryFn: () => StorageService.getShelves({ spaceId: watchedSpaceId }),
+    queryKey: ['storage', 'shelves', watchedSpaceId, watchedZoneId],
+    queryFn: () =>
+      StorageService.getShelves(
+        watchedZoneId ? { zoneId: watchedZoneId } : { spaceId: watchedSpaceId },
+      ),
     enabled: !!watchedSpaceId,
   });
 
