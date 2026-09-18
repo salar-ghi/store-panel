@@ -6,6 +6,8 @@ export interface StockInput {
   id: number;
   productId: number;
   productName?: string;
+  sku?: string;
+  locationNote?: string;
   batchNumber: string;
   quantity: number;
   soldQuantity: number;
@@ -28,6 +30,8 @@ export interface StockInput {
 
 export interface CreateStockInputRequest {
   productId: number;
+  sku: string;
+  locationNote: string;
   batchNumber: string;
   quantity: number;
   costPrice: number;

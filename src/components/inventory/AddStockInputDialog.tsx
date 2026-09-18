@@ -29,8 +29,24 @@ import { CreateStockInputRequest } from '@/types/inventory-input';
 import { toPersianDigits } from '@/lib/persian-date';
 import { formatPrice } from '@/lib/format';
 
+// Currency options — identical list/labels to the product form so the two
+// modules never contradict each other.
+const currencies = [
+  { value: 'IRT', label: 'تومان ایران (IRT)', short: 'تومان' },
+  { value: 'IRR', label: 'ریال ایران (IRR)', short: 'ریال' },
+  { value: 'USD', label: 'دلار آمریکا (USD)', short: 'دلار' },
+  { value: 'EUR', label: 'یورو (EUR)', short: 'یورو' },
+  { value: 'GBP', label: 'پوند (GBP)', short: 'پوند' },
+  { value: 'AED', label: 'درهم امارات (AED)', short: 'درهم' },
+];
+
+const currencyShort = (code?: string) =>
+  currencies.find((c) => c.value === (code || 'IRT'))?.short || 'تومان';
+
 const schema = z.object({
   productId: z.coerce.number().int().positive({ message: 'محصول را انتخاب کنید' }),
+  sku: z.string().min(1, { message: 'کد کالا (SKU) الزامی است' }),
+  locationNote: z.string().min(1, { message: 'توضیح محل نگهداری الزامی است' }),
   batchNumber: z.string().min(2, { message: 'شماره سری الزامی است' }),
   quantity: z.coerce.number().positive({ message: 'تعداد باید بیشتر از صفر باشد' }),
   costPrice: z.coerce.number().nonnegative({ message: 'قیمت خرید نمی‌تواند منفی باشد' }),
@@ -79,11 +95,13 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     resolver: zodResolver(schema),
     defaultValues: {
       productId: defaultProductId ?? 0,
+      sku: '',
+      locationNote: '',
       batchNumber: '',
       quantity: 1,
       costPrice: 0,
       salePrice: 0,
-      currency: 'IRR',
+      currency: 'IRT',
       receivedDate: new Date(),
       notes: '',
     },
@@ -113,11 +131,13 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     if (!open) {
       form.reset({
         productId: 0,
+        sku: '',
+        locationNote: '',
         batchNumber: '',
         quantity: 1,
         costPrice: 0,
         salePrice: 0,
-        currency: 'IRR',
+        currency: 'IRT',
         receivedDate: new Date(),
         notes: '',
       });
@@ -135,6 +155,28 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     const q = productSearch.toLowerCase();
     return products.filter((p) => p.name?.toLowerCase().includes(q)).slice(0, 50);
   }, [products, productSearch]);
+
+  const currencyLabel = currencyShort(form.watch('currency'));
+  const watchedShelfId = form.watch('shelfId');
+
+  // Prefill SKU from the selected product (editable afterwards)
+  useEffect(() => {
+    if (!selectedProduct) return;
+    const productSku =
+      (selectedProduct as any).sku ||
+      (selectedProduct as any).code ||
+      (selectedProduct as any).barcode ||
+      '';
+    if (productSku && !form.getValues('sku')) form.setValue('sku', String(productSku));
+  }, [selectedProduct]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep the location note in sync with the chosen space / shelf
+  useEffect(() => {
+    const space = spaces.find((s) => s.id === Number(watchedSpaceId));
+    const shelf = shelves.find((s) => s.id === Number(watchedShelfId));
+    const parts = [space?.name, shelf?.code].filter(Boolean);
+    if (parts.length) form.setValue('locationNote', parts.join(' / '));
+  }, [watchedSpaceId, watchedShelfId, spaces, shelves]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateStockInputRequest) => InventoryInputService.create(payload),
@@ -154,11 +196,13 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
   const onSubmit = (values: FormValues) => {
     const payload: CreateStockInputRequest = {
       productId: values.productId,
+      sku: values.sku.trim(),
+      locationNote: values.locationNote.trim(),
       batchNumber: values.batchNumber,
       quantity: values.quantity,
       costPrice: values.costPrice,
       salePrice: values.salePrice,
-      currency: values.currency || 'IRR',
+      currency: values.currency || 'IRT',
       supplierId: values.supplierId,
       spaceId: values.spaceId,
       shelfId: values.shelfId,
@@ -303,18 +347,68 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="sku"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>کد کالا (SKU)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثلا IPH17PM-256" dir="ltr" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        در صورت انتخاب محصول به‌صورت خودکار پر می‌شود و قابل ویرایش است.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>واحد پول</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || 'IRT'}>
+                        <FormControl>
+                          <SelectTrigger className="md:w-64">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>همه قیمت‌های زیر بر اساس همین واحد ثبت می‌شوند.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="costPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>قیمت خرید (هر واحد)</FormLabel>
+                        <FormLabel>قیمت خرید (هر واحد — {currencyLabel})</FormLabel>
                         <FormControl>
-                          <PriceInput value={field.value} onChange={field.onChange} allowDecimal />
+                          <PriceInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            allowDecimal
+                            suffix={currencyLabel}
+                          />
                         </FormControl>
                         {field.value ? (
-                          <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                          <FormDescription className="text-[11px]">
+                            {formatPrice(field.value, currencyLabel)}
+                          </FormDescription>
                         ) : null}
                         <FormMessage />
                       </FormItem>
@@ -325,35 +419,20 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                     name="salePrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>قیمت فروش (هر واحد)</FormLabel>
+                        <FormLabel>قیمت فروش (هر واحد — {currencyLabel})</FormLabel>
                         <FormControl>
-                          <PriceInput value={field.value} onChange={field.onChange} allowDecimal />
+                          <PriceInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            allowDecimal
+                            suffix={currencyLabel}
+                          />
                         </FormControl>
                         {field.value ? (
-                          <FormDescription className="text-[11px]">{formatPrice(field.value)}</FormDescription>
+                          <FormDescription className="text-[11px]">
+                            {formatPrice(field.value, currencyLabel)}
+                          </FormDescription>
                         ) : null}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>واحد پول</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="IRR">ریال (IRR)</SelectItem>
-                            <SelectItem value="USD">دلار (USD)</SelectItem>
-                            <SelectItem value="EUR">یورو (EUR)</SelectItem>
-                          </SelectContent>
-                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -452,6 +531,23 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="locationNote"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>توضیح محل نگهداری</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثلا انبار مرکزی / قفسه A-12" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        با انتخاب فضا و قفسه خودکار پر می‌شود و قابل ویرایش است.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
