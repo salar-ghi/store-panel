@@ -131,11 +131,13 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
     if (!open) {
       form.reset({
         productId: 0,
+        sku: '',
+        locationNote: '',
         batchNumber: '',
         quantity: 1,
         costPrice: 0,
         salePrice: 0,
-        currency: 'IRR',
+        currency: 'IRT',
         receivedDate: new Date(),
         notes: '',
       });
