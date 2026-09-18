@@ -497,6 +497,7 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                         <Select
                           onValueChange={(v) => {
                             field.onChange(v ? Number(v) : undefined);
+                            form.setValue('zoneId', undefined);
                             form.setValue('shelfId', undefined);
                           }}
                           value={field.value ? String(field.value) : undefined}
@@ -522,6 +523,41 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
 
                 <FormField
                   control={form.control}
+                  name="zoneId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>زون (اختیاری)</FormLabel>
+                      <Select
+                        onValueChange={(v) => {
+                          field.onChange(v ? Number(v) : undefined);
+                          form.setValue('shelfId', undefined);
+                        }}
+                        value={field.value ? String(field.value) : undefined}
+                        disabled={!watchedSpaceId}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={watchedSpaceId ? 'انتخاب زون' : 'ابتدا فضا را انتخاب کنید'} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {zones.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-muted-foreground">زونی برای این فضا تعریف نشده است</div>
+                          )}
+                          {zones.map((z) => (
+                            <SelectItem key={z.id} value={String(z.id)}>
+                              {z.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="shelfId"
                   render={({ field }) => (
                     <FormItem>
@@ -533,7 +569,15 @@ export function AddStockInputDialog({ open, onOpenChange, defaultProductId }: Ad
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={watchedSpaceId ? 'انتخاب قفسه' : 'ابتدا فضا را انتخاب کنید'} />
+                            <SelectValue
+                              placeholder={
+                                !watchedSpaceId
+                                  ? 'ابتدا فضا را انتخاب کنید'
+                                  : watchedZoneId
+                                    ? 'انتخاب قفسه'
+                                    : 'انتخاب قفسه (همه زون‌ها)'
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
