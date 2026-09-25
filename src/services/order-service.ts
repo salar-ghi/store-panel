@@ -36,6 +36,16 @@ export const OrderService = {
     const res = await apiClient.put<Order>(`/api/Order/admin/orders/${id}`, payload);
     return res.data;
   },
+  /** Lists all order returns. Accepts plain arrays or wrapped { items } responses. */
+  listReturns: async (): Promise<any[]> => {
+    try {
+      const { data } = await apiClient.get<any>('/api/Order/admin/returns');
+      if (Array.isArray(data)) return data;
+      return data?.items ?? data?.data ?? [];
+    } catch {
+      return [];
+    }
+  },
   createReturn: async (payload: CreateReturnRequest): Promise<void> => {
     await apiClient.post(`/api/Order/admin/orders/${payload.orderId}/returns`, payload);
   },
