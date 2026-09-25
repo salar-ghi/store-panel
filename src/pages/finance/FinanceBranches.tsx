@@ -45,6 +45,14 @@ export default function FinanceBranches() {
         <Button><Plus className="h-4 w-4 ml-2" /> افزودن شعبه</Button>
       </div>
 
+      {branches.length === 0 && (
+        <Card className="p-10 text-center border-dashed">
+          <Building2 className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+          <div className="font-medium">هنوز شعبه‌ای ثبت نشده است</div>
+          <p className="text-sm text-muted-foreground mt-1">پس از ثبت شعبه در سرور، اطلاعات مالی آن اینجا نمایش داده می‌شود.</p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {branches.map((b) => {
           const p = perf.find((x) => x.branchId === b.id);
@@ -68,7 +76,7 @@ export default function FinanceBranches() {
                       </div>
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">{branchTypeLabels[b.type]}</Badge>
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">{branchTypeLabels[b.type] ?? b.type ?? "شعبه"}</Badge>
                 </div>
 
                 <div className="mt-5 grid grid-cols-3 gap-3">
