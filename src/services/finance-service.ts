@@ -26,11 +26,19 @@ export interface ApprovalLog {
 
 async function safeGet<T>(url: string, fallback: T, params?: Record<string, unknown>): Promise<T> {
   try {
-    const { data } = await apiClient.get<T>(url, { params });
-    return (data ?? fallback) as T;
+    const { data } = await apiClient.get<any>(url, { params });
+    if (data == null) return fallback;
+    // Normalise wrapped list responses ({ items }, { data }, { result }) so pages never crash.
+    if (Array.isArray(fallback)) {
+      if (Array.isArray(data)) return data as T;
+      const inner = data.items ?? data.data ?? data.result ?? data.value;
+      return (Array.isArray(inner) ? inner : fallback) as T;
+    }
+    if (typeof data !== 'object' || Array.isArray(data)) return fallback;
+    return { ...(fallback as any), ...(data.data && typeof data.data === 'object' ? data.data : data) } as T;
   } catch (err: any) {
-    if (err?.response?.status === 404 || err?.code === 'ERR_NETWORK') return fallback;
-    throw err;
+    console.warn(`[finance] ${url} failed`, err?.message);
+    return fallback;
   }
 }
 

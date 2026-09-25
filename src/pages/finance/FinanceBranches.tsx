@@ -101,7 +101,7 @@ export default function FinanceBranches() {
                   </div>
                   <div className="space-y-1.5">
                     {branchAccounts.map((a) => {
-                      const Icon = accountIcons[a.type];
+                      const Icon = accountIcons[a.type as keyof typeof accountIcons] ?? Wallet;
                       return (
                         <div key={a.id} className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/40">
                           <div className="flex items-center gap-2">
