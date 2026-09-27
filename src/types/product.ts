@@ -97,7 +97,7 @@ export interface ProductVariant {
 
 import { ProductAttributeValue } from './attribute';
 
-export interface Product {
+export interface Product extends ProductGlobalFacetFields {
   id: number;
   name: string;
   description: string;
@@ -194,4 +194,12 @@ export interface UpdateProductRequest {
   salesUnit?: SalesUnitConfig;
   attributeValues?: ProductAttributeValue[];
   contentBlocks?: ProductContentBlock[];
+}
+
+// Global (cross-category) facet fields, indexed on every product.
+export interface ProductGlobalFacetFields {
+  /** Fast delivery / express fulfillment eligibility. */
+  isExpressDelivery?: boolean;
+  /** Seller / supplier rating 0–5. */
+  sellerRating?: number;
 }
