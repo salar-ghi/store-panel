@@ -4,11 +4,15 @@
  * Converts images to base64 and sends to backend API
  */
 
-// Configuration for backend API
+// Configuration for backend API — read from VITE_API_URL in .env.development / .env.production
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const UPLOAD_CONFIG = {
-  apiUrl: 'https://localhost:5000/api/upload', // Backend upload endpoint
-  baseImageUrl: 'https://localhost:5000/uploads', // Base URL for accessing uploaded files
+  apiUrl: `${API_BASE_URL}/api/upload`, // Backend upload endpoint
+  baseImageUrl: `${API_BASE_URL}/uploads`, // Base URL for accessing uploaded files
 };
+
+export { UPLOAD_CONFIG };
 
 /**
  * Converts a file to base64 string
