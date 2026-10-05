@@ -1,7 +1,3 @@
-// Inventory engine — single source of truth for "what is sellable, where".
-// Seeds from real products (or falls back to mocks) and distributes each
-// product's stock across the shelves defined in StorageService.
-
 import { StorageService } from './storage-service';
 import { mockProducts } from '@/data/ordersData';
 import type { Product } from '@/types/product';

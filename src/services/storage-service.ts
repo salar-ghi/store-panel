@@ -1,9 +1,3 @@
-// Storage service — talks to the backend Inventory API.
-// Endpoints (ASP.NET InventoryController):
-//   GET/POST/PUT/DELETE  /api/inventory/spaces[/{id}]
-//   GET/POST/PUT/DELETE  /api/inventory/zones[/{id}]   (GET supports ?spaceId=)
-//   GET/POST/PUT/DELETE  /api/inventory/shelves[/{id}] (GET supports ?spaceId=&zoneId=)
-
 import apiClient from '@/lib/api-client';
 import {
   StorageSpace,

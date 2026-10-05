@@ -1,12 +1,3 @@
-// Inventory Input service — talks to the planned backend endpoints
-//   GET  /api/Inventory/inputs           (filter: productId, supplierId, from, to)
-//   POST /api/Inventory/inputs
-//   GET  /api/Inventory/inputs/recent
-//   GET  /api/Inventory/inputs/expiring  (?days=30)
-//
-// All calls degrade gracefully so the UI keeps working before the backend
-// ships these routes.
-
 import apiClient from '@/lib/api-client';
 import {
   CreateStockInputRequest,

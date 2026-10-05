@@ -1,29 +1,3 @@
-// Analytics service — powers the dashboard (home) and analytics pages.
-//
-// Preferred backend contract (single round-trip):
-//   GET /api/Analytics/overview?range=daily|weekly|monthly|yearly&categoryId=&brandId=
-//        -> AnalyticsOverview (all widgets in one payload)
-//
-// If that endpoint is missing (404), the service transparently falls back to
-// per-widget endpoints so widgets can be delivered incrementally:
-//   GET /api/Analytics/kpis
-//   GET /api/Analytics/sales
-//   GET /api/Analytics/revenue-comparison
-//   GET /api/Analytics/profit-margin
-//   GET /api/Analytics/growth-trend
-//   GET /api/Analytics/category-distribution
-//   GET /api/Analytics/top-products
-//   GET /api/Analytics/brand-performance
-//   GET /api/Analytics/supplier-stats
-//   GET /api/Analytics/inventory-status
-//   GET /api/Analytics/orders-heatmap
-//   GET /api/Analytics/customer-segments
-//   GET /api/Analytics/order-status
-//   GET /api/Analytics/return-rate
-//   GET /api/Analytics/targets
-//   GET /api/Analytics/payment-methods
-// All of them accept the same query string (range/categoryId/brandId).
-
 import apiClient from '@/lib/api-client';
 import { CategoryService } from '@/services/category-service';
 import {
