@@ -1,0 +1,19 @@
+services:
+  store-panel:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+
+    image: store-panel:latest
+    container_name: store-panel
+    restart: unless-stopped
+
+    expose:
+      - "80"
+
+    networks:
+      - shophub-network
+
+networks:
+  shophub-network:
+    external: true
