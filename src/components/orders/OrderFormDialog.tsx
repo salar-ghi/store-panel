@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductSelector } from "./ProductSelector";
 import { OrderItemsTable } from "./OrderItemsTable";
 import { CustomerPicker, PickedCustomer } from "./CustomerPicker";
+import { MapAddressPicker } from "@/components/maps/MapAddressPicker";
 import {
   PaymentPanel,
   computeDiscountAmount,
@@ -493,22 +494,30 @@ export function OrderFormDialog({
 
           {/* Step 1: customer */}
           <TabsContent value="customer" className="space-y-4 pt-2">
-            <CustomerPicker value={customerData} onChange={setCustomerData} />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label>آدرس تحویل (اختیاری)</Label>
-                <Textarea
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder="آدرس کامل تحویل سفارش..."
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
+            <CustomerPicker
+              value={customerData}
+              onChange={(c) => {
+                setCustomerData(c);
+                if (c.address && !customerAddress) {
+                  setCustomerAddress(c.address);
+                }
+              }}
+            />
+            <div className="space-y-3 pt-2">
+              <MapAddressPicker
+                value={customerAddress}
+                onChange={(addr) => setCustomerAddress(addr)}
+                label="آدرس تحویل کالا روی نقشه (OpenStreetMap)"
+                placeholder="آدرس دقیق تحویل را بنویسید یا از نقشه پین کنید..."
+                height="240px"
+              />
+              <div className="space-y-1.5">
                 <Label>یادداشت سفارش (اختیاری)</Label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="توضیحات اضافی..."
+                  placeholder="توضیحات اضافی برای انبار یا پیک..."
+                  rows={2}
                 />
               </div>
             </div>
