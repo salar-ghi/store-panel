@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { MapAddressPicker } from '@/components/maps/MapAddressPicker';
 
 export interface PickedCustomer {
   id?: string;
@@ -333,10 +334,12 @@ export function CustomerPicker({ value, onChange }: CustomerPickerProps) {
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>آدرس (اختیاری)</Label>
-              <Input
+              <MapAddressPicker
                 value={draft.address}
-                onChange={(e) => setDraft({ ...draft, address: e.target.value })}
+                onChange={(addr) => setDraft({ ...draft, address: addr })}
+                label="آدرس مشتری روی نقشه (OpenStreetMap)"
+                placeholder="آدرس دقیق مشتری را مشخص کنید یا روی نقشه پین کنید..."
+                height="200px"
               />
             </div>
           </div>

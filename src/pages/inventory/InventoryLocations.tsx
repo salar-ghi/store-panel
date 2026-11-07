@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
-import { MapPin, Plus, Edit, Trash, PackageSearch, MoreHorizontal } from "lucide-react";
+import { MapPin, Plus, Edit, Trash, PackageSearch } from "lucide-react";
+import { WarehouseService } from "@/services/warehouse-service";
+import { Warehouse } from "@/types/warehouse";
 import {
   Dialog,
   DialogContent,
@@ -26,24 +30,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 
-// Define the Location type to ensure consistency
-interface Location {
-  id: number;
-  name: string;
-  address: string;
-  capacity: number;
-  used: number;
-}
-
-// Mock data for inventory locations
-const mockLocations: Location[] = [
-  { id: 1, name: "انبار مرکزی", address: "تهران، خیابان ولیعصر", capacity: 2000, used: 1450 },
-  { id: 2, name: "انبار شرق", address: "مشهد، بلوار پیروزی", capacity: 1500, used: 980 },
-  { id: 3, name: "انبار غرب", address: "تبریز، خیابان امام", capacity: 1000, used: 750 },
-  { id: 4, name: "انبار شمال", address: "رشت، خیابان لاکانی", capacity: 800, used: 320 },
-  { id: 5, name: "انبار جنوب", address: "شیراز، بلوار ارم", capacity: 1200, used: 890 },
-];
-
 const locationFormSchema = z.object({
   name: z.string().min(2, { message: "نام مکان باید حداقل ۲ کاراکتر باشد" }),
   address: z.string().min(5, { message: "آدرس باید حداقل ۵ کاراکتر باشد" }),
@@ -53,10 +39,59 @@ const locationFormSchema = z.object({
 type LocationFormValues = z.infer<typeof locationFormSchema>;
 
 export default function InventoryLocations() {
-  const [locations, setLocations] = useState<Location[]>(mockLocations);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [editingLocation, setEditingLocation] = useState<Warehouse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: locations = [], isLoading } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: () => WarehouseService.getAll().catch(() => []),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: LocationFormValues) =>
+      WarehouseService.create({
+        name: data.name,
+        address: data.address,
+        capacity: data.capacity,
+        currentOccupancy: 0,
+        isActive: true,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["warehouses"] });
+      toast.success("مکان انبار با موفقیت اضافه شد");
+      setIsDialogOpen(false);
+    },
+    onError: () => toast.error("خطا در ایجاد مکان انبار"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: LocationFormValues }) =>
+      WarehouseService.update(id, {
+        id,
+        name: data.name,
+        address: data.address,
+        capacity: data.capacity,
+        currentOccupancy: editingLocation?.currentOccupancy ?? 0,
+        isActive: editingLocation?.isActive ?? true,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["warehouses"] });
+      toast.success("مکان انبار با موفقیت به‌روزرسانی شد");
+      setIsDialogOpen(false);
+    },
+    onError: () => toast.error("خطا در به‌روزرسانی مکان انبار"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => WarehouseService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["warehouses"] });
+      toast.success("مکان انبار با موفقیت حذف شد");
+    },
+    onError: () => toast.error("خطا در حذف مکان انبار"),
+  });
 
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationFormSchema),
@@ -69,33 +104,13 @@ export default function InventoryLocations() {
 
   const onSubmit = (data: LocationFormValues) => {
     if (editingLocation) {
-      // Update existing location
-      setLocations(
-        locations.map((loc) =>
-          loc.id === editingLocation.id
-            ? { ...loc, ...data }
-            : loc
-        )
-      );
-      toast.success("مکان انبار با موفقیت به‌روزرسانی شد");
+      updateMutation.mutate({ id: editingLocation.id, data });
     } else {
-      // Add new location with required fields
-      const newLocation: Location = {
-        id: locations.length + 1,
-        name: data.name,
-        address: data.address,
-        capacity: data.capacity,
-        used: 0,
-      };
-      setLocations([...locations, newLocation]);
-      toast.success("مکان انبار با موفقیت اضافه شد");
+      createMutation.mutate(data);
     }
-    setIsDialogOpen(false);
-    form.reset();
-    setEditingLocation(null);
   };
 
-  const handleEdit = (location: Location) => {
+  const handleEdit = (location: Warehouse) => {
     setEditingLocation(location);
     form.reset({
       name: location.name,
@@ -107,8 +122,7 @@ export default function InventoryLocations() {
 
   const handleDelete = (id: number) => {
     if (confirm("آیا از حذف این مکان انبار اطمینان دارید؟")) {
-      setLocations(locations.filter((loc) => loc.id !== id));
-      toast.success("مکان انبار با موفقیت حذف شد");
+      deleteMutation.mutate(id);
     }
   };
 
@@ -167,61 +181,73 @@ export default function InventoryLocations() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLocations.map((location) => {
-                  const usagePercent = Math.round((location.used / location.capacity) * 100);
-                  return (
-                    <TableRow key={location.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-indigo-500" />
-                          <span className="font-medium">{location.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{location.address}</TableCell>
-                      <TableCell>{location.capacity.toLocaleString()} واحد</TableCell>
-                      <TableCell>{location.used.toLocaleString()} واحد</TableCell>
-                      <TableCell>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                          <div 
-                            className={`h-2.5 rounded-full ${
-                              usagePercent < 50 ? 'bg-green-500' : 
-                              usagePercent < 80 ? 'bg-yellow-500' : 
-                              'bg-red-500'
-                            }`}
-                            style={{ width: `${usagePercent}%` }}
-                          ></div>
-                        </div>
-                        <div className="text-xs mt-1 text-muted-foreground">
-                          {usagePercent}% استفاده شده
-                        </div>
-                      </TableCell>
-                      <TableCell className="flex gap-1 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(location)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => handleDelete(location.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell colSpan={6} className="p-4">
+                        <Skeleton className="h-8 w-full" />
                       </TableCell>
                     </TableRow>
-                  );
-                })}
+                  ))
+                ) : filteredLocations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                      هیچ مکان انباری ثبت نشده است
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredLocations.map((location) => {
+                    const used = location.currentOccupancy ?? 0;
+                    const usagePercent = location.capacity > 0 ? Math.round((used / location.capacity) * 100) : 0;
+                    return (
+                      <TableRow key={location.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-indigo-500" />
+                            <span className="font-medium">{location.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{location.address}</TableCell>
+                        <TableCell>{location.capacity.toLocaleString()} واحد</TableCell>
+                        <TableCell>{used.toLocaleString()} واحد</TableCell>
+                        <TableCell>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                            <div
+                              className={`h-2.5 rounded-full ${
+                                usagePercent < 50 ? 'bg-green-500' :
+                                usagePercent < 80 ? 'bg-yellow-500' :
+                                'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(100, usagePercent)}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-xs mt-1 text-muted-foreground">
+                            {usagePercent}% استفاده شده
+                          </div>
+                        </TableCell>
+                        <TableCell className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(location)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            onClick={() => handleDelete(location.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
-            {filteredLocations.length === 0 && (
-              <div className="py-6 text-center text-muted-foreground">
-                هیچ مکانی با این مشخصات پیدا نشد
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

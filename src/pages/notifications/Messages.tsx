@@ -1,10 +1,12 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MessageSquare, 
   Search, 
@@ -32,116 +34,45 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
-// Mock data for user conversations
-const mockUsers = [
-  {
-    id: 1,
-    name: "علی محمدی",
-    avatar: "/placeholder.svg",
-    lastMessage: "سلام، من درباره سفارشم سوال داشتم",
-    time: "12:30",
-    unread: 3,
-    online: true,
-  },
-  {
-    id: 2,
-    name: "نیلوفر احمدی",
-    avatar: "/placeholder.svg",
-    lastMessage: "ممنون از پاسخگویی شما",
-    time: "11:45",
-    unread: 0,
-    online: true,
-  },
-  {
-    id: 3,
-    name: "رضا کریمی",
-    avatar: "/placeholder.svg",
-    lastMessage: "آیا این محصول موجود است؟",
-    time: "دیروز",
-    unread: 1,
-    online: false,
-  },
-  {
-    id: 4,
-    name: "مریم حسینی",
-    avatar: "/placeholder.svg",
-    lastMessage: "سفارش من کی ارسال می‌شود؟",
-    time: "دیروز",
-    unread: 0,
-    online: false,
-  },
-  {
-    id: 5,
-    name: "سعید رضایی",
-    avatar: "/placeholder.svg",
-    lastMessage: "محصول دریافت شد. با تشکر",
-    time: "2 روز پیش",
-    unread: 0,
-    online: false,
-  },
-];
+import { UserService } from "@/services/user-service";
 
-// Mock data for messages
-const mockMessages = [
-  {
-    id: 1,
-    userId: 1,
-    text: "سلام، من درباره سفارشم سوال داشتم",
-    time: "12:30",
-    isMe: false,
-  },
-  {
-    id: 2,
-    userId: 1,
-    text: "سفارش من به شماره ORD-7845 کی ارسال می‌شود؟",
-    time: "12:31",
-    isMe: false,
-  },
-  {
-    id: 3,
-    userId: 1,
-    text: "سلام، بله چطور می‌توانم کمکتان کنم؟",
-    time: "12:35",
-    isMe: true,
-  },
-  {
-    id: 4,
-    userId: 1,
-    text: "سفارش شما در حال آماده‌سازی است و تا فردا ارسال می‌شود",
-    time: "12:36",
-    isMe: true,
-  },
-  {
-    id: 5,
-    userId: 1,
-    text: "آیا نیاز به اطلاعات بیشتری دارید؟",
-    time: "12:36",
-    isMe: true,
-  },
-  {
-    id: 6,
-    userId: 1,
-    text: "ممنون از پاسخگویی شما. آیا امکان ارسال سریع‌تر وجود دارد؟",
-    time: "12:40",
-    isMe: false,
-  },
-  {
-    id: 7,
-    userId: 1,
-    text: "متأسفانه خیر. سفارش شما باید مراحل پردازش را طی کند",
-    time: "12:42",
-    isMe: true,
-  },
-];
+interface MessageItem {
+  id: number;
+  userId: string | number;
+  text: string;
+  time: string;
+  isMe: boolean;
+}
 
 export default function Messages() {
-  const [users, setUsers] = useState(mockUsers);
-  const [messages, setMessages] = useState(mockMessages);
-  const [selectedUserId, setSelectedUserId] = useState(1);
+  const [messages, setMessages] = useState<MessageItem[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string | number | null>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const selectedUser = users.find(user => user.id === selectedUserId);
+
+  const { data: rawUsers = [], isLoading } = useQuery({
+    queryKey: ["chat-users"],
+    queryFn: async () => {
+      try {
+        const u = await UserService.getAllUsers();
+        return u.map((user) => ({
+          id: user.id,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'کاربر',
+          avatar: "/placeholder.svg",
+          lastMessage: user.email || user.phoneNumber || "",
+          time: "-",
+          unread: 0,
+          online: false,
+        }));
+      } catch {
+        return [];
+      }
+    },
+  });
+
+  const users = rawUsers;
+  const effectiveUserId = selectedUserId ?? (users.length > 0 ? users[0].id : null);
+  const selectedUser = users.find((user) => user.id === effectiveUserId);
   
   const handleSendMessage = () => {
     if (!messageText.trim()) return;
@@ -218,9 +149,21 @@ export default function Messages() {
           </CardHeader>
           <CardContent className="px-0">
             <ScrollArea className="h-[500px]">
-              {filteredUsers.length === 0 ? (
+              {isLoading ? (
+                <div className="space-y-3 p-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="space-y-1.5 flex-1">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredUsers.length === 0 ? (
                 <div className="py-6 text-center text-muted-foreground">
-                  هیچ گفتگویی یافت نشد
+                  هیچ کاربری یا گفتگویی یافت نشد
                 </div>
               ) : (
                 filteredUsers.map((user) => (
@@ -228,7 +171,7 @@ export default function Messages() {
                     key={user.id}
                     className={cn(
                       "flex items-center gap-3 px-4 py-3 cursor-pointer",
-                      selectedUserId === user.id ? "bg-indigo-100 dark:bg-indigo-900/20" : "",
+                      effectiveUserId === user.id ? "bg-indigo-100 dark:bg-indigo-900/20" : "",
                       "hover:bg-indigo-50 dark:hover:bg-indigo-900/10"
                     )}
                     onClick={() => handleSelectUser(user.id)}

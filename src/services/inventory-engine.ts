@@ -1,5 +1,4 @@
 import { StorageService } from './storage-service';
-import { mockProducts } from '@/data/ordersData';
 import type { Product } from '@/types/product';
 
 export interface StockLocation {
@@ -32,7 +31,12 @@ async function ensureInit(productsOverride?: Product[]) {
   const source: Product[] =
     productsOverride && productsOverride.length > 0
       ? productsOverride
-      : (mockProducts as unknown as Product[]);
+      : [];
+  if (source.length === 0) {
+    _stockMap = new Map();
+    _seededKey = '';
+    return;
+  }
   const key = keyForProducts(source);
   if (_stockMap && _seededKey === key) return;
 
