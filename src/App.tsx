@@ -13,7 +13,6 @@ import Promotions from "@/pages/Promotions";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
-import Register from "@/pages/Register";
 import Brands from "@/pages/Brands";
 import Categories from "@/pages/Categories";
 import Users from "@/pages/Users";
@@ -107,7 +106,6 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               
               <Route path="/" element={
                 <ProtectedRoute>

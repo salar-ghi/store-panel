@@ -107,14 +107,6 @@ export default function Login() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            حساب کاربری ندارید؟{" "}
-            <Link to="/register" className="text-primary underline-offset-4 hover:underline">
-              ثبت نام
-            </Link>
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );
