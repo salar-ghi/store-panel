@@ -24,7 +24,9 @@ export interface ApprovalLog {
   date: string;
 }
 
-async function safeGet<T>(url: string, fallback: T, params?: Record<string, unknown>): Promise<T> {
+import { notifyApiError } from '@/lib/notify-error';
+
+export async function safeGet<T>(url: string, fallback: T, params?: Record<string, unknown>): Promise<T> {
   try {
     const { data } = await apiClient.get<any>(url, { params });
     if (data == null) return fallback;
@@ -37,7 +39,8 @@ async function safeGet<T>(url: string, fallback: T, params?: Record<string, unkn
     if (typeof data !== 'object' || Array.isArray(data)) return fallback;
     return { ...(fallback as any), ...(data.data && typeof data.data === 'object' ? data.data : data) } as T;
   } catch (err: any) {
-    console.warn(`[finance] ${url} failed`, err?.message);
+    console.error(`[finance] GET ${url} failed:`, err);
+    notifyApiError(err, 'خطا در دریافت اطلاعات مالی از سرور');
     return fallback;
   }
 }
@@ -45,7 +48,48 @@ async function safeGet<T>(url: string, fallback: T, params?: Record<string, unkn
 export const FinanceService = {
   getBranches: () => safeGet<Branch[]>(`${BASE}/branches`, []),
   getAccounts: () => safeGet<FinancialAccount[]>(`${BASE}/accounts`, []),
-  getTransactions: () => safeGet<Transaction[]>(`${BASE}/transactions`, []),
+  getTransactions: async (params?: {
+    pageIndex?: number;
+    pageSize?: number;
+    search?: string;
+    sortBy?: string;
+    type?: string;
+    status?: string;
+    branchId?: string;
+  }): Promise<{ items: Transaction[]; totalCount: number; pageIndex: number; pageSize: number }> => {
+    const pageIndex = params?.pageIndex ?? 1;
+    const pageSize = params?.pageSize ?? 10;
+    try {
+      const cleanParams: Record<string, unknown> = {};
+      if (params?.pageIndex != null) cleanParams.pageIndex = params.pageIndex;
+      if (params?.pageSize != null) cleanParams.pageSize = params.pageSize;
+      if (params?.search) cleanParams.search = params.search;
+      if (params?.sortBy) cleanParams.sortBy = params.sortBy;
+      if (params?.type && params.type !== 'all') cleanParams.type = params.type;
+      if (params?.status && params.status !== 'all') cleanParams.status = params.status;
+      if (params?.branchId && params.branchId !== 'all') cleanParams.branchId = params.branchId;
+
+      const { data } = await apiClient.get<any>(`${BASE}/transactions`, { params: cleanParams });
+      if (data == null) {
+        return { items: [], totalCount: 0, pageIndex, pageSize };
+      }
+      if (Array.isArray(data)) {
+        return { items: data, totalCount: data.length, pageIndex, pageSize };
+      }
+      const items = data.items ?? data.data ?? data.result ?? data.value ?? [];
+      const totalCount = data.totalCount ?? data.total ?? data.count ?? (Array.isArray(items) ? items.length : 0);
+      return {
+        items: Array.isArray(items) ? items : [],
+        totalCount: typeof totalCount === 'number' ? totalCount : 0,
+        pageIndex: data.pageIndex ?? pageIndex,
+        pageSize: data.pageSize ?? pageSize,
+      };
+    } catch (err: any) {
+      console.error(`[finance] GET ${BASE}/transactions failed:`, err);
+      notifyApiError(err, 'خطا در دریافت تراکنش‌های مالی');
+      return { items: [], totalCount: 0, pageIndex, pageSize };
+    }
+  },
   getBills: () => safeGet<RecurringBill[]>(`${BASE}/bills`, []),
   getPayroll: () => safeGet<PayrollEntry[]>(`${BASE}/payroll`, []),
   getApprovalLogs: () => safeGet<ApprovalLog[]>(`${BASE}/approvals/logs`, []),

@@ -41,18 +41,22 @@ const EMPTY_KPIS: AnalyticsKPIs = {
   avgOrderChange: 0,
 };
 
+import { notifyApiError } from '@/lib/notify-error';
+
 function isMissing(err: any) {
   const status = err?.response?.status;
-  return status === 404 || status === 501 || err?.code === 'ERR_NETWORK';
+  return status === 404 || status === 501;
 }
 
-async function safeGet<T>(url: string, fallback: T, params?: Record<string, unknown>): Promise<T> {
+export async function safeGet<T>(url: string, fallback: T, params?: Record<string, unknown>): Promise<T> {
   try {
     const { data } = await apiClient.get<T>(url, { params });
     return (data ?? fallback) as T;
-  } catch (err) {
+  } catch (err: any) {
+    console.error(`[analytics] GET ${url} failed:`, err);
     if (isMissing(err)) return fallback;
-    throw err;
+    notifyApiError(err, 'خطا در دریافت اطلاعات آماری از سرور');
+    return fallback;
   }
 }
 

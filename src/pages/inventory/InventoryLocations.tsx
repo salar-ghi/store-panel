@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
 import { MapPin, Plus, Edit, Trash, PackageSearch } from "lucide-react";
 import { WarehouseService } from "@/services/warehouse-service";
 import { Warehouse } from "@/types/warehouse";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Dialog,
   DialogContent,
@@ -42,19 +43,40 @@ export default function InventoryLocations() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Warehouse | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: locations = [], isLoading } = useQuery({
-    queryKey: ["warehouses"],
-    queryFn: () => WarehouseService.getAll().catch(() => []),
+  // Server-side query state
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPageIndex(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["warehouses", "paged", pageIndex, pageSize, debouncedSearch],
+    queryFn: () =>
+      WarehouseService.getPaged({
+        pageIndex,
+        pageSize,
+        search: debouncedSearch.trim() || undefined,
+      }),
   });
 
+  const locations = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
+
   const createMutation = useMutation({
-    mutationFn: (data: LocationFormValues) =>
+    mutationFn: (values: LocationFormValues) =>
       WarehouseService.create({
-        name: data.name,
-        address: data.address,
-        capacity: data.capacity,
+        name: values.name,
+        address: values.address,
+        capacity: values.capacity,
         currentOccupancy: 0,
         isActive: true,
       }),
@@ -67,12 +89,12 @@ export default function InventoryLocations() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: LocationFormValues }) =>
+    mutationFn: ({ id, data: updateData }: { id: number; data: LocationFormValues }) =>
       WarehouseService.update(id, {
         id,
-        name: data.name,
-        address: data.address,
-        capacity: data.capacity,
+        name: updateData.name,
+        address: updateData.address,
+        capacity: updateData.capacity,
         currentOccupancy: editingLocation?.currentOccupancy ?? 0,
         isActive: editingLocation?.isActive ?? true,
       }),
@@ -102,11 +124,11 @@ export default function InventoryLocations() {
     },
   });
 
-  const onSubmit = (data: LocationFormValues) => {
+  const onSubmit = (formData: LocationFormValues) => {
     if (editingLocation) {
-      updateMutation.mutate({ id: editingLocation.id, data });
+      updateMutation.mutate({ id: editingLocation.id, data: formData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(formData);
     }
   };
 
@@ -136,17 +158,12 @@ export default function InventoryLocations() {
     setIsDialogOpen(true);
   };
 
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    loc.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-6 py-6" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">مکان‌های انبار</h1>
-          <p className="text-muted-foreground">مدیریت و سازماندهی مکان‌های نگهداری محصولات</p>
+          <p className="text-muted-foreground">مدیریت و سازماندهی مکان‌های نگهداری محصولات (صفحه‌بندی سمت سرور)</p>
         </div>
         <Button onClick={openNewDialog} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
@@ -157,14 +174,14 @@ export default function InventoryLocations() {
       <Card className="bg-gradient-to-br from-indigo-50 to-white dark:from-gray-900 dark:to-gray-800">
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>مکان‌های انبار</CardTitle>
-          <div className="flex items-center w-72">
+          <div className="relative flex items-center w-72">
+            <PackageSearch className="h-4 w-4 text-muted-foreground absolute right-3 pointer-events-none" />
             <Input
               placeholder="جستجو در مکان‌ها..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pr-9"
             />
-            <PackageSearch className="h-4 w-4 text-muted-foreground absolute mr-3" />
           </div>
         </CardHeader>
         <CardContent>
@@ -189,14 +206,14 @@ export default function InventoryLocations() {
                       </TableCell>
                     </TableRow>
                   ))
-                ) : filteredLocations.length === 0 ? (
+                ) : locations.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                       هیچ مکان انباری ثبت نشده است
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredLocations.map((location) => {
+                  locations.map((location) => {
                     const used = location.currentOccupancy ?? 0;
                     const usagePercent = location.capacity > 0 ? Math.round((used / location.capacity) * 100) : 0;
                     return (
@@ -249,6 +266,18 @@ export default function InventoryLocations() {
               </TableBody>
             </Table>
           </div>
+
+          <DataTablePagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(1);
+            }}
+            isLoading={isLoading}
+          />
         </CardContent>
       </Card>
 
