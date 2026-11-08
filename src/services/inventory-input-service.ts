@@ -7,16 +7,19 @@ import {
 
 const BASE = '/api/Inventory/inputs';
 
+import { notifyApiError } from '@/lib/notify-error';
+
 async function safeGet<T>(url: string, params?: Record<string, unknown>, fallback: T = [] as unknown as T): Promise<T> {
   try {
     const { data } = await apiClient.get<T>(url, { params });
     return data ?? fallback;
   } catch (err: any) {
-    // Treat missing endpoints as "no data yet" so the UI doesn't crash.
-    if (err?.response?.status === 404 || err?.code === 'ERR_NETWORK') {
+    console.error(`[inventory-input] GET ${url} failed:`, err);
+    if (err?.response?.status === 404) {
       return fallback;
     }
-    throw err;
+    notifyApiError(err, 'خطا در دریافت اطلاعات ورودی انبار');
+    return fallback;
   }
 }
 

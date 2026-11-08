@@ -1,63 +1,100 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, Plus, CheckCheck, X, Pencil } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Search, Download, Plus, CheckCheck, X, Pencil, ArrowUpDown } from "lucide-react";
 import { FinanceService, formatCurrency } from "@/services/finance-service";
 import { Branch, Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { TransactionFormDialog } from "@/components/finance/TransactionFormDialog";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { useToast } from "@/hooks/use-toast";
 
 export default function FinanceTransactions() {
   const { toast } = useToast();
   const [list, setList] = useState<Transaction[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
+
+  // Server-side query state
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [type, setType] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [branchId, setBranchId] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("date_desc");
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
 
-  const reload = () => FinanceService.getTransactions().then(setList);
+  // Debounce search by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPageIndex(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await FinanceService.getTransactions({
+        pageIndex,
+        pageSize,
+        search: debouncedSearch.trim() || undefined,
+        sortBy,
+        type,
+        status,
+        branchId,
+      });
+      setList(res.items);
+      setTotalCount(res.totalCount);
+    } finally {
+      setLoading(false);
+    }
+  }, [pageIndex, pageSize, debouncedSearch, sortBy, type, status, branchId]);
 
   useEffect(() => {
-    reload();
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  useEffect(() => {
     FinanceService.getBranches().then(setBranches);
   }, []);
 
   const handleApprove = async (id: string) => {
     await FinanceService.approveTransaction(id, "مدیر مالی");
     toast({ title: "تراکنش تایید شد", description: "به‌صورت خودکار ثبت نهایی شد" });
-    reload();
+    fetchTransactions();
   };
+
   const handleReject = async (id: string) => {
     await FinanceService.rejectTransaction(id, "مدیر مالی");
     toast({ title: "تراکنش رد شد", variant: "destructive" });
-    reload();
+    fetchTransactions();
   };
+
   const openCreate = () => { setEditing(null); setDialogOpen(true); };
   const openEdit = (t: Transaction) => { setEditing(t); setDialogOpen(true); };
 
-  const filtered = useMemo(() => {
-    return list.filter((t) => {
-      if (type !== "all" && t.type !== type) return false;
-      if (status !== "all" && t.status !== status) return false;
-      if (branchId !== "all" && t.branchId !== branchId) return false;
-      if (search && !`${t.code} ${t.counterparty} ${t.reference}`.toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
-  }, [list, type, status, branchId, search]);
+  const handleFilterChange = (setter: (v: string) => void) => (v: string) => {
+    setter(v);
+    setPageIndex(1);
+  };
 
   return (
     <div className="space-y-5 animate-fade-in" dir="rtl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">تراکنش‌های مالی</h1>
-          <p className="text-sm text-muted-foreground">تمام درآمد، هزینه، خرید، فروش و انتقالات وجوه</p>
+          <p className="text-sm text-muted-foreground">تمام درآمد، هزینه، خرید، فروش و انتقالات وجوه (صفحه‌بندی سمت سرور)</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm"><Download className="h-4 w-4 ml-2" /> خروجی Excel</Button>
@@ -66,12 +103,17 @@ export default function FinanceTransactions() {
       </div>
 
       <Card className="p-4 border-0">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           <div className="md:col-span-2 relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="جستجو در کد، طرف حساب، ارجاع..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input
+              placeholder="جستجو در کد، طرف حساب، ارجاع..."
+              className="pr-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-          <Select value={type} onValueChange={setType}>
+          <Select value={type} onValueChange={handleFilterChange(setType)}>
             <SelectTrigger><SelectValue placeholder="نوع" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">همه انواع</SelectItem>
@@ -83,7 +125,7 @@ export default function FinanceTransactions() {
               <SelectItem value="refund">بازگشت وجه</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={status} onValueChange={setStatus}>
+          <Select value={status} onValueChange={handleFilterChange(setStatus)}>
             <SelectTrigger><SelectValue placeholder="وضعیت" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">همه وضعیت‌ها</SelectItem>
@@ -94,11 +136,25 @@ export default function FinanceTransactions() {
               <SelectItem value="rejected">رد شده</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={branchId} onValueChange={setBranchId}>
+          <Select value={branchId} onValueChange={handleFilterChange(setBranchId)}>
             <SelectTrigger><SelectValue placeholder="شعبه" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">همه شعب</SelectItem>
               {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={handleFilterChange(setSortBy)}>
+            <SelectTrigger>
+              <div className="flex items-center gap-1.5 truncate">
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                <SelectValue placeholder="مرتب‌سازی" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date_desc">جدیدترین</SelectItem>
+              <SelectItem value="date_asc">قدیمی‌ترین</SelectItem>
+              <SelectItem value="amount_desc">بیشترین مبلغ</SelectItem>
+              <SelectItem value="amount_asc">کمترین مبلغ</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -120,43 +176,70 @@ export default function FinanceTransactions() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((t) => {
-                const branch = branches.find((b) => b.id === t.branchId);
-                const isIncome = ["sale", "refund", "income_other"].includes(t.type);
-                return (
-                  <TableRow key={t.id} className="hover:bg-muted/30">
-                    <TableCell className="font-mono text-xs">{t.code}</TableCell>
-                    <TableCell><TransactionTypeBadge type={t.type} /></TableCell>
-                    <TableCell className="text-sm">{t.counterparty}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{branch?.name ?? "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{t.category}</TableCell>
-                    <TableCell className={`font-semibold ${isIncome ? "text-success" : "text-destructive"}`}>
-                      {isIncome ? "+" : "-"} {formatCurrency(t.amount)}
-                    </TableCell>
-                    <TableCell><TransactionStatusBadge status={t.status} /></TableCell>
-                    <TableCell className="text-left">
-                      {t.status === "pending" ? (
-                        <div className="flex gap-1 justify-end">
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success" onClick={() => handleApprove(t.id)} title="تایید"><CheckCheck className="h-4 w-4" /></Button>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive" onClick={() => handleReject(t.id)} title="رد"><X className="h-4 w-4" /></Button>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(t)} title="ویرایش"><Pencil className="h-4 w-4" /></Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="ghost" className="h-8" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
-                      )}
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={8} className="p-4">
+                      <Skeleton className="h-7 w-full" />
                     </TableCell>
                   </TableRow>
-                );
-              })}
-              {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">تراکنشی یافت نشد</TableCell></TableRow>
+                ))
+              ) : list.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    تراکنشی یافت نشد
+                  </TableCell>
+                </TableRow>
+              ) : (
+                list.map((t) => {
+                  const branch = branches.find((b) => b.id === t.branchId);
+                  const isIncome = ["sale", "refund", "income_other"].includes(t.type);
+                  return (
+                    <TableRow key={t.id} className="hover:bg-muted/30">
+                      <TableCell className="font-mono text-xs">{t.code}</TableCell>
+                      <TableCell><TransactionTypeBadge type={t.type} /></TableCell>
+                      <TableCell className="text-sm">{t.counterparty}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{branch?.name ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{t.category}</TableCell>
+                      <TableCell className={`font-semibold ${isIncome ? "text-success" : "text-destructive"}`}>
+                        {isIncome ? "+" : "-"} {formatCurrency(t.amount)}
+                      </TableCell>
+                      <TableCell><TransactionStatusBadge status={t.status} /></TableCell>
+                      <TableCell className="text-left">
+                        {t.status === "pending" ? (
+                          <div className="flex gap-1 justify-end">
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success" onClick={() => handleApprove(t.id)} title="تایید"><CheckCheck className="h-4 w-4" /></Button>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive" onClick={() => handleReject(t.id)} title="رد"><X className="h-4 w-4" /></Button>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(t)} title="ویرایش"><Pencil className="h-4 w-4" /></Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="ghost" className="h-8" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
         </div>
+
+        <div className="border-t p-2">
+          <DataTablePagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(1);
+            }}
+            isLoading={loading}
+          />
+        </div>
       </Card>
 
-      <TransactionFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSaved={reload} />
+      <TransactionFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSaved={fetchTransactions} />
     </div>
   );
 }
