@@ -13,7 +13,7 @@ export default function FinanceReports() {
   const [tx, setTx] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    FinanceService.getTransactions().then(setTx);
+    FinanceService.getAllTransactions().then(setTx);
   }, []);
 
   const byCategory = Object.entries(

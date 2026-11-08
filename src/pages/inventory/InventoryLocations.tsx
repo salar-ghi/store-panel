@@ -1,11 +1,21 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Plus, PackageSearch, Trash, Edit, MapPin, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { MapPin, Plus, Edit, Trash, PackageSearch, MoreHorizontal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,12 +31,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 
-// Define the Location type to ensure consistency
 interface Location {
   id: number;
   name: string;
@@ -35,8 +51,7 @@ interface Location {
   used: number;
 }
 
-// Mock data for inventory locations
-const mockLocations: Location[] = [
+const initialLocations: Location[] = [
   { id: 1, name: "انبار مرکزی", address: "تهران، خیابان ولیعصر", capacity: 2000, used: 1450 },
   { id: 2, name: "انبار شرق", address: "مشهد، بلوار پیروزی", capacity: 1500, used: 980 },
   { id: 3, name: "انبار غرب", address: "تبریز، خیابان امام", capacity: 1000, used: 750 },
@@ -53,10 +68,12 @@ const locationFormSchema = z.object({
 type LocationFormValues = z.infer<typeof locationFormSchema>;
 
 export default function InventoryLocations() {
-  const [locations, setLocations] = useState<Location[]>(mockLocations);
+  const [locations, setLocations] = useState<Location[]>(initialLocations);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationFormSchema),
@@ -69,17 +86,13 @@ export default function InventoryLocations() {
 
   const onSubmit = (data: LocationFormValues) => {
     if (editingLocation) {
-      // Update existing location
       setLocations(
         locations.map((loc) =>
-          loc.id === editingLocation.id
-            ? { ...loc, ...data }
-            : loc
+          loc.id === editingLocation.id ? { ...loc, ...data } : loc
         )
       );
       toast.success("مکان انبار با موفقیت به‌روزرسانی شد");
     } else {
-      // Add new location with required fields
       const newLocation: Location = {
         id: locations.length + 1,
         name: data.name,
@@ -122,13 +135,22 @@ export default function InventoryLocations() {
     setIsDialogOpen(true);
   };
 
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    loc.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredLocations = useMemo(() => {
+    return locations.filter(
+      (loc) =>
+        loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        loc.address.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [locations, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredLocations.length / pageSize));
+  const paginatedLocations = useMemo(() => {
+    const start = (pageIndex - 1) * pageSize;
+    return filteredLocations.slice(start, start + pageSize);
+  }, [filteredLocations, pageIndex, pageSize]);
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-6 py-6" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">مکان‌های انبار</h1>
@@ -143,18 +165,21 @@ export default function InventoryLocations() {
       <Card className="bg-gradient-to-br from-indigo-50 to-white dark:from-gray-900 dark:to-gray-800">
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>مکان‌های انبار</CardTitle>
-          <div className="flex items-center w-72">
+          <div className="flex items-center w-72 relative">
+            <PackageSearch className="h-4 w-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2" />
             <Input
               placeholder="جستجو در مکان‌ها..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPageIndex(1);
+              }}
+              className="pr-9"
             />
-            <PackageSearch className="h-4 w-4 text-muted-foreground absolute mr-3" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -167,7 +192,7 @@ export default function InventoryLocations() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLocations.map((location) => {
+                {paginatedLocations.map((location) => {
                   const usagePercent = Math.round((location.used / location.capacity) * 100);
                   return (
                     <TableRow key={location.id}>
@@ -195,33 +220,83 @@ export default function InventoryLocations() {
                           {usagePercent}% استفاده شده
                         </div>
                       </TableCell>
-                      <TableCell className="flex gap-1 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(location)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => handleDelete(location.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                      <TableCell className="text-left">
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(location)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            onClick={() => handleDelete(location.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
                 })}
+                {paginatedLocations.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-6 text-center text-muted-foreground">
+                      هیچ مکانی با این مشخصات پیدا نشد
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
-            {filteredLocations.length === 0 && (
-              <div className="py-6 text-center text-muted-foreground">
-                هیچ مکانی با این مشخصات پیدا نشد
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3 border-t bg-muted/20 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span>تعداد در صفحه:</span>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(val) => {
+                    setPageSize(Number(val));
+                    setPageIndex(1);
+                  }}
+                >
+                  <SelectTrigger className="w-16 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">۵</SelectItem>
+                    <SelectItem value="10">۱۰</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span>
+                  صفحه {pageIndex.toLocaleString("fa-IR")} از {totalPages.toLocaleString("fa-IR")} ({filteredLocations.length.toLocaleString("fa-IR")} مکان)
+                </span>
               </div>
-            )}
+
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1"
+                  disabled={pageIndex <= 1}
+                  onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                  قبلی
+                </Button>
+                <span className="px-2 font-mono">{pageIndex}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1"
+                  disabled={pageIndex >= totalPages}
+                  onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
+                >
+                  بعدی
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

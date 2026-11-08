@@ -25,7 +25,7 @@ export default function FinanceApprovals() {
   const [note, setNote] = useState("");
 
   const reload = () => {
-    FinanceService.getTransactions().then(setList);
+    FinanceService.getAllTransactions().then(setList);
     FinanceService.getApprovalLogs().then(setLogs);
   };
 

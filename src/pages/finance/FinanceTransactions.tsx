@@ -1,64 +1,100 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, Plus, CheckCheck, X, Pencil } from "lucide-react";
+import { Search, Download, Plus, CheckCheck, X, Pencil, ChevronRight, ChevronLeft } from "lucide-react";
 import { FinanceService, formatCurrency } from "@/services/finance-service";
 import { Branch, Transaction } from "@/types/finance";
+import { PagedResult } from "@/lib/safe-api";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { TransactionFormDialog } from "@/components/finance/TransactionFormDialog";
 import { useToast } from "@/hooks/use-toast";
 
 export default function FinanceTransactions() {
   const { toast } = useToast();
-  const [list, setList] = useState<Transaction[]>([]);
+  const [data, setData] = useState<PagedResult<Transaction>>({
+    items: [],
+    totalCount: 0,
+    pageIndex: 1,
+    pageSize: 10,
+    totalPages: 1,
+    hasPreviousPage: false,
+    hasNextPage: false,
+  });
   const [branches, setBranches] = useState<Branch[]>([]);
   const [search, setSearch] = useState("");
   const [type, setType] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [branchId, setBranchId] = useState<string>("all");
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
 
-  const reload = () => FinanceService.getTransactions().then(setList);
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const res = await FinanceService.getTransactions({
+        pageIndex,
+        pageSize,
+        search,
+        type,
+        status,
+        branchId,
+      });
+      setData(res);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    FinanceService.getBranches().then(setBranches);
+  }, []);
 
   useEffect(() => {
     reload();
-    FinanceService.getBranches().then(setBranches);
-  }, []);
+  }, [pageIndex, pageSize, type, status, branchId]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPageIndex(1);
+    reload();
+  };
 
   const handleApprove = async (id: string) => {
     await FinanceService.approveTransaction(id, "مدیر مالی");
     toast({ title: "تراکنش تایید شد", description: "به‌صورت خودکار ثبت نهایی شد" });
     reload();
   };
+
   const handleReject = async (id: string) => {
     await FinanceService.rejectTransaction(id, "مدیر مالی");
     toast({ title: "تراکنش رد شد", variant: "destructive" });
     reload();
   };
-  const openCreate = () => { setEditing(null); setDialogOpen(true); };
-  const openEdit = (t: Transaction) => { setEditing(t); setDialogOpen(true); };
 
-  const filtered = useMemo(() => {
-    return list.filter((t) => {
-      if (type !== "all" && t.type !== type) return false;
-      if (status !== "all" && t.status !== status) return false;
-      if (branchId !== "all" && t.branchId !== branchId) return false;
-      if (search && !`${t.code} ${t.counterparty} ${t.reference}`.toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
-  }, [list, type, status, branchId, search]);
+  const openCreate = () => {
+    setEditing(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (t: Transaction) => {
+    setEditing(t);
+    setDialogOpen(true);
+  };
 
   const exportToExcel = () => {
-    if (filtered.length === 0) {
+    if (data.items.length === 0) {
       toast({ title: "داده‌ای برای خروجی وجود ندارد", variant: "destructive" });
       return;
     }
     const headers = ["کد تراکنش", "نوع", "طرف حساب", "شعبه", "دسته‌بندی", "مبلغ (ریال)", "وضعیت", "روش پرداخت", "کد ارجاع", "تاریخ"];
-    const rows = filtered.map((t) => {
+    const rows = data.items.map((t) => {
       const branchName = branches.find((b) => b.id === t.branchId)?.name || "مرکزی";
       return [
         t.code,
@@ -80,7 +116,7 @@ export default function FinanceTransactions() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `transactions_page${pageIndex}_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -93,23 +129,38 @@ export default function FinanceTransactions() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">تراکنش‌های مالی</h1>
-          <p className="text-sm text-muted-foreground">تمام درآمد، هزینه، خرید، فروش و انتقالات وجوه</p>
+          <p className="text-sm text-muted-foreground">
+            تمام درآمد، هزینه، خرید، فروش و انتقالات وجوه ({data.totalCount.toLocaleString("fa-IR")} تراکنش کل)
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportToExcel}>
             <Download className="h-4 w-4 ml-2" /> خروجی Excel
           </Button>
-          <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="h-4 w-4 ml-2" /> تراکنش جدید
+          </Button>
         </div>
       </div>
 
       <Card className="p-4 border-0">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <div className="md:col-span-2 relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="جستجو در کد، طرف حساب، ارجاع..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input
+              placeholder="جستجو در کد، طرف حساب، ارجاع... (Enter)"
+              className="pr-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-          <Select value={type} onValueChange={setType}>
+          <Select
+            value={type}
+            onValueChange={(v) => {
+              setType(v);
+              setPageIndex(1);
+            }}
+          >
             <SelectTrigger><SelectValue placeholder="نوع" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">همه انواع</SelectItem>
@@ -121,7 +172,13 @@ export default function FinanceTransactions() {
               <SelectItem value="refund">بازگشت وجه</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={status} onValueChange={setStatus}>
+          <Select
+            value={status}
+            onValueChange={(v) => {
+              setStatus(v);
+              setPageIndex(1);
+            }}
+          >
             <SelectTrigger><SelectValue placeholder="وضعیت" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">همه وضعیت‌ها</SelectItem>
@@ -132,14 +189,20 @@ export default function FinanceTransactions() {
               <SelectItem value="rejected">رد شده</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={branchId} onValueChange={setBranchId}>
+          <Select
+            value={branchId}
+            onValueChange={(v) => {
+              setBranchId(v);
+              setPageIndex(1);
+            }}
+          >
             <SelectTrigger><SelectValue placeholder="شعبه" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">همه شعب</SelectItem>
               {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </form>
       </Card>
 
       <Card className="border-0 overflow-hidden">
@@ -158,7 +221,7 @@ export default function FinanceTransactions() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((t) => {
+              {data.items.map((t) => {
                 const branch = branches.find((b) => b.id === t.branchId);
                 const isIncome = ["sale", "refund", "income_other"].includes(t.type);
                 return (
@@ -186,11 +249,64 @@ export default function FinanceTransactions() {
                   </TableRow>
                 );
               })}
-              {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">تراکنشی یافت نشد</TableCell></TableRow>
+              {data.items.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
+                    {loading ? "در حال دریافت اطلاعات..." : "تراکنشی یافت نشد"}
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Server-Side Pagination Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t bg-muted/20 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span>تعداد در صفحه:</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(val) => {
+                setPageSize(Number(val));
+                setPageIndex(1);
+              }}
+            >
+              <SelectTrigger className="w-16 h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">۵</SelectItem>
+                <SelectItem value="10">۱۰</SelectItem>
+                <SelectItem value="25">۲۵</SelectItem>
+                <SelectItem value="50">۵۰</SelectItem>
+              </SelectContent>
+            </Select>
+            <span>
+              نمایش صفحه {data.pageIndex.toLocaleString("fa-IR")} از {data.totalPages.toLocaleString("fa-IR")}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1"
+              disabled={!data.hasPreviousPage || loading}
+              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+              قبلی
+            </Button>
+            <span className="px-2 font-mono">{data.pageIndex}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1"
+              disabled={!data.hasNextPage || loading}
+              onClick={() => setPageIndex((p) => Math.min(data.totalPages, p + 1))}
+            >
+              بعدی
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </Card>
 

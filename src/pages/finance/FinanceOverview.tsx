@@ -19,7 +19,7 @@ export default function FinanceOverview() {
 
   useEffect(() => {
     FinanceService.getBranches().then(setBranches);
-    FinanceService.getTransactions().then((t) => setRecent(t.slice(0, 6)));
+    FinanceService.getAllTransactions().then((t) => setRecent(t.slice(0, 6)));
   }, []);
 
   useEffect(() => {

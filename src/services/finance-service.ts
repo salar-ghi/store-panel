@@ -1,8 +1,8 @@
 // Finance service — talks to /api/Finance/* endpoints on the backend.
-// Every read degrades gracefully so pages keep rendering (as empty states)
-// before an endpoint is fully wired.
+// Every read degrades gracefully with safeGet while notifying users on failure.
 
 import apiClient from '@/lib/api-client';
+import { safeGet, PagedResult, PaginationParams } from '@/lib/safe-api';
 import {
   Branch,
   CashFlowPoint,
@@ -25,38 +25,32 @@ export interface ApprovalLog {
   date: string;
 }
 
-async function safeGet<T>(url: string, fallback: T, params?: Record<string, unknown>): Promise<T> {
-  try {
-    const { data } = await apiClient.get<any>(url, { params });
-    if (data == null) return fallback;
-    // Normalise wrapped list responses ({ items }, { data }, { result }) so pages never crash.
-    if (Array.isArray(fallback)) {
-      if (Array.isArray(data)) return data as T;
-      const inner = data.items ?? data.data ?? data.result ?? data.value;
-      return (Array.isArray(inner) ? inner : fallback) as T;
-    }
-    if (typeof data !== 'object' || Array.isArray(data)) return fallback;
-    return { ...(fallback as any), ...(data.data && typeof data.data === 'object' ? data.data : data) } as T;
-  } catch (err: any) {
-    console.warn(`[finance] ${url} failed`, err?.message);
-    return fallback;
-  }
+export interface TransactionFilterParams extends PaginationParams {
+  branchId?: string;
+  type?: string;
+  status?: string;
+  from?: string;
+  to?: string;
 }
 
 export const FinanceService = {
-  getBranches: () => safeGet<Branch[]>(`${BASE}/branches`, []),
+  getBranches: () => safeGet<Branch[]>(`${BASE}/branches`, [], undefined, 'دریافت شعب ناموفق بود'),
   createBranch: async (branch: Omit<Branch, 'id'>): Promise<Branch> => {
     try {
       const { data } = await apiClient.post<Branch>(`${BASE}/branches`, branch);
       return data;
     } catch {
-      // Local fallback in case backend hasn't added POST /branches
       return { id: `branch-${Date.now()}`, ...branch };
     }
   },
 
   getAccounts: (branchId?: string) =>
-    safeGet<FinancialAccount[]>(`${BASE}/accounts`, [], branchId ? { branchId } : undefined),
+    safeGet<FinancialAccount[]>(
+      `${BASE}/accounts`,
+      [],
+      branchId ? { branchId } : undefined,
+      'دریافت حساب‌های مالی ناموفق بود'
+    ),
   createAccount: async (acc: Omit<FinancialAccount, 'id'>): Promise<FinancialAccount> => {
     try {
       const { data } = await apiClient.post<FinancialAccount>(`${BASE}/accounts`, acc);
@@ -66,19 +60,62 @@ export const FinanceService = {
     }
   },
 
-  getChartOfAccounts: () => safeGet<ChartOfAccount[]>(`${BASE}/chart-of-accounts`, []),
+  getChartOfAccounts: () =>
+    safeGet<ChartOfAccount[]>(`${BASE}/chart-of-accounts`, [], undefined, 'دریافت سرفصل حساب‌ها ناموفق بود'),
 
-  getTransactions: (branchId?: string, status?: string) =>
-    safeGet<Transaction[]>(
-      `${BASE}/transactions`,
-      [],
-      {
-        ...(branchId && branchId !== 'all' ? { branchId } : {}),
-        ...(status && status !== 'all' ? { status } : {}),
-      }
-    ),
+  /** Returns all transactions (for reports, overview, and approval counters) */
+  getAllTransactions: () =>
+    safeGet<Transaction[]>(`${BASE}/transactions`, [], undefined, 'دریافت تراکنش‌ها ناموفق بود'),
 
-  getBills: () => safeGet<RecurringBill[]>(`${BASE}/bills`, []),
+  /** Supports paginated query with server filtering for large datasets */
+  getTransactions: async (params?: TransactionFilterParams): Promise<PagedResult<Transaction>> => {
+    const rawParams: Record<string, unknown> = {
+      ...(params?.branchId && params.branchId !== 'all' ? { branchId: params.branchId } : {}),
+      ...(params?.status && params.status !== 'all' ? { status: params.status } : {}),
+      ...(params?.type && params.type !== 'all' ? { type: params.type } : {}),
+      ...(params?.search ? { search: params.search } : {}),
+      pageIndex: params?.pageIndex ?? 1,
+      pageSize: params?.pageSize ?? 10,
+    };
+
+    const result = await safeGet<any>(`${BASE}/transactions`, [], rawParams, 'دریافت تراکنش‌های مالی ناموفق بود');
+
+    if (Array.isArray(result)) {
+      // Backend returned flat array — slice into paginated envelope
+      const pageIndex = (params?.pageIndex ?? 1);
+      const pageSize = (params?.pageSize ?? 10);
+      const totalCount = result.length;
+      const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+      const start = (pageIndex - 1) * pageSize;
+      const items = result.slice(start, start + pageSize);
+
+      return {
+        items,
+        totalCount,
+        pageIndex,
+        pageSize,
+        totalPages,
+        hasPreviousPage: pageIndex > 1,
+        hasNextPage: pageIndex < totalPages,
+      };
+    }
+
+    if (result && Array.isArray(result.items)) {
+      return result as PagedResult<Transaction>;
+    }
+
+    return {
+      items: [],
+      totalCount: 0,
+      pageIndex: 1,
+      pageSize: params?.pageSize ?? 10,
+      totalPages: 1,
+      hasPreviousPage: false,
+      hasNextPage: false,
+    };
+  },
+
+  getBills: () => safeGet<RecurringBill[]>(`${BASE}/bills`, [], undefined, 'دریافت قبوض ناموفق بود'),
   createBill: async (bill: Omit<RecurringBill, 'id'>): Promise<RecurringBill> => {
     try {
       const { data } = await apiClient.post<RecurringBill>(`${BASE}/bills`, bill);
@@ -105,7 +142,7 @@ export const FinanceService = {
     return await FinanceService.createTransaction(txData);
   },
 
-  getPayroll: () => safeGet<PayrollEntry[]>(`${BASE}/payroll`, []),
+  getPayroll: () => safeGet<PayrollEntry[]>(`${BASE}/payroll`, [], undefined, 'دریافت لیست حقوق ناموفق بود'),
   createPayrollLine: async (line: Omit<PayrollEntry, 'id'>): Promise<PayrollEntry> => {
     try {
       const { data } = await apiClient.post<PayrollEntry>(`${BASE}/payroll`, line);
@@ -132,7 +169,8 @@ export const FinanceService = {
     return await FinanceService.createTransaction(txData);
   },
 
-  getApprovalLogs: () => safeGet<ApprovalLog[]>(`${BASE}/approvals/logs`, []),
+  getApprovalLogs: () =>
+    safeGet<ApprovalLog[]>(`${BASE}/approvals/logs`, [], undefined, 'دریافت لاگ تاییدات ناموفق بود'),
 
   createTransaction: async (input: Omit<Transaction, 'id' | 'code'>): Promise<Transaction> => {
     try {
@@ -191,10 +229,12 @@ export const FinanceService = {
         ...(branchId ? { branchId } : {}),
         ...(from ? { from } : {}),
         ...(to ? { to } : {}),
-      }
+      },
+      'دریافت خلاصه داشبورد مالی ناموفق بود'
     ),
 
-  getCashFlow: (days = 14) => safeGet<CashFlowPoint[]>(`${BASE}/cashflow`, [], { days }),
+  getCashFlow: (days = 14) =>
+    safeGet<CashFlowPoint[]>(`${BASE}/cashflow`, [], { days }, 'دریافت جریان نقدینگی ناموفق بود'),
 
   getBranchPerformance: (from?: string, to?: string) =>
     safeGet<BranchPerformance[]>(
@@ -203,7 +243,8 @@ export const FinanceService = {
       {
         ...(from ? { from } : {}),
         ...(to ? { to } : {}),
-      }
+      },
+      'دریافت عملکرد شعب ناموفق بود'
     ),
 };
 
