@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,19 +6,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Download, Plus, CheckCheck, X, Pencil, ArrowUpDown } from "lucide-react";
-import { FinanceService, formatCurrency } from "@/services/finance-service";
-import { Branch, Transaction } from "@/types/finance";
+import { formatCurrency } from "@/services/finance-service";
+import { Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { TransactionFormDialog } from "@/components/finance/TransactionFormDialog";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { useToast } from "@/hooks/use-toast";
+import {
+  useFinanceBranches,
+  useFinanceTransactions,
+  useApproveTransaction,
+  useRejectTransaction,
+} from "@/hooks/use-finance";
 
 export default function FinanceTransactions() {
   const { toast } = useToast();
-  const [list, setList] = useState<Transaction[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [branches, setBranches] = useState<Branch[]>([]);
 
   // Server-side query state
   const [pageIndex, setPageIndex] = useState(1);
@@ -42,43 +44,43 @@ export default function FinanceTransactions() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await FinanceService.getTransactions({
-        pageIndex,
-        pageSize,
-        search: debouncedSearch.trim() || undefined,
-        sortBy,
-        type,
-        status,
-        branchId,
-      });
-      setList(res.items);
-      setTotalCount(res.totalCount);
-    } finally {
-      setLoading(false);
-    }
-  }, [pageIndex, pageSize, debouncedSearch, sortBy, type, status, branchId]);
+  const { data: branches = [] } = useFinanceBranches();
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+  const {
+    data: txData,
+    isLoading: loading,
+  } = useFinanceTransactions({
+    pageIndex,
+    pageSize,
+    search: debouncedSearch.trim() || undefined,
+    sortBy,
+    type,
+    status,
+    branchId,
+  });
 
-  useEffect(() => {
-    FinanceService.getBranches().then(setBranches);
-  }, []);
+  const list = txData?.items ?? [];
+  const totalCount = txData?.totalCount ?? 0;
+
+  const approveMutation = useApproveTransaction();
+  const rejectMutation = useRejectTransaction();
 
   const handleApprove = async (id: string) => {
-    await FinanceService.approveTransaction(id, "مدیر مالی");
-    toast({ title: "تراکنش تایید شد", description: "به‌صورت خودکار ثبت نهایی شد" });
-    fetchTransactions();
+    try {
+      await approveMutation.mutateAsync({ id, approver: "مدیر مالی" });
+      toast({ title: "تراکنش تایید شد", description: "به‌صورت خودکار ثبت نهایی شد" });
+    } catch {
+      toast({ title: "خطا در تایید تراکنش", variant: "destructive" });
+    }
   };
 
   const handleReject = async (id: string) => {
-    await FinanceService.rejectTransaction(id, "مدیر مالی");
-    toast({ title: "تراکنش رد شد", variant: "destructive" });
-    fetchTransactions();
+    try {
+      await rejectMutation.mutateAsync({ id, approver: "مدیر مالی" });
+      toast({ title: "تراکنش رد شد", variant: "destructive" });
+    } catch {
+      toast({ title: "خطا در رد تراکنش", variant: "destructive" });
+    }
   };
 
   const openCreate = () => { setEditing(null); setDialogOpen(true); };
@@ -208,12 +210,34 @@ export default function FinanceTransactions() {
                       <TableCell className="text-left">
                         {t.status === "pending" ? (
                           <div className="flex gap-1 justify-end">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-success" onClick={() => handleApprove(t.id)} title="تایید"><CheckCheck className="h-4 w-4" /></Button>
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive" onClick={() => handleReject(t.id)} title="رد"><X className="h-4 w-4" /></Button>
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(t)} title="ویرایش"><Pencil className="h-4 w-4" /></Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-success"
+                              onClick={() => handleApprove(t.id)}
+                              disabled={approveMutation.isPending}
+                              title="تایید"
+                            >
+                              <CheckCheck className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-destructive"
+                              onClick={() => handleReject(t.id)}
+                              disabled={rejectMutation.isPending}
+                              title="رد"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(t)} title="ویرایش">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
                           </div>
                         ) : (
-                          <Button size="sm" variant="ghost" className="h-8" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8" onClick={() => openEdit(t)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -239,7 +263,7 @@ export default function FinanceTransactions() {
         </div>
       </Card>
 
-      <TransactionFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSaved={fetchTransactions} />
+      <TransactionFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} />
     </div>
   );
 }

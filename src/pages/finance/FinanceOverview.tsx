@@ -1,30 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Wallet, TrendingUp, TrendingDown, Banknote, Clock, CalendarClock, Building2, Sparkles, Zap, ShieldCheck } from "lucide-react";
 import { FinanceStatCard } from "@/components/finance/FinanceStatCard";
 import { CashFlowChart } from "@/components/finance/CashFlowChart";
 import { BranchComparisonChart } from "@/components/finance/BranchComparisonChart";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FinanceService, formatCurrency } from "@/services/finance-service";
-import { Branch, FinanceSummary, Transaction } from "@/types/finance";
+import { formatCurrency } from "@/services/finance-service";
+import { useFinanceBranches, useFinanceSummary, useFinanceTransactions } from "@/hooks/use-finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { Link } from "react-router-dom";
 
 export default function FinanceOverview() {
-  const [branches, setBranches] = useState<Branch[]>([]);
   const [branchId, setBranchId] = useState<string>("all");
-  const [summary, setSummary] = useState<FinanceSummary | null>(null);
-  const [recent, setRecent] = useState<Transaction[]>([]);
 
-  useEffect(() => {
-    FinanceService.getBranches().then(setBranches);
-    FinanceService.getTransactions().then((t) => setRecent(t.slice(0, 6)));
-  }, []);
-
-  useEffect(() => {
-    FinanceService.getSummary(branchId === "all" ? undefined : branchId).then(setSummary);
-  }, [branchId]);
+  const { data: branches = [] } = useFinanceBranches();
+  const { data: summary, isLoading: isSummaryLoading } = useFinanceSummary(branchId);
+  const { data: transactionsData, isLoading: isTxLoading } = useFinanceTransactions({ pageSize: 6 });
+  const recent = transactionsData?.items.slice(0, 6) ?? [];
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -65,7 +59,7 @@ export default function FinanceOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <FinanceStatCard
           title="کل درآمد"
-          value={summary ? formatCurrency(summary.totalIncome) : "—"}
+          value={isSummaryLoading ? "—" : summary ? formatCurrency(summary.totalIncome) : "—"}
           icon={<TrendingUp className="h-5 w-5" />}
           trend={12.4}
           gradient="from-success/15 via-success/5 to-transparent"
@@ -73,7 +67,7 @@ export default function FinanceOverview() {
         />
         <FinanceStatCard
           title="کل هزینه"
-          value={summary ? formatCurrency(summary.totalExpense) : "—"}
+          value={isSummaryLoading ? "—" : summary ? formatCurrency(summary.totalExpense) : "—"}
           icon={<TrendingDown className="h-5 w-5" />}
           trend={-4.2}
           gradient="from-destructive/15 via-destructive/5 to-transparent"
@@ -81,7 +75,7 @@ export default function FinanceOverview() {
         />
         <FinanceStatCard
           title="سود خالص"
-          value={summary ? formatCurrency(summary.netProfit) : "—"}
+          value={isSummaryLoading ? "—" : summary ? formatCurrency(summary.netProfit) : "—"}
           icon={<Banknote className="h-5 w-5" />}
           trend={8.7}
           gradient="from-primary/15 via-primary/5 to-transparent"
@@ -89,7 +83,7 @@ export default function FinanceOverview() {
         />
         <FinanceStatCard
           title="موجودی نقد"
-          value={summary ? formatCurrency(summary.cashOnHand) : "—"}
+          value={isSummaryLoading ? "—" : summary ? formatCurrency(summary.cashOnHand) : "—"}
           icon={<Wallet className="h-5 w-5" />}
           hint={summary ? `${summary.branchCount} شعبه فعال` : ""}
           gradient="from-accent/15 via-accent/5 to-transparent"
@@ -151,21 +145,33 @@ export default function FinanceOverview() {
             <Button asChild size="sm" variant="ghost"><Link to="/finance/transactions">مشاهده همه</Link></Button>
           </div>
           <div className="space-y-2">
-            {recent.map((t) => (
-              <div key={t.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="text-xs text-muted-foreground font-mono shrink-0">{t.code}</div>
-                  <TransactionTypeBadge type={t.type} />
-                  <div className="text-sm truncate">{t.counterparty}</div>
+            {isTxLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="p-3">
+                  <Skeleton className="h-10 w-full" />
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <TransactionStatusBadge status={t.status} />
-                  <div className={`text-sm font-semibold ${["sale", "refund", "income_other"].includes(t.type) ? "text-success" : "text-destructive"}`}>
-                    {formatCurrency(t.amount)}
+              ))
+            ) : recent.length === 0 ? (
+              <div className="text-center py-6 text-muted-foreground text-sm">
+                تراکنشی یافت نشد
+              </div>
+            ) : (
+              recent.map((t) => (
+                <div key={t.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="text-xs text-muted-foreground font-mono shrink-0">{t.code}</div>
+                    <TransactionTypeBadge type={t.type} />
+                    <div className="text-sm truncate">{t.counterparty}</div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <TransactionStatusBadge status={t.status} />
+                    <div className={`text-sm font-semibold ${["sale", "refund", "income_other"].includes(t.type) ? "text-success" : "text-destructive"}`}>
+                      {formatCurrency(t.amount)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Card>
 
