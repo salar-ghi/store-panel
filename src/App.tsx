@@ -42,6 +42,7 @@ const FinanceTransactions = lazy(() => import("@/pages/finance/FinanceTransactio
 const FinanceBills = lazy(() => import("@/pages/finance/FinanceBills"));
 const FinancePayroll = lazy(() => import("@/pages/finance/FinancePayroll"));
 const FinanceBranches = lazy(() => import("@/pages/finance/FinanceBranches"));
+const FinanceLedger = lazy(() => import("@/pages/finance/FinanceLedger"));
 const FinanceReports = lazy(() => import("@/pages/finance/FinanceReports"));
 const FinanceApprovals = lazy(() => import("@/pages/finance/FinanceApprovals"));
 
@@ -318,6 +319,7 @@ const App = () => {
                 <Route path="/finance/bills" element={<ProtectedRoute><Layout><FinanceBills /></Layout></ProtectedRoute>} />
                 <Route path="/finance/payroll" element={<ProtectedRoute><Layout><FinancePayroll /></Layout></ProtectedRoute>} />
                 <Route path="/finance/branches" element={<ProtectedRoute><Layout><FinanceBranches /></Layout></ProtectedRoute>} />
+                <Route path="/finance/ledger" element={<ProtectedRoute><Layout><FinanceLedger /></Layout></ProtectedRoute>} />
                 <Route path="/finance/reports" element={<ProtectedRoute><Layout><FinanceReports /></Layout></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />

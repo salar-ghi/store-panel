@@ -52,6 +52,42 @@ export default function FinanceTransactions() {
     });
   }, [list, type, status, branchId, search]);
 
+  const exportToExcel = () => {
+    if (filtered.length === 0) {
+      toast({ title: "داده‌ای برای خروجی وجود ندارد", variant: "destructive" });
+      return;
+    }
+    const headers = ["کد تراکنش", "نوع", "طرف حساب", "شعبه", "دسته‌بندی", "مبلغ (ریال)", "وضعیت", "روش پرداخت", "کد ارجاع", "تاریخ"];
+    const rows = filtered.map((t) => {
+      const branchName = branches.find((b) => b.id === t.branchId)?.name || "مرکزی";
+      return [
+        t.code,
+        t.type,
+        `"${(t.counterparty || '').replace(/"/g, '""')}"`,
+        `"${branchName.replace(/"/g, '""')}"`,
+        `"${(t.category || '').replace(/"/g, '""')}"`,
+        t.amount,
+        t.status,
+        t.method,
+        `"${(t.reference || '').replace(/"/g, '""')}"`,
+        new Date(t.date).toLocaleDateString("fa-IR"),
+      ].join(",");
+    });
+
+    // UTF-8 BOM so Excel opens Persian text without character corruption
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({ title: "فایل خروجی دانلود شد", description: "گزارش تراکنش‌ها در قالب فایل استاندارد اکسل/CSV ذخیره شد." });
+  };
+
   return (
     <div className="space-y-5 animate-fade-in" dir="rtl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -60,7 +96,9 @@ export default function FinanceTransactions() {
           <p className="text-sm text-muted-foreground">تمام درآمد، هزینه، خرید، فروش و انتقالات وجوه</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm"><Download className="h-4 w-4 ml-2" /> خروجی Excel</Button>
+          <Button variant="outline" size="sm" onClick={exportToExcel}>
+            <Download className="h-4 w-4 ml-2" /> خروجی Excel
+          </Button>
           <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
         </div>
       </div>
@@ -127,9 +165,9 @@ export default function FinanceTransactions() {
                   <TableRow key={t.id} className="hover:bg-muted/30">
                     <TableCell className="font-mono text-xs">{t.code}</TableCell>
                     <TableCell><TransactionTypeBadge type={t.type} /></TableCell>
-                    <TableCell className="text-sm">{t.counterparty}</TableCell>
+                    <TableCell className="text-sm">{t.counterparty || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{branch?.name ?? "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{t.category}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{t.category || "—"}</TableCell>
                     <TableCell className={`font-semibold ${isIncome ? "text-success" : "text-destructive"}`}>
                       {isIncome ? "+" : "-"} {formatCurrency(t.amount)}
                     </TableCell>

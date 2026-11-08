@@ -35,6 +35,20 @@ export interface FinancialAccount {
   currency: Currency;
   balance: number;
   isActive: boolean;
+  bankName?: string;
+}
+
+export interface ChartOfAccount {
+  id: string;
+  tenantId: string;
+  code: string;
+  name: string;
+  type: 1 | 2 | 3 | 4 | 5 | 6 | 7 | "Asset" | "Liability" | "Equity" | "Revenue" | "Expense" | "ContraAsset" | "ContraRevenue";
+  normalBalance: 1 | 2 | "Debit" | "Credit";
+  parentAccountId?: string;
+  isPostingAllowed: boolean;
+  isSystemAccount: boolean;
+  isActive: boolean;
 }
 
 export interface Transaction {

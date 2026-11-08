@@ -21,6 +21,7 @@ import {
   Package as PackageIcon,
   PackageX,
   Boxes,
+  BookOpen,
   Bell,
   MessageSquare,
   Inbox,
@@ -99,6 +100,7 @@ const sidebarItems = [
       { title: "قبوض و پرداخت‌ها", path: "/finance/bills", icon: Receipt },
       { title: "حقوق و دستمزد", path: "/finance/payroll", icon: Banknote },
       { title: "شعبه‌ها و حساب‌ها", path: "/finance/branches", icon: Building2 },
+      { title: "سرفصل حساب‌ها و دفتر کل", path: "/finance/ledger", icon: BookOpen },
       { title: "گزارش‌های مالی", path: "/finance/reports", icon: FileBarChart },
     ]
   },
