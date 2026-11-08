@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { FinanceService } from "@/services/finance-service";
-import { Branch, FinancialAccount, Transaction, TransactionType, PaymentMethod, TransactionStatus } from "@/types/finance";
+import { Transaction, TransactionType, PaymentMethod, TransactionStatus } from "@/types/finance";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowDownCircle, ArrowUpCircle, Banknote, Receipt, RotateCcw, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PriceInput } from "@/components/ui/price-input";
 import { formatPrice } from "@/lib/format";
+import { useFinanceBranches, useFinanceAccounts, useCreateTransaction, useUpdateTransaction } from "@/hooks/use-finance";
 
 interface Props {
   open: boolean;
@@ -43,9 +43,10 @@ const methodLabels: Record<PaymentMethod, string> = {
 
 export function TransactionFormDialog({ open, onOpenChange, initial, onSaved }: Props) {
   const { toast } = useToast();
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [accounts, setAccounts] = useState<FinancialAccount[]>([]);
-  const [saving, setSaving] = useState(false);
+  const { data: branches = [] } = useFinanceBranches();
+  const { data: accounts = [] } = useFinanceAccounts();
+  const createMutation = useCreateTransaction();
+  const updateMutation = useUpdateTransaction();
 
   const [type, setType] = useState<TransactionType>("sale");
   const [amount, setAmount] = useState<string>("");
@@ -57,11 +58,6 @@ export function TransactionFormDialog({ open, onOpenChange, initial, onSaved }: 
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
   const [autoPost, setAutoPost] = useState(true);
-
-  useEffect(() => {
-    FinanceService.getBranches().then(setBranches);
-    FinanceService.getAccounts().then(setAccounts);
-  }, []);
 
   useEffect(() => {
     if (initial) {
@@ -85,12 +81,13 @@ export function TransactionFormDialog({ open, onOpenChange, initial, onSaved }: 
   const filteredAccounts = accounts.filter((a) => !branchId || a.branchId === branchId);
   const selectedTypeMeta = typeOptions.find((t) => t.value === type)!;
 
+  const saving = createMutation.isPending || updateMutation.isPending;
+
   const handleSubmit = async () => {
     if (!amount || !branchId || !accountId) {
       toast({ title: "اطلاعات ناقص", description: "مبلغ، شعبه و حساب الزامی است", variant: "destructive" });
       return;
     }
-    setSaving(true);
     try {
       const status: TransactionStatus = autoPost ? "completed" : "pending";
       const payload = {
@@ -103,17 +100,17 @@ export function TransactionFormDialog({ open, onOpenChange, initial, onSaved }: 
       };
       let saved: Transaction | null;
       if (initial) {
-        saved = await FinanceService.updateTransaction(initial.id, payload);
+        saved = await updateMutation.mutateAsync({ id: initial.id, patch: payload });
       } else {
-        saved = await FinanceService.createTransaction(payload);
+        saved = await createMutation.mutateAsync(payload);
       }
       if (saved) {
         toast({ title: initial ? "تراکنش بروزرسانی شد" : "تراکنش ثبت شد", description: autoPost ? "به‌صورت خودکار ثبت نهایی شد" : "به صف تایید ارسال شد" });
         onSaved?.(saved);
         onOpenChange(false);
       }
-    } finally {
-      setSaving(false);
+    } catch {
+      toast({ title: "خطا در ذخیره تراکنش", variant: "destructive" });
     }
   };
 

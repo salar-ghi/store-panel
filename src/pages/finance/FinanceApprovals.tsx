@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,31 +6,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCheck, X, Clock, ShieldCheck, Search, Inbox, History } from "lucide-react";
-import { ApprovalLog, FinanceService, formatCurrency } from "@/services/finance-service";
-import { Branch, Transaction } from "@/types/finance";
+import { formatCurrency } from "@/services/finance-service";
+import { Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { useToast } from "@/hooks/use-toast";
+import {
+  useFinanceBranches,
+  useFinanceTransactions,
+  useFinanceApprovalLogs,
+  useApproveTransaction,
+  useRejectTransaction,
+} from "@/hooks/use-finance";
 
 export default function FinanceApprovals() {
   const { toast } = useToast();
-  const [list, setList] = useState<Transaction[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [logs, setLogs] = useState<ApprovalLog[]>([]);
   const [search, setSearch] = useState("");
   const [target, setTarget] = useState<Transaction | null>(null);
   const [action, setAction] = useState<"approve" | "reject" | null>(null);
   const [note, setNote] = useState("");
 
-  const reload = () => {
-    FinanceService.getTransactions().then(setList);
-    FinanceService.getApprovalLogs().then(setLogs);
-  };
+  const { data: branches = [] } = useFinanceBranches();
+  const { data: txData, isLoading: isTxLoading } = useFinanceTransactions({ pageSize: 100 });
+  const { data: logs = [], isLoading: isLogsLoading } = useFinanceApprovalLogs();
 
-  useEffect(() => {
-    reload();
-    FinanceService.getBranches().then(setBranches);
-  }, []);
+  const list = txData?.items ?? [];
+
+  const approveMutation = useApproveTransaction();
+  const rejectMutation = useRejectTransaction();
 
   const pending = useMemo(
     () => list.filter((t) => t.status === "pending" && (!search || `${t.code} ${t.counterparty}`.toLowerCase().includes(search.toLowerCase()))),
@@ -46,15 +50,21 @@ export default function FinanceApprovals() {
 
   const confirmAction = async () => {
     if (!target || !action) return;
-    if (action === "approve") {
-      await FinanceService.approveTransaction(target.id, "مدیر مالی", note);
-      toast({ title: "تراکنش تایید و اعمال شد" });
-    } else {
-      await FinanceService.rejectTransaction(target.id, "مدیر مالی", note);
-      toast({ title: "تراکنش رد شد", variant: "destructive" });
+    try {
+      if (action === "approve") {
+        await approveMutation.mutateAsync({ id: target.id, approver: "مدیر مالی", note });
+        toast({ title: "تراکنش تایید و اعمال شد" });
+      } else {
+        await rejectMutation.mutateAsync({ id: target.id, approver: "مدیر مالی", note });
+        toast({ title: "تراکنش رد شد", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "خطا در انجام عملیات", variant: "destructive" });
+    } finally {
+      setTarget(null);
+      setAction(null);
+      setNote("");
     }
-    setTarget(null); setAction(null); setNote("");
-    reload();
   };
 
   const branchName = (id: string) => branches.find((b) => b.id === id)?.name ?? "—";
@@ -73,7 +83,7 @@ export default function FinanceApprovals() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">در انتظار تایید</p>
-              <p className="text-2xl font-bold mt-1">{pending.length}</p>
+              <p className="text-2xl font-bold mt-1">{isTxLoading ? "—" : pending.length}</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-warning/15 flex items-center justify-center"><Clock className="h-5 w-5 text-warning" /></div>
           </div>
@@ -82,7 +92,7 @@ export default function FinanceApprovals() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">جمع مبلغ در صف</p>
-              <p className="text-lg font-bold mt-1">{formatCurrency(totalPendingAmount)}</p>
+              <p className="text-lg font-bold mt-1">{isTxLoading ? "—" : formatCurrency(totalPendingAmount)}</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-primary/15 flex items-center justify-center"><Inbox className="h-5 w-5 text-primary" /></div>
           </div>
@@ -91,7 +101,7 @@ export default function FinanceApprovals() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">پرداخت‌های زمان‌بندی شده</p>
-              <p className="text-2xl font-bold mt-1">{scheduled.length}</p>
+              <p className="text-2xl font-bold mt-1">{isTxLoading ? "—" : scheduled.length}</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-success/15 flex items-center justify-center"><CheckCheck className="h-5 w-5 text-success" /></div>
           </div>
@@ -111,7 +121,12 @@ export default function FinanceApprovals() {
             <Input placeholder="جستجو در کد یا طرف حساب..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
 
-          {pending.length === 0 ? (
+          {isTxLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : pending.length === 0 ? (
             <Card className="p-10 text-center border-0">
               <ShieldCheck className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">هیچ تراکنشی در انتظار تایید نیست.</p>
@@ -136,10 +151,21 @@ export default function FinanceApprovals() {
                     {t.description && <p className="text-xs text-muted-foreground border-r-2 border-border pr-2">{t.description}</p>}
                   </div>
                   <div className="flex md:flex-col gap-2 md:w-32">
-                    <Button size="sm" className="flex-1" onClick={() => { setTarget(t); setAction("approve"); }}>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => { setTarget(t); setAction("approve"); }}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                    >
                       <CheckCheck className="h-4 w-4 ml-1" /> تایید
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1 text-destructive hover:bg-destructive/10" onClick={() => { setTarget(t); setAction("reject"); }}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-destructive hover:bg-destructive/10"
+                      onClick={() => { setTarget(t); setAction("reject"); }}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                    >
                       <X className="h-4 w-4 ml-1" /> رد
                     </Button>
                   </div>
@@ -150,7 +176,9 @@ export default function FinanceApprovals() {
         </TabsContent>
 
         <TabsContent value="scheduled" className="mt-4 space-y-3">
-          {scheduled.length === 0 ? (
+          {isTxLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : scheduled.length === 0 ? (
             <Card className="p-10 text-center border-0 text-muted-foreground">پرداخت زمان‌بندی شده‌ای وجود ندارد.</Card>
           ) : (
             scheduled.map((t) => (
@@ -169,7 +197,9 @@ export default function FinanceApprovals() {
         </TabsContent>
 
         <TabsContent value="history" className="mt-4 space-y-2">
-          {logs.length === 0 && recent.length === 0 ? (
+          {isLogsLoading || isTxLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : logs.length === 0 && recent.length === 0 ? (
             <Card className="p-10 text-center border-0 text-muted-foreground">تاریخچه‌ای ثبت نشده است.</Card>
           ) : (
             <>
@@ -233,10 +263,14 @@ export default function FinanceApprovals() {
             <Button variant="outline" onClick={() => { setTarget(null); setAction(null); setNote(""); }}>انصراف</Button>
             <Button
               variant={action === "reject" ? "destructive" : "default"}
-              disabled={action === "reject" && !note.trim()}
+              disabled={action === "reject" && !note.trim() || approveMutation.isPending || rejectMutation.isPending}
               onClick={confirmAction}
             >
-              {action === "approve" ? "تایید و ثبت نهایی" : "رد تراکنش"}
+              {approveMutation.isPending || rejectMutation.isPending
+                ? "در حال پردازش..."
+                : action === "approve"
+                ? "تایید و ثبت نهایی"
+                : "رد تراکنش"}
             </Button>
           </DialogFooter>
         </DialogContent>
