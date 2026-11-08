@@ -1,4 +1,4 @@
-// Finance service — talks to /api/Finance/* endpoints on the backend.
+// Finance service — talks to /api/finance/* endpoints on the backend.
 // Every read degrades gracefully so pages keep rendering (as empty states)
 // before an endpoint is fully wired.
 
@@ -14,7 +14,7 @@ import {
   BranchPerformance,
 } from '@/types/finance';
 
-const BASE = '/api/Finance';
+const BASE = '/api/finance';
 
 export interface ApprovalLog {
   transactionId: string;

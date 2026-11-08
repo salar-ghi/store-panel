@@ -14,7 +14,7 @@ describe('Server-side pagination and safeGet improvements', () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       vi.spyOn(apiClient, 'get').mockRejectedValueOnce(new Error('Network error'));
 
-      const result = await safeGet('/api/Finance/branches', [{ id: '1', name: 'Fallback Branch', code: 'FB', type: 'online', isActive: true }]);
+      const result = await safeGet('/api/finance/branches', [{ id: '1', name: 'Fallback Branch', code: 'FB', type: 'online', isActive: true }]);
 
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('Fallback Branch');
