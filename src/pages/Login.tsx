@@ -29,6 +29,7 @@ const formSchema = z.object({
 });
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, isLoading, error, isAuthenticated } = useAuthStore();
