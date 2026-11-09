@@ -22,7 +22,7 @@ export const ACCESS_MODULES = [
 
 export function modulePermissionKeys(moduleId: string): string[] {
   const module = ACCESS_MODULES.find((item) => item.id === moduleId);
-  return module?.features.flatMap(([feature]) => ACCESS_ACTIONS.map(({ id }) => `${module.id}.${feature}.${id}`)) ?? [];
+  return module?.features.flatMap(([feature]: readonly [string, string]) => ACCESS_ACTIONS.map(({ id }) => `${module.id}.${feature}.${id}`)) ?? [];
 }
 
 export const permissionSchema = z.string().refine(
