@@ -1,22 +1,32 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Wallet, TrendingUp, TrendingDown, Banknote, Clock, CalendarClock, Building2, Sparkles, Zap, ShieldCheck } from "lucide-react";
 import { FinanceStatCard } from "@/components/finance/FinanceStatCard";
 import { CashFlowChart } from "@/components/finance/CashFlowChart";
 import { BranchComparisonChart } from "@/components/finance/BranchComparisonChart";
+import { JalaliDateRangePicker } from "@/components/ui/jalali-date-range-picker";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/services/finance-service";
-import { useFinanceBranches, useFinanceSummary, useFinanceTransactions } from "@/hooks/use-finance";
+import { useFinanceBranches, useFinanceSummary, useFinanceTransactions, FinanceOverviewFilterParams } from "@/hooks/use-finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { Link } from "react-router-dom";
 
 export default function FinanceOverview() {
   const [branchId, setBranchId] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<{ fromDate?: Date; toDate?: Date }>({});
+
+  const filterParams: FinanceOverviewFilterParams = useMemo(() => {
+    return {
+      branchId: branchId === "all" ? undefined : branchId,
+      from: dateRange.fromDate ? dateRange.fromDate.toISOString() : undefined,
+      to: dateRange.toDate ? dateRange.toDate.toISOString() : undefined,
+    };
+  }, [branchId, dateRange]);
 
   const { data: branches = [] } = useFinanceBranches();
-  const { data: summary, isLoading: isSummaryLoading } = useFinanceSummary(branchId);
+  const { data: summary, isLoading: isSummaryLoading } = useFinanceSummary(filterParams);
   const { data: transactionsData, isLoading: isTxLoading } = useFinanceTransactions({ pageSize: 6 });
   const recent = transactionsData?.items.slice(0, 6) ?? [];
 
@@ -36,9 +46,9 @@ export default function FinanceOverview() {
               کنترل کامل درآمد، هزینه، حقوق، قبوض و تراکنش‌ها برای فروشگاه‌های تک شعبه، زنجیره‌ای و فروشگاه‌های آنلاین — همراه با اتوماسیون پرداخت و گردش کار تایید.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger className="w-[200px] bg-white/15 border-white/20 text-primary-foreground">
+              <SelectTrigger className="w-[180px] bg-white/15 border-white/20 text-primary-foreground">
                 <SelectValue placeholder="انتخاب شعبه" />
               </SelectTrigger>
               <SelectContent>
@@ -51,6 +61,16 @@ export default function FinanceOverview() {
             <Button asChild variant="secondary">
               <Link to="/finance/transactions">مشاهده تراکنش‌ها</Link>
             </Button>
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-white/20 flex flex-wrap items-center justify-between gap-3 text-primary-foreground">
+          <div className="flex items-center gap-2">
+            <JalaliDateRangePicker
+              fromDate={dateRange.fromDate}
+              toDate={dateRange.toDate}
+              onChange={setDateRange}
+              className="text-foreground bg-card/90 p-1.5 rounded-xl backdrop-blur-md"
+            />
           </div>
         </div>
       </div>
@@ -93,7 +113,7 @@ export default function FinanceOverview() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <CashFlowChart />
+        <CashFlowChart filterParams={filterParams} />
         <BranchComparisonChart />
       </div>
 

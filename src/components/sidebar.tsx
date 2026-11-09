@@ -31,7 +31,8 @@ import {
   Building2,
   FileBarChart,
   LayoutGrid,
-  ShieldCheck
+  ShieldCheck,
+  BookOpen
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -97,6 +98,7 @@ const sidebarItems = [
       { title: "تراکنش‌ها", path: "/finance/transactions", icon: Receipt },
       { title: "صف تایید مالی", path: "/finance/approvals", icon: ShieldCheck },
       { title: "قبوض و پرداخت‌ها", path: "/finance/bills", icon: Receipt },
+      { title: "دفتر کل و اسناد دوبل", path: "/finance/ledger", icon: BookOpen },
       { title: "حقوق و دستمزد", path: "/finance/payroll", icon: Banknote },
       { title: "شعبه‌ها و حساب‌ها", path: "/finance/branches", icon: Building2 },
       { title: "گزارش‌های مالی", path: "/finance/reports", icon: FileBarChart },

@@ -3,10 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 import { Building2, MapPin, User, Plus, Wallet, Banknote, CreditCard, Smartphone, PiggyBank } from "lucide-react";
 import { formatCurrency } from "@/services/finance-service";
 import { Branch } from "@/types/finance";
 import { useFinanceBranches, useFinanceAccounts, useFinanceBranchPerformance } from "@/hooks/use-finance";
+import { BranchFormDialog } from "@/components/finance/BranchFormDialog";
+import { AccountFormDialog } from "@/components/finance/AccountFormDialog";
 
 const branchTypeLabels: Record<Branch["type"], string> = {
   supermarket: "سوپرمارکت",
@@ -24,6 +27,10 @@ const accountIcons = {
 };
 
 export default function FinanceBranches() {
+  const [branchDialogOpen, setBranchDialogOpen] = useState(false);
+  const [accountDialogOpen, setAccountDialogOpen] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState<string | undefined>(undefined);
+
   const { data: branches = [], isLoading: isBranchesLoading } = useFinanceBranches();
   const { data: accounts = [], isLoading: isAccountsLoading } = useFinanceAccounts();
   const { data: perf = [], isLoading: isPerfLoading } = useFinanceBranchPerformance();
@@ -31,14 +38,26 @@ export default function FinanceBranches() {
   const loading = isBranchesLoading || isAccountsLoading || isPerfLoading;
   const maxIncome = Math.max(1, ...perf.map((p) => p.income));
 
+  const openAccountDialogForBranch = (bId?: string) => {
+    setSelectedBranchId(bId);
+    setAccountDialogOpen(true);
+  };
+
   return (
     <div className="space-y-5 animate-fade-in" dir="rtl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">شعبه‌ها و حساب‌های مالی</h1>
           <p className="text-sm text-muted-foreground">مدیریت مالی هر شعبه به‌صورت مستقل و گزارش تجمیعی</p>
         </div>
-        <Button><Plus className="h-4 w-4 ml-2" /> افزودن شعبه</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => openAccountDialogForBranch(undefined)}>
+            <Plus className="h-4 w-4 ml-2" /> افزودن حساب
+          </Button>
+          <Button onClick={() => setBranchDialogOpen(true)}>
+            <Plus className="h-4 w-4 ml-2" /> افزودن شعبه
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -105,7 +124,17 @@ export default function FinanceBranches() {
                   <div className="mt-4 pt-4 border-t border-border/50">
                     <div className="flex items-center justify-between mb-2">
                       <div className="text-xs font-medium flex items-center gap-1"><Wallet className="h-3 w-3" /> حساب‌ها ({branchAccounts.length})</div>
-                      <div className="text-sm font-bold">{formatCurrency(totalBalance)}</div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-1.5 text-xs text-primary"
+                          onClick={() => openAccountDialogForBranch(b.id)}
+                        >
+                          <Plus className="h-3 w-3 ml-1" /> حساب جدید
+                        </Button>
+                        <div className="text-sm font-bold">{formatCurrency(totalBalance)}</div>
+                      </div>
                     </div>
                     <div className="space-y-1.5">
                       {branchAccounts.map((a) => {
@@ -128,6 +157,12 @@ export default function FinanceBranches() {
           })}
         </div>
       )}
+      <BranchFormDialog open={branchDialogOpen} onOpenChange={setBranchDialogOpen} />
+      <AccountFormDialog
+        open={accountDialogOpen}
+        onOpenChange={setAccountDialogOpen}
+        defaultBranchId={selectedBranchId}
+      />
     </div>
   );
 }

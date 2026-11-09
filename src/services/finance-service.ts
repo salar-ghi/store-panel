@@ -90,8 +90,71 @@ export const FinanceService = {
       return { items: [], totalCount: 0, pageIndex, pageSize };
     }
   },
+  createBranch: async (input: Omit<Branch, 'id'>): Promise<Branch> => {
+    const { data } = await apiClient.post<Branch>(`${BASE}/branches`, input);
+    return data;
+  },
+
+  updateBranch: async (id: string, patch: Partial<Branch>): Promise<Branch | null> => {
+    try {
+      const { data } = await apiClient.put<Branch>(`${BASE}/branches/${id}`, patch);
+      return data;
+    } catch {
+      return null;
+    }
+  },
+
+  createAccount: async (input: Omit<FinancialAccount, 'id'>): Promise<FinancialAccount> => {
+    const { data } = await apiClient.post<FinancialAccount>(`${BASE}/accounts`, input);
+    return data;
+  },
+
   getBills: () => safeGet<RecurringBill[]>(`${BASE}/bills`, []),
+
+  createBill: async (input: Omit<RecurringBill, 'id'>): Promise<RecurringBill> => {
+    const { data } = await apiClient.post<RecurringBill>(`${BASE}/bills`, input);
+    return data;
+  },
+
+  updateBill: async (id: string, patch: Partial<RecurringBill>): Promise<RecurringBill | null> => {
+    try {
+      const { data } = await apiClient.put<RecurringBill>(`${BASE}/bills/${id}`, patch);
+      return data;
+    } catch {
+      return null;
+    }
+  },
+
+  toggleBillAutoPay: async (id: string, autoPay: boolean): Promise<RecurringBill | null> => {
+    try {
+      const { data } = await apiClient.patch<RecurringBill>(`${BASE}/bills/${id}/auto-pay`, { autoPay });
+      return data;
+    } catch {
+      return null;
+    }
+  },
+
+  payBill: async (id: string, input: { accountId: string; note?: string; paymentDate?: string }): Promise<{ success: boolean; transactionId?: string }> => {
+    const { data } = await apiClient.post<{ success: boolean; transactionId?: string }>(`${BASE}/bills/${id}/pay`, input);
+    return data;
+  },
+
   getPayroll: () => safeGet<PayrollEntry[]>(`${BASE}/payroll`, []),
+
+  createPayrollEntry: async (input: Omit<PayrollEntry, 'id'>): Promise<PayrollEntry> => {
+    const { data } = await apiClient.post<PayrollEntry>(`${BASE}/payroll`, input);
+    return data;
+  },
+
+  payPayrollEntry: async (id: string, input: { accountId: string; note?: string }): Promise<{ success: boolean; transactionId?: string }> => {
+    const { data } = await apiClient.post<{ success: boolean; transactionId?: string }>(`${BASE}/payroll/${id}/pay`, input);
+    return data;
+  },
+
+  runPayrollCycle: async (input: { period: string; branchId?: string; accountId: string }): Promise<{ success: boolean; processedCount: number; totalAmount: number }> => {
+    const { data } = await apiClient.post<{ success: boolean; processedCount: number; totalAmount: number }>(`${BASE}/payroll/run-cycle`, input);
+    return data;
+  },
   getApprovalLogs: () => safeGet<ApprovalLog[]>(`${BASE}/approvals/logs`, []),
 
   createTransaction: async (input: Omit<Transaction, 'id' | 'code'>): Promise<Transaction> => {
@@ -126,8 +189,73 @@ export const FinanceService = {
     }
   },
 
-  getSummary: (branchId?: string) =>
-    safeGet<FinanceSummary>(
+  // General Ledger, Double-Entry & Chart of Accounts
+  getChartOfAccounts: () => safeGet<ChartOfAccount[]>(`${BASE}/chart-of-accounts`, []),
+
+  createChartOfAccount: async (input: Omit<ChartOfAccount, 'id' | 'debit' | 'credit' | 'balance'>): Promise<ChartOfAccount> => {
+    const { data } = await apiClient.post<ChartOfAccount>(`${BASE}/chart-of-accounts`, input);
+    return data;
+  },
+
+  getCostCenters: () => safeGet<CostCenter[]>(`${BASE}/cost-centers`, []),
+
+  createCostCenter: async (input: Omit<CostCenter, 'id'>): Promise<CostCenter> => {
+    const { data } = await apiClient.post<CostCenter>(`${BASE}/cost-centers`, input);
+    return data;
+  },
+
+  getJournalEntries: async (params?: {
+    pageIndex?: number;
+    pageSize?: number;
+    search?: string;
+    branchId?: string;
+  }): Promise<{ items: JournalEntry[]; totalCount: number; pageIndex: number; pageSize: number }> => {
+    const pageIndex = params?.pageIndex ?? 1;
+    const pageSize = params?.pageSize ?? 20;
+    try {
+      const cleanParams: Record<string, unknown> = {};
+      if (params?.pageIndex != null) cleanParams.pageIndex = params.pageIndex;
+      if (params?.pageSize != null) cleanParams.pageSize = params.pageSize;
+      if (params?.search) cleanParams.search = params.search;
+      if (params?.branchId && params.branchId !== 'all') cleanParams.branchId = params.branchId;
+
+      const { data } = await apiClient.get<any>(`${BASE}/journal-entries`, { params: cleanParams });
+      if (data == null) {
+        return { items: [], totalCount: 0, pageIndex, pageSize };
+      }
+      if (Array.isArray(data)) {
+        return { items: data, totalCount: data.length, pageIndex, pageSize };
+      }
+      const items = data.items ?? data.data ?? data.result ?? data.value ?? [];
+      const totalCount = data.totalCount ?? data.total ?? data.count ?? (Array.isArray(items) ? items.length : 0);
+      return {
+        items: Array.isArray(items) ? items : [],
+        totalCount: typeof totalCount === 'number' ? totalCount : 0,
+        pageIndex: data.pageIndex ?? pageIndex,
+        pageSize: data.pageSize ?? pageSize,
+      };
+    } catch (err: any) {
+      console.error(`[finance] GET ${BASE}/journal-entries failed:`, err);
+      notifyApiError(err, 'خطا در دریافت اسناد حسابداری');
+      return { items: [], totalCount: 0, pageIndex, pageSize };
+    }
+  },
+
+  createJournalEntry: async (input: Omit<JournalEntry, 'id' | 'createdAt'>): Promise<JournalEntry> => {
+    const { data } = await apiClient.post<JournalEntry>(`${BASE}/journal-entries`, input);
+    return data;
+  },
+
+  getTrialBalance: (params?: { branchId?: string; from?: string; to?: string }) =>
+    safeGet<TrialBalanceItem[]>(`${BASE}/trial-balance`, [], params as Record<string, unknown>),
+
+  getSummary: (params?: { branchId?: string; from?: string; to?: string }) => {
+    const query: Record<string, unknown> = {};
+    if (params?.branchId && params.branchId !== 'all') query.branchId = params.branchId;
+    if (params?.from) query.from = params.from;
+    if (params?.to) query.to = params.to;
+
+    return safeGet<FinanceSummary>(
       `${BASE}/summary`,
       {
         totalIncome: 0,
@@ -139,10 +267,17 @@ export const FinanceService = {
         branchCount: 0,
         currency: 'IRR',
       },
-      branchId ? { branchId } : undefined,
-    ),
+      Object.keys(query).length > 0 ? query : undefined,
+    );
+  },
 
-  getCashFlow: () => safeGet<CashFlowPoint[]>(`${BASE}/cashflow`, []),
+  getCashFlow: (params?: { branchId?: string; from?: string; to?: string }) => {
+    const query: Record<string, unknown> = {};
+    if (params?.branchId && params.branchId !== 'all') query.branchId = params.branchId;
+    if (params?.from) query.from = params.from;
+    if (params?.to) query.to = params.to;
+    return safeGet<CashFlowPoint[]>(`${BASE}/cashflow`, [], Object.keys(query).length > 0 ? query : undefined);
+  },
 
   getBranchPerformance: () => safeGet<BranchPerformance[]>(`${BASE}/branch-performance`, []),
 };

@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Zap, FileText, Calendar, Building, Wifi, ShieldCheck, Receipt } from "lucide-react";
+import { Plus, Zap, FileText, Calendar, Building, Wifi, ShieldCheck, Receipt, Pencil } from "lucide-react";
 import { formatCurrency } from "@/services/finance-service";
 import { RecurringBill } from "@/types/finance";
-import { useFinanceBills, useFinanceBranches } from "@/hooks/use-finance";
+import { useFinanceBills, useFinanceBranches, useToggleBillAutoPay } from "@/hooks/use-finance";
+import { BillFormDialog } from "@/components/finance/BillFormDialog";
+import { BillPaymentDialog } from "@/components/finance/BillPaymentDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const icons = {
   utility: Zap,
@@ -34,8 +38,41 @@ const cycleLabels: Record<RecurringBill["cycle"], string> = {
 };
 
 export default function FinanceBills() {
+  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
+  const [payingBill, setPayingBill] = useState<RecurringBill | null>(null);
+
   const { data: bills = [], isLoading: isBillsLoading } = useFinanceBills();
   const { data: branches = [] } = useFinanceBranches();
+  const toggleAutoPayMutation = useToggleBillAutoPay();
+
+  const handleToggleAutoPay = async (bill: RecurringBill) => {
+    try {
+      await toggleAutoPayMutation.mutateAsync({ id: bill.id, autoPay: !bill.autoPay });
+      toast({
+        title: !bill.autoPay ? "پرداخت خودکار فعال شد" : "پرداخت خودکار غیرفعال شد",
+      });
+    } catch {
+      toast({ title: "خطا در تغییر وضعیت پرداخت خودکار", variant: "destructive" });
+    }
+  };
+
+  const openCreate = () => {
+    setEditingBill(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (bill: RecurringBill) => {
+    setEditingBill(bill);
+    setDialogOpen(true);
+  };
+
+  const openPayment = (bill: RecurringBill) => {
+    setPayingBill(bill);
+    setPaymentDialogOpen(true);
+  };
 
   const totalMonthly = bills.reduce((s, b) => s + (b.cycle === "monthly" ? b.amount : b.cycle === "quarterly" ? b.amount / 3 : b.cycle === "yearly" ? b.amount / 12 : b.amount * 4), 0);
 
@@ -46,7 +83,7 @@ export default function FinanceBills() {
           <h1 className="text-2xl font-bold">قبوض و پرداخت‌های دوره‌ای</h1>
           <p className="text-sm text-muted-foreground">مدیریت قبوض خودکار، اجاره، بیمه، مالیات و خدمات</p>
         </div>
-        <Button><Plus className="h-4 w-4 ml-2" /> افزودن قبض</Button>
+        <Button onClick={openCreate}><Plus className="h-4 w-4 ml-2" /> افزودن قبض</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -113,19 +150,33 @@ export default function FinanceBills() {
                     <div className="text-lg font-bold">{formatCurrency(b.amount)}</div>
                     <div className="flex items-center gap-2 mt-2 justify-end">
                       <span className="text-xs text-muted-foreground">پرداخت خودکار</span>
-                      <Switch checked={b.autoPay} />
+                      <Switch
+                        checked={b.autoPay}
+                        disabled={toggleAutoPayMutation.isPending}
+                        onCheckedChange={() => handleToggleAutoPay(b)}
+                      />
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1">پرداخت دستی</Button>
-                  <Button size="sm" variant="ghost">جزئیات</Button>
+                  <Button size="sm" variant="outline" className="flex-1" onClick={() => openPayment(b)}>
+                    پرداخت دستی
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>
+                    <Pencil className="h-3.5 w-3.5 ml-1" /> ویرایش
+                  </Button>
                 </div>
               </Card>
             );
           })}
         </div>
       )}
+      <BillFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editingBill} />
+      <BillPaymentDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        bill={payingBill}
+      />
     </div>
   );
 }

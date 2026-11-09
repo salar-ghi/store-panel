@@ -44,6 +44,7 @@ const FinancePayroll = lazy(() => import("@/pages/finance/FinancePayroll"));
 const FinanceBranches = lazy(() => import("@/pages/finance/FinanceBranches"));
 const FinanceReports = lazy(() => import("@/pages/finance/FinanceReports"));
 const FinanceApprovals = lazy(() => import("@/pages/finance/FinanceApprovals"));
+const FinanceLedger = lazy(() => import("@/pages/finance/FinanceLedger"));
 
 // Elegant loading fallback
 function PageLoadingFallback() {
@@ -319,6 +320,7 @@ const App = () => {
                 <Route path="/finance/payroll" element={<ProtectedRoute><Layout><FinancePayroll /></Layout></ProtectedRoute>} />
                 <Route path="/finance/branches" element={<ProtectedRoute><Layout><FinanceBranches /></Layout></ProtectedRoute>} />
                 <Route path="/finance/reports" element={<ProtectedRoute><Layout><FinanceReports /></Layout></ProtectedRoute>} />
+                <Route path="/finance/ledger" element={<ProtectedRoute><Layout><FinanceLedger /></Layout></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
