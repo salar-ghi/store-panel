@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -28,6 +29,7 @@ const formSchema = z.object({
 });
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, isLoading, error, isAuthenticated } = useAuthStore();
@@ -94,7 +96,17 @@ export default function Login() {
                   <FormItem>
                     <FormLabel>رمز عبور</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="رمز عبور خود را وارد کنید" {...field} />
+                      <div className="relative">
+                        <Input type={showPassword ? "text" : "password"} placeholder="رمز عبور خود را وارد کنید" className="pl-10" {...field} />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
