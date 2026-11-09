@@ -107,18 +107,18 @@ export default function Login() {
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
-                        <button
-                          type="button"
-                          onPointerDown={() => setPeekPassword(true)}
-                          onPointerUp={() => setPeekPassword(false)}
-                          onPointerLeave={() => setPeekPassword(false)}
-                          onPointerCancel={() => setPeekPassword(false)}
-                          aria-label="برای دیدن رمز عبور نگه دارید"
-                          title="برای دیدن رمز عبور نگه دارید"
-                          className="absolute left-8 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors select-none"
-                        >
-                          <ScanEye className="h-4 w-4" />
-                        </button>
+                          {/* <button
+                            type="button"
+                            onPointerDown={() => setPeekPassword(true)}
+                            onPointerUp={() => setPeekPassword(false)}
+                            onPointerLeave={() => setPeekPassword(false)}
+                            onPointerCancel={() => setPeekPassword(false)}
+                            aria-label="برای دیدن رمز عبور نگه دارید"
+                            title="برای دیدن رمز عبور نگه دارید"
+                            className="absolute left-8 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors select-none"
+                          >
+                            <ScanEye className="h-4 w-4" />
+                          </button> */}
                       </div>
                     </FormControl>
                     <FormMessage />
