@@ -12,6 +12,10 @@ import {
   RecurringBill,
   Transaction,
   BranchPerformance,
+  ChartOfAccount,
+  CostCenter,
+  JournalEntry,
+  TrialBalanceItem,
 } from '@/types/finance';
 
 const BASE = '/api/finance';
