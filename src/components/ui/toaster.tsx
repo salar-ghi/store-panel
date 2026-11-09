@@ -1,6 +1,7 @@
 
 import * as React from "react"
 import { useToast } from "@/hooks/use-toast"
+import { persianNotification } from "@/lib/notification-message"
 import {
   Toast,
   ToastClose,
@@ -19,9 +20,9 @@ export function Toaster() {
         return (
           <Toast key={id} {...props}>
             <div dir="rtl" className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && <ToastTitle>{typeof title === "string" ? persianNotification(title, props.variant === "destructive" ? undefined : "اطلاع‌رسانی") : title}</ToastTitle>}
               {description && (
-                <ToastDescription>{description}</ToastDescription>
+                <ToastDescription>{typeof description === "string" ? persianNotification(description, "") : description}</ToastDescription>
               )}
             </div>
             {action}
