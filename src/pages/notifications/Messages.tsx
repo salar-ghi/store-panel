@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,8 @@ export default function Messages() {
     },
   });
 
+  const queryClient = useQueryClient();
+  const setUsers = (next: typeof rawUsers) => queryClient.setQueryData(["chat-users"], next);
   const users = rawUsers;
   const effectiveUserId = selectedUserId ?? (users.length > 0 ? users[0].id : null);
   const selectedUser = users.find((user) => user.id === effectiveUserId);
@@ -97,7 +100,7 @@ export default function Messages() {
     }
   };
   
-  const handleSelectUser = (userId: number) => {
+  const handleSelectUser = (userId: string | number) => {
     setSelectedUserId(userId);
     
     // Mark messages as read when we select the conversation

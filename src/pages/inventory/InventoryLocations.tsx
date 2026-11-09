@@ -75,10 +75,8 @@ export default function InventoryLocations() {
     mutationFn: (values: LocationFormValues) =>
       WarehouseService.create({
         name: values.name,
-        address: values.address,
+        location: values.address,
         capacity: values.capacity,
-        currentOccupancy: 0,
-        isActive: true,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["warehouses"] });
@@ -91,11 +89,9 @@ export default function InventoryLocations() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data: updateData }: { id: number; data: LocationFormValues }) =>
       WarehouseService.update(id, {
-        id,
         name: updateData.name,
-        address: updateData.address,
+        location: updateData.address,
         capacity: updateData.capacity,
-        currentOccupancy: editingLocation?.currentOccupancy ?? 0,
         isActive: editingLocation?.isActive ?? true,
       }),
     onSuccess: () => {
@@ -136,7 +132,7 @@ export default function InventoryLocations() {
     setEditingLocation(location);
     form.reset({
       name: location.name,
-      address: location.address,
+      address: location.location,
       capacity: location.capacity,
     });
     setIsDialogOpen(true);
@@ -214,7 +210,7 @@ export default function InventoryLocations() {
                   </TableRow>
                 ) : (
                   locations.map((location) => {
-                    const used = location.currentOccupancy ?? 0;
+                    const used = location.currentUtilization ?? 0;
                     const usagePercent = location.capacity > 0 ? Math.round((used / location.capacity) * 100) : 0;
                     return (
                       <TableRow key={location.id}>
@@ -224,7 +220,7 @@ export default function InventoryLocations() {
                             <span className="font-medium">{location.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{location.address}</TableCell>
+                        <TableCell>{location.location}</TableCell>
                         <TableCell>{location.capacity.toLocaleString()} واحد</TableCell>
                         <TableCell>{used.toLocaleString()} واحد</TableCell>
                         <TableCell>
