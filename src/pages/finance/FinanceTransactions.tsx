@@ -9,6 +9,7 @@ import { Search, Download, Plus, CheckCheck, X, Pencil, ArrowUpDown } from "luci
 import { formatCurrency } from "@/services/finance-service";
 import { Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
+import { exportToCsv } from "@/lib/export-utils";
 import { TransactionFormDialog } from "@/components/finance/TransactionFormDialog";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { useToast } from "@/hooks/use-toast";
@@ -86,6 +87,43 @@ export default function FinanceTransactions() {
   const openCreate = () => { setEditing(null); setDialogOpen(true); };
   const openEdit = (t: Transaction) => { setEditing(t); setDialogOpen(true); };
 
+  const handleExportExcel = () => {
+    if (list.length === 0) {
+      toast({ title: "داده‌ای برای خروجی اکسل وجود ندارد", variant: "destructive" });
+      return;
+    }
+
+    const headers = [
+      "کد تراکنش",
+      "نوع",
+      "طرف حساب",
+      "شعبه",
+      "دسته‌بندی",
+      "مبلغ (ریال)",
+      "وضعیت",
+      "روش پرداخت",
+      "تاریخ",
+    ];
+
+    const rows = list.map((t) => {
+      const branch = branches.find((b) => b.id === t.branchId);
+      return [
+        t.code,
+        t.type,
+        t.counterparty || "—",
+        branch?.name || "مرکزی",
+        t.category || "—",
+        t.amount,
+        t.status,
+        t.method,
+        new Date(t.date).toLocaleDateString("fa-IR"),
+      ];
+    });
+
+    exportToCsv(`finance-transactions-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    toast({ title: "فایل اکسل تراکنش‌ها با موفقیت دانلود شد" });
+  };
+
   const handleFilterChange = (setter: (v: string) => void) => (v: string) => {
     setter(v);
     setPageIndex(1);
@@ -99,7 +137,9 @@ export default function FinanceTransactions() {
           <p className="text-sm text-muted-foreground">تمام درآمد، هزینه، خرید، فروش و انتقالات وجوه (صفحه‌بندی سمت سرور)</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm"><Download className="h-4 w-4 ml-2" /> خروجی Excel</Button>
+          <Button variant="outline" size="sm" onClick={handleExportExcel}>
+            <Download className="h-4 w-4 ml-2" /> خروجی Excel
+          </Button>
           <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 ml-2" /> تراکنش جدید</Button>
         </div>
       </div>

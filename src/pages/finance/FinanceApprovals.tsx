@@ -7,11 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCheck, X, Clock, ShieldCheck, Search, Inbox, History } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCheck, X, Clock, ShieldCheck, Search, Inbox, History, AlertCircle, UserCheck } from "lucide-react";
 import { formatCurrency } from "@/services/finance-service";
 import { Transaction } from "@/types/finance";
 import { TransactionStatusBadge, TransactionTypeBadge } from "@/components/finance/TransactionBadges";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/store/auth-store";
 import {
   useFinanceBranches,
   useFinanceTransactions,
@@ -20,9 +22,20 @@ import {
   useRejectTransaction,
 } from "@/hooks/use-finance";
 
+// Multi-tier financial approval authority limits (in IRR)
+const ROLE_APPROVAL_LIMITS: Record<string, { label: string; limit: number; unlimited?: boolean }> = {
+  branch_manager: { label: "سرپرست شعبه", limit: 20_000_000 },
+  accountant: { label: "حسابدار ارشد", limit: 100_000_000 },
+  finance_manager: { label: "مدیر مالی", limit: 500_000_000 },
+  admin: { label: "مدیر عامل / ادمین کل", limit: Infinity, unlimited: true },
+};
+
 export default function FinanceApprovals() {
   const { toast } = useToast();
+  const { user } = useAuthStore();
   const [search, setSearch] = useState("");
+  const [thresholdFilter, setThresholdFilter] = useState("all");
+  const [simulatedRole, setSimulatedRole] = useState<string>(user?.role === "admin" ? "admin" : "accountant");
   const [target, setTarget] = useState<Transaction | null>(null);
   const [action, setAction] = useState<"approve" | "reject" | null>(null);
   const [note, setNote] = useState("");
@@ -36,9 +49,21 @@ export default function FinanceApprovals() {
   const approveMutation = useApproveTransaction();
   const rejectMutation = useRejectTransaction();
 
+  // Current user authority info
+  const currentRoleInfo = ROLE_APPROVAL_LIMITS[simulatedRole] || ROLE_APPROVAL_LIMITS.accountant;
+
   const pending = useMemo(
-    () => list.filter((t) => t.status === "pending" && (!search || `${t.code} ${t.counterparty}`.toLowerCase().includes(search.toLowerCase()))),
-    [list, search]
+    () =>
+      list.filter((t) => {
+        if (t.status !== "pending") return false;
+        if (search && !`${t.code} ${t.counterparty}`.toLowerCase().includes(search.toLowerCase())) return false;
+        if (thresholdFilter === "under10m" && t.amount >= 10_000_000) return false;
+        if (thresholdFilter === "10m_to_50m" && (t.amount < 10_000_000 || t.amount > 50_000_000)) return false;
+        if (thresholdFilter === "50m_to_200m" && (t.amount < 50_000_000 || t.amount > 200_000_000)) return false;
+        if (thresholdFilter === "above200m" && t.amount <= 200_000_000) return false;
+        return true;
+      }),
+    [list, search, thresholdFilter]
   );
   const scheduled = useMemo(() => list.filter((t) => t.status === "scheduled"), [list]);
   const recent = useMemo(
@@ -48,14 +73,37 @@ export default function FinanceApprovals() {
 
   const totalPendingAmount = pending.reduce((s, t) => s + t.amount, 0);
 
+  const canApprove = (amount: number) => {
+    if (currentRoleInfo.unlimited) return true;
+    return amount <= currentRoleInfo.limit;
+  };
+
   const confirmAction = async () => {
     if (!target || !action) return;
+
+    if (action === "approve" && !canApprove(target.amount)) {
+      toast({
+        title: "عدم کفایت سقف اختیار مالی",
+        description: `سقف تایید نقش «${currentRoleInfo.label}» برابر ${formatCurrency(currentRoleInfo.limit)} است، در حالی که این تراکنش مبلغ ${formatCurrency(target.amount)} دارد.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (action === "approve") {
-        await approveMutation.mutateAsync({ id: target.id, approver: "مدیر مالی", note });
+        await approveMutation.mutateAsync({
+          id: target.id,
+          approver: `${currentRoleInfo.label} (${user?.username || "مدیر مالی"})`,
+          note,
+        });
         toast({ title: "تراکنش تایید و اعمال شد" });
       } else {
-        await rejectMutation.mutateAsync({ id: target.id, approver: "مدیر مالی", note });
+        await rejectMutation.mutateAsync({
+          id: target.id,
+          approver: `${currentRoleInfo.label} (${user?.username || "مدیر مالی"})`,
+          note,
+        });
         toast({ title: "تراکنش رد شد", variant: "destructive" });
       }
     } catch {
@@ -75,6 +123,21 @@ export default function FinanceApprovals() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-primary" /> صف تایید مالی</h1>
           <p className="text-sm text-muted-foreground">تراکنش‌های در انتظار تایید مدیر را بررسی و پس از تایید به‌صورت خودکار ثبت کنید.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-card p-2 rounded-xl border">
+          <UserCheck className="h-4 w-4 text-primary" />
+          <span className="text-xs text-muted-foreground">نقش و سقف اختیارات جاری:</span>
+          <Select value={simulatedRole} onValueChange={setSimulatedRole}>
+            <SelectTrigger className="h-8 text-xs w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="branch_manager">سرپرست شعبه (تا ۲۰ م)</SelectItem>
+              <SelectItem value="accountant">حسابدار ارشد (تا ۱۰۰ م)</SelectItem>
+              <SelectItem value="finance_manager">مدیر مالی (تا ۵۰۰ م)</SelectItem>
+              <SelectItem value="admin">مدیر عامل / ادمین (نامحدود)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -116,9 +179,28 @@ export default function FinanceApprovals() {
         </TabsList>
 
         <TabsContent value="pending" className="mt-4 space-y-3">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="جستجو در کد یا طرف حساب..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="md:col-span-3 relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="جستجو در کد یا طرف حساب..."
+                className="pr-9"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div>
+              <Select value={thresholdFilter} onValueChange={setThresholdFilter}>
+                <SelectTrigger><SelectValue placeholder="سقف اختیارات" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">تمام مبالغ</SelectItem>
+                  <SelectItem value="under10m">کمتر از ۱۰ میلیون ریال</SelectItem>
+                  <SelectItem value="10m_to_50m">۱۰ تا ۵۰ میلیون ریال</SelectItem>
+                  <SelectItem value="50m_to_200m">۵۰ تا ۲۰۰ میلیون ریال</SelectItem>
+                  <SelectItem value="above200m">بیش از ۲۰۰ میلیون ریال</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {isTxLoading ? (
@@ -149,13 +231,20 @@ export default function FinanceApprovals() {
                       <div><p className="text-xs text-muted-foreground">مبلغ</p><p className="font-bold text-primary">{formatCurrency(t.amount)}</p></div>
                     </div>
                     {t.description && <p className="text-xs text-muted-foreground border-r-2 border-border pr-2">{t.description}</p>}
+                    {!canApprove(t.amount) && (
+                      <div className="flex items-center gap-1.5 text-xs text-destructive bg-destructive/10 p-2 rounded-lg">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>فراتر از سقف اختیار شما ({formatCurrency(currentRoleInfo.limit)}) — نیازمند تایید مدیر ارشد</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex md:flex-col gap-2 md:w-32">
+                  <div className="flex md:flex-col gap-2 md:w-36">
                     <Button
                       size="sm"
                       className="flex-1"
                       onClick={() => { setTarget(t); setAction("approve"); }}
-                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      disabled={!canApprove(t.amount) || approveMutation.isPending || rejectMutation.isPending}
+                      title={!canApprove(t.amount) ? "مبلغ بیش از سقف اختیار دسترسی شماست" : "تایید"}
                     >
                       <CheckCheck className="h-4 w-4 ml-1" /> تایید
                     </Button>

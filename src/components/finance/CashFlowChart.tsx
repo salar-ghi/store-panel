@@ -3,10 +3,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCompact } from "@/services/finance-service";
-import { useFinanceCashFlow } from "@/hooks/use-finance";
+import { useFinanceCashFlow, FinanceOverviewFilterParams } from "@/hooks/use-finance";
 
-export function CashFlowChart() {
-  const { data = [], isLoading } = useFinanceCashFlow();
+interface CashFlowChartProps {
+  filterParams?: FinanceOverviewFilterParams;
+}
+
+export function CashFlowChart({ filterParams }: CashFlowChartProps) {
+  const { data = [], isLoading } = useFinanceCashFlow(filterParams);
 
   return (
     <Card className="p-5 border-0 shadow-sm bg-gradient-to-br from-card to-muted/30">

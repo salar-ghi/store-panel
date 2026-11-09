@@ -2,16 +2,32 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Download, FileText, TrendingUp } from "lucide-react";
 import { formatCompact, formatCurrency } from "@/services/finance-service";
 import { useFinanceTransactions } from "@/hooks/use-finance";
+import { exportToCsv, printFinancialReport } from "@/lib/export-utils";
+import { JalaliDateRangePicker } from "@/components/ui/jalali-date-range-picker";
+import { useToast } from "@/hooks/use-toast";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--destructive))", "hsl(var(--accent))", "hsl(var(--info))"];
 
 export default function FinanceReports() {
-  const { data: txData, isLoading } = useFinanceTransactions({ pageSize: 500 });
-  const tx = txData?.items ?? [];
+  const { toast } = useToast();
+  const [dateRange, setDateRange] = useState<{ fromDate?: Date; toDate?: Date }>({});
+
+  const { data: txData, isLoading } = useFinanceTransactions({ pageSize: 1000 });
+  const allTx = txData?.items ?? [];
+
+  const tx = useMemo(() => {
+    return allTx.filter((t) => {
+      const d = new Date(t.date).getTime();
+      if (dateRange.fromDate && d < dateRange.fromDate.getTime()) return false;
+      if (dateRange.toDate && d > dateRange.toDate.getTime() + 86400000) return false;
+      return true;
+    });
+  }, [allTx, dateRange]);
 
   const byCategory = Object.entries(
     tx.reduce<Record<string, number>>((acc, t) => {
@@ -33,16 +49,46 @@ export default function FinanceReports() {
   const totalIncome = tx.filter((t) => ["sale", "refund", "income_other"].includes(t.type)).reduce((s, t) => s + t.amount, 0);
   const totalExpense = tx.filter((t) => ["purchase", "expense", "salary", "bill", "tax"].includes(t.type)).reduce((s, t) => s + t.amount, 0);
 
+  const handleExportExcel = () => {
+    if (tx.length === 0) {
+      toast({ title: "داده‌ای برای خروجی گزارش وجود ندارد", variant: "destructive" });
+      return;
+    }
+    const headers = ["سرفصل گزارش", "مبلغ (ریال)"];
+    const rows = [
+      ["درآمد کل", totalIncome],
+      ["هزینه کل", totalExpense],
+      ["سود خالص", totalIncome - totalExpense],
+      ...byCategory.map((c) => [`دسته: ${c.name}`, c.value]),
+      ...byMethod.map((m) => [`روش پرداخت: ${methodLabels[m.name] || m.name}`, m.value]),
+    ];
+    exportToCsv(`financial-report-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    toast({ title: "فایل گزارش با موفقیت استخراج شد" });
+  };
+
+  const handlePrintPdf = () => {
+    printFinancialReport("گزارش جامع مالی");
+  };
+
   return (
     <div className="space-y-5 animate-fade-in" dir="rtl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">گزارش‌های مالی</h1>
           <p className="text-sm text-muted-foreground">سود و زیان، ترازنامه، گردش وجوه و گزارش‌های تخصصی</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline"><FileText className="h-4 w-4 ml-2" /> چاپ PDF</Button>
-          <Button><Download className="h-4 w-4 ml-2" /> دریافت Excel</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <JalaliDateRangePicker
+            fromDate={dateRange.fromDate}
+            toDate={dateRange.toDate}
+            onChange={setDateRange}
+          />
+          <Button variant="outline" onClick={handlePrintPdf}>
+            <FileText className="h-4 w-4 ml-2" /> چاپ PDF
+          </Button>
+          <Button onClick={handleExportExcel}>
+            <Download className="h-4 w-4 ml-2" /> دریافت Excel
+          </Button>
         </div>
       </div>
 

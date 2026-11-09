@@ -30,6 +30,7 @@ export interface Branch {
 export interface FinancialAccount {
   id: string;
   name: string;
+  accountNumber?: string;
   type: AccountType;
   branchId?: string;
   currency: Currency;
@@ -114,4 +115,70 @@ export interface CashFlowPoint {
   date: string; // jalali label e.g. "۱۴۰۴/۰۲/۰۱"
   income: number;
   expense: number;
+}
+
+// Enterprise Double-Entry & General Ledger
+export type AccountNature = "asset" | "liability" | "equity" | "revenue" | "expense";
+export type AccountLevel = "group" | "general" | "subsidiary" | "detail"; // گروه، کل، معین، تفصیلی
+
+export interface ChartOfAccount {
+  id: string;
+  code: string; // e.g. "10101"
+  name: string;
+  nature: AccountNature;
+  level: AccountLevel;
+  parentId?: string | null;
+  debit: number;
+  credit: number;
+  balance: number;
+  isActive: boolean;
+  children?: ChartOfAccount[];
+}
+
+export interface CostCenter {
+  id: string;
+  code: string;
+  name: string;
+  branchId?: string;
+  isActive: boolean;
+}
+
+export interface JournalEntryLine {
+  id?: string;
+  accountId: string;
+  accountCode?: string;
+  accountName?: string;
+  costCenterId?: string;
+  costCenterName?: string;
+  debit: number;
+  credit: number;
+  description?: string;
+}
+
+export interface JournalEntry {
+  id: string;
+  entryNumber: string; // سند شماره
+  date: string; // ISO
+  description: string;
+  branchId?: string;
+  status: "draft" | "posted" | "approved";
+  totalDebit: number;
+  totalCredit: number;
+  lines: JournalEntryLine[];
+  createdBy?: string;
+  approvedBy?: string;
+  createdAt: string;
+}
+
+export interface TrialBalanceItem {
+  accountCode: string;
+  accountName: string;
+  level: AccountLevel;
+  nature: AccountNature;
+  openingDebit: number;
+  openingCredit: number;
+  turnoverDebit: number; // گردش بدهکار
+  turnoverCredit: number; // گردش بستانکار
+  closingDebit: number; // مانده بدهکار
+  closingCredit: number; // مانده بستانکار
 }

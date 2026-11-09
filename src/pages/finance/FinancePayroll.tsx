@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,9 @@ import { CheckCheck, Play, Plus, Users } from "lucide-react";
 import { formatCurrency } from "@/services/finance-service";
 import { PayrollEntry } from "@/types/finance";
 import { useFinanceBranches, useFinancePayroll } from "@/hooks/use-finance";
+import { PayrollEntryDialog } from "@/components/finance/PayrollEntryDialog";
+import { PayrollCycleDialog } from "@/components/finance/PayrollCycleDialog";
+import { SinglePayrollPayDialog } from "@/components/finance/SinglePayrollPayDialog";
 
 const statusLabels: Record<PayrollEntry["status"], string> = {
   pending: "در انتظار",
@@ -22,23 +26,32 @@ const statusColors: Record<PayrollEntry["status"], string> = {
 };
 
 export default function FinancePayroll() {
+  const [entryModalOpen, setEntryModalOpen] = useState(false);
+  const [cycleModalOpen, setCycleModalOpen] = useState(false);
+  const [payingEntry, setPayingEntry] = useState<PayrollEntry | null>(null);
+
   const { data: list = [], isLoading: isPayrollLoading } = useFinancePayroll();
   const { data: branches = [] } = useFinanceBranches();
 
   const total = list.reduce((s, p) => s + p.netPay, 0);
   const paid = list.filter((p) => p.status === "paid").reduce((s, p) => s + p.netPay, 0);
-  const pending = list.filter((p) => p.status !== "paid").reduce((s, p) => s + p.netPay, 0);
+  const pendingEntries = list.filter((p) => p.status !== "paid");
+  const pending = pendingEntries.reduce((s, p) => s + p.netPay, 0);
 
   return (
     <div className="space-y-5 animate-fade-in" dir="rtl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">حقوق و دستمزد</h1>
           <p className="text-sm text-muted-foreground">مدیریت پرداخت حقوق پرسنل به تفکیک شعبه</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline"><Plus className="h-4 w-4 ml-2" /> افزودن پرسنل</Button>
-          <Button><Play className="h-4 w-4 ml-2" /> اجرای دوره</Button>
+          <Button variant="outline" onClick={() => setEntryModalOpen(true)}>
+            <Plus className="h-4 w-4 ml-2" /> افزودن پرسنل
+          </Button>
+          <Button onClick={() => setCycleModalOpen(true)}>
+            <Play className="h-4 w-4 ml-2" /> اجرای دوره
+          </Button>
         </div>
       </div>
 
@@ -121,7 +134,14 @@ export default function FinancePayroll() {
                       <TableCell><Badge variant="outline" className={statusColors[p.status]}>{statusLabels[p.status]}</Badge></TableCell>
                       <TableCell className="text-left">
                         {p.status !== "paid" && (
-                          <Button size="sm" variant="ghost" className="text-success"><CheckCheck className="h-4 w-4 ml-1" /> پرداخت</Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-success hover:bg-success/10"
+                            onClick={() => setPayingEntry(p)}
+                          >
+                            <CheckCheck className="h-4 w-4 ml-1" /> پرداخت
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -132,6 +152,18 @@ export default function FinancePayroll() {
           </Table>
         </div>
       </Card>
+      <PayrollEntryDialog open={entryModalOpen} onOpenChange={setEntryModalOpen} />
+      <PayrollCycleDialog
+        open={cycleModalOpen}
+        onOpenChange={setCycleModalOpen}
+        pendingTotal={pending}
+        pendingCount={pendingEntries.length}
+      />
+      <SinglePayrollPayDialog
+        open={!!payingEntry}
+        onOpenChange={(o) => { if (!o) setPayingEntry(null); }}
+        entry={payingEntry}
+      />
     </div>
   );
 }
